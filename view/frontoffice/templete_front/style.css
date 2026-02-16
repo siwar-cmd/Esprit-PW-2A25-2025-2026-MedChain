@@ -1,0 +1,119 @@
+/* Charte Graphique MedChain */
+:root {
+    --primary: #1D9E75;
+    --secondary: #0F6E56;
+    --accent: #9FE1CB;
+    --neutral: #888780;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f9f9f9;
+}
+
+/* Navbar : Logo à gauche, Boutons à droite */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 5%;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.logo img { height: 50px; }
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 15px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    background-color: var(--accent); /* #9FE1CB */
+    color: var(--secondary);        /* #0F6E56 */
+}
+
+/* Hero Section */
+.hero {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.hero-img {
+    width: 90%;
+    max-width: 1200px;
+    border-radius: 15px;
+}
+
+/* Services : Cartes Hover */
+.services-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 50px 5%;
+    flex-wrap: wrap;
+}
+
+.service-card {
+    background: #fff;
+    width: 300px;
+    padding: 30px;
+    border-radius: 20px;
+    text-decoration: none;
+    text-align: center;
+    color: #333;
+    transition: all 0.4s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.service-card img {
+    width: 80px;
+    margin-bottom: 20px;
+}
+
+.service-card h3 {
+    color: var(--secondary);
+    margin-bottom: 15px;
+}
+
+.service-card p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+/* Faux bouton à l'intérieur de la carte */
+.btn-action {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--secondary);
+    color: #fff;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+/* EFFET HOVER SUR LA CARTE */
+.service-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 25px rgba(29, 158, 117, 0.2);
+}
+
+.service-card:hover .btn-action {
+    background-color: var(--accent);
+    color: var(--secondary);
+}
