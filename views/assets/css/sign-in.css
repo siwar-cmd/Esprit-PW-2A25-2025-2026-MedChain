@@ -1,0 +1,513 @@
+/* sign-in.css - Style moderne pour la page de connexion Medcare */
+
+:root {
+    /* Palette Médicale Medcare */
+    --medcare-blue-dark: #071551ff;
+    --medcare-blue-medium: #7a9edbff;
+    --medcare-blue-light: #99d8dcff;
+    --medcare-blue-primary: #0051d2;
+    --medcare-teal: #0fa3b1;
+    --medcare-white: #ffffff;
+    --medcare-light-bg: #f0f9ff;
+    --medcare-gray-light: #e8edf1;
+    --medcare-gray-medium: #797979;
+    --medcare-gray-dark: #33363e;
+    --medcare-text-dark: #020a21;
+    --medcare-text-light: #5d6d7e;
+    --medcare-success: #10b981;
+    --medcare-warning: #f59e0b;
+    --medcare-danger: #ef4444;
+    
+    /* Effets */
+    --card-shadow: 0 10px 30px rgba(7, 21, 81, 0.1);
+    --hover-shadow: 0 20px 40px rgba(0, 81, 210, 0.15);
+    --gradient-bg: linear-gradient(135deg, #f0f9ff 0%, #f0fdfa 100%);
+    --gradient-primary: linear-gradient(90deg, var(--medcare-blue-dark) 0%, var(--medcare-blue-primary) 100%);
+    --gradient-login: linear-gradient(135deg, rgba(7, 21, 81, 0.95) 0%, rgba(121, 158, 219, 0.85) 100%);
+}
+
+/* ========== OVERRIDES POUR LA PAGE LOGIN ========== */
+
+body.login-page {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Open Sans', sans-serif;
+    background: var(--gradient-bg);
+    color: var(--medcare-text-dark);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ========== DÉCORATIONS MÉDICALES ANIMÉES ========== */
+.medical-decoration {
+    position: fixed;
+    font-size: 40px;
+    color: rgba(0, 81, 210, 0.1);
+    z-index: 0;
+    animation: medicalFloat 20s linear infinite;
+    pointer-events: none;
+}
+
+.medical-decoration:nth-child(1) {
+    top: 10%;
+    left: 5%;
+    animation-delay: 0s;
+}
+
+.medical-decoration:nth-child(2) {
+    top: 70%;
+    right: 8%;
+    animation-delay: 5s;
+}
+
+@keyframes medicalFloat {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.1;
+    }
+    50% {
+        opacity: 0.2;
+    }
+    100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0.1;
+    }
+}
+
+/* ========== ZONE DE CONNEXION PRINCIPALE ========== */
+.login-area {
+    width: 100%;
+    padding: 40px 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.login-area .container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ========== CARTE DE CONNEXION MODERNE ========== */
+.appointment-form {
+    background: var(--medcare-white);
+    border-radius: 24px;
+    padding: 60px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--medcare-gray-light);
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.appointment-form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: var(--gradient-primary);
+}
+
+/* ========== LOGO ========== */
+.logo-container {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo-img {
+    height: 80px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 4px 8px rgba(7, 21, 81, 0.1));
+}
+
+.logo-img:hover {
+    transform: scale(1.05) rotate(-2deg);
+}
+
+/* ========== EN-TÊTE DE CONNEXION ========== */
+.login-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.login-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: var(--medcare-blue-dark);
+    margin-bottom: 15px;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.login-header h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: var(--gradient-primary);
+    border-radius: 2px;
+}
+
+.login-header p {
+    color: var(--medcare-text-light);
+    font-size: 1rem;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* ========== MESSAGES D'ERREUR ========== */
+.alert-error {
+    background: linear-gradient(90deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid var(--medcare-danger);
+    border-left: 6px solid var(--medcare-danger);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.alert-error i {
+    color: var(--medcare-danger);
+    font-size: 20px;
+    margin-top: 2px;
+}
+
+.alert-error div {
+    color: var(--medcare-text-dark);
+    font-weight: 500;
+    flex: 1;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== FORMULAIRE DE CONNEXION ========== */
+.login-form {
+    margin-bottom: 40px;
+}
+
+.form-group {
+    margin-bottom: 30px;
+}
+
+.form-group label {
+    color: var(--medcare-blue-dark);
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: block;
+    font-size: 15px;
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--medcare-blue-medium);
+    font-size: 18px;
+    z-index: 2;
+}
+
+.form-control {
+    width: 100%;
+    border: 2px solid var(--medcare-gray-light);
+    border-radius: 12px;
+    padding: 16px 20px 16px 55px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: var(--medcare-white);
+    color: var(--medcare-text-dark);
+    font-family: inherit;
+}
+
+.form-control:focus {
+    border-color: var(--medcare-blue-primary);
+    box-shadow: 0 0 0 4px rgba(0, 81, 210, 0.1);
+    outline: none;
+    padding-left: 60px;
+}
+
+.form-control.error {
+    border-color: var(--medcare-danger);
+    background: #fef2f2;
+}
+
+/* ========== LIEN MOT DE PASSE OUBLIÉ ========== */
+.forgot-password-link {
+    margin-top: 12px;
+    text-align: right;
+}
+
+.forgot-password-link a {
+    color: var(--medcare-blue-primary);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.forgot-password-link a:hover {
+    color: var(--medcare-blue-dark);
+    text-decoration: underline;
+    gap: 8px;
+}
+
+/* ========== BOUTON DE CONNEXION MODERNE ========== */
+.main_btn {
+    width: 100%;
+    padding: 18px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    background: var(--gradient-primary);
+    color: var(--medcare-white);
+    box-shadow: 0 10px 25px rgba(0, 81, 210, 0.3);
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    margin-top: 10px;
+}
+
+.main_btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s ease;
+}
+
+.main_btn:hover::before {
+    left: 100%;
+}
+
+.main_btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 81, 210, 0.4);
+}
+
+.main_btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* ========== EFFET RIPPLE ========== */
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ========== SPINNER DE CHARGEMENT ========== */
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--medcare-white);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========== LIENS SUPPLÉMENTAIRES ========== */
+.login-links {
+    text-align: center;
+    border-top: 1px solid var(--medcare-gray-light);
+    padding-top: 30px;
+}
+
+.login-links p {
+    color: var(--medcare-text-light);
+    margin-bottom: 20px;
+    font-size: 15px;
+}
+
+.login-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin: 0 8px 15px;
+    font-size: 15px;
+    min-width: 200px;
+}
+
+.login-link:first-of-type {
+    background: var(--medcare-light-bg);
+    color: var(--medcare-blue-primary);
+    border: 2px solid var(--medcare-blue-light);
+}
+
+.login-link:first-of-type:hover {
+    background: var(--medcare-blue-primary);
+    color: var(--medcare-white);
+    transform: translateY(-3px);
+    box-shadow: var(--hover-shadow);
+}
+
+.login-link.back-home {
+    background: transparent;
+    color: var(--medcare-text-light);
+    border: 2px solid var(--medcare-gray-light);
+}
+
+.login-link.back-home:hover {
+    background: var(--medcare-gray-light);
+    color: var(--medcare-text-dark);
+    transform: translateY(-3px);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .appointment-form {
+        padding: 40px 30px;
+        margin: 20px;
+    }
+    
+    .login-header h3 {
+        font-size: 1.8rem;
+    }
+    
+    .logo-img {
+        height: 60px;
+    }
+    
+    .login-link {
+        min-width: 180px;
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    .medical-decoration {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 576px) {
+    .login-area {
+        padding: 20px 10px;
+    }
+    
+    .appointment-form {
+        padding: 30px 20px;
+    }
+    
+    .login-header h3 {
+        font-size: 1.5rem;
+    }
+    
+    .login-link {
+        display: flex;
+        min-width: 100%;
+        margin: 0 0 15px 0;
+    }
+    
+    .login-links {
+        padding-top: 20px;
+    }
+}
+
+/* ========== ANIMATIONS DE FOCUS ========== */
+.focused .input-with-icon i {
+    color: var(--medcare-blue-primary);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.focused .form-control {
+    border-color: var(--medcare-blue-primary);
+    box-shadow: 0 0 0 4px rgba(0, 81, 210, 0.1);
+}
+
+/* ========== ANIMATION DE SUCCÈS ========== */
+@keyframes successCheck {
+    0% {
+        transform: scale(0) rotate(-45deg);
+    }
+    80% {
+        transform: scale(1.2) rotate(-45deg);
+    }
+    100% {
+        transform: scale(1) rotate(-45deg);
+    }
+}
+
+.success-check {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--medcare-success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: successCheck 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.success-check::before {
+    content: '';
+    width: 12px;
+    height: 6px;
+    border-left: 3px solid white;
+    border-bottom: 3px solid white;
+    transform: rotate(-45deg);
+    margin-top: -2px;
+}
