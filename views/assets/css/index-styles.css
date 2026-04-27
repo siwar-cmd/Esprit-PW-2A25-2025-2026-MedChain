@@ -1,0 +1,157 @@
+/* index-styles.css - Styles spécifiques à la page d'accueil */
+
+/* ===== HEADER & NAVIGATION ===== */
+/* Styles d'authentification */
+.auth-section {
+    display: flex;
+    align-items: center;
+}
+
+.auth-welcome {
+    color: #fff;
+    margin-right: 15px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.auth-welcome i {
+    margin-right: 5px;
+}
+
+.auth-link {
+    color: #fff;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}
+
+.auth-link:hover {
+    opacity: 0.8;
+    text-decoration: none;
+    color: #fff;
+}
+
+.auth-link.logout {
+    text-decoration: underline;
+}
+
+.auth-link.login {
+    margin-right: 10px;
+}
+
+/* Logo */
+.navbar-logo {
+    height: 120px;
+    max-height: 120px;
+}
+
+/* Menu compte */
+.account-menu .dropdown-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.account-menu .dropdown-toggle i {
+    margin-right: 8px;
+}
+
+/* ===== HERO SECTION ===== */
+.user-hero {
+    margin-bottom: 30px;
+}
+
+.user-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.user-hero p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.hero-cta {
+    margin-top: 30px;
+}
+
+/* ===== CTA SECTION (Non connecté) ===== */
+.cta-promo {
+    background: linear-gradient(90deg, #071551ff 0%, #7a9edbff 100%);
+    padding: 80px 0;
+    color: white;
+}
+
+.cta-promo-content h3 {
+    color: white;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.cta-promo-content p {
+    color: white;
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+.cta-promo-button {
+    background: white;
+    color: #99d8dcff;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.cta-promo-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== APPOINTMENT SECTION ===== */
+.appointment-login-required {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.appointment-login-required p {
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.user-info-field {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .navbar-logo {
+        height: 80px;
+    }
+    
+    .auth-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .auth-welcome {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .cta-promo {
+        padding: 50px 0;
+    }
+    
+    .cta-promo-content {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .cta-promo-button {
+        display: block;
+        margin: 0 auto;
+    }
+}
