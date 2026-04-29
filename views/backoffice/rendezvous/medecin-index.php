@@ -90,6 +90,7 @@ $stats = $rdvController->getStats('medecin', $userId);
             <a href="#" class="dashboard-logo-text">Med<span>Chain</span></a>
         </div>
         <nav class="dashboard-nav">
+            <a href="../../frontoffice/home/index.php" class="dashboard-nav-item"><i class="bi bi-house"></i> Accueil</a>
             <a href="medecin-index.php" class="dashboard-nav-item active"><i class="bi bi-calendar-check"></i> Rendez-vous</a>
             <a href="../../../controllers/logout.php" class="dashboard-nav-item" style="color: #F87171; margin-top: auto;"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
         </nav>

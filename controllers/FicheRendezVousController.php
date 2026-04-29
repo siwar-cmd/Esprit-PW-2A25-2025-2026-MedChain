@@ -39,8 +39,8 @@ class FicheRendezVousController {
                 return ["success" => false, "message" => "Une fiche existe déjà pour ce rendez-vous"];
             }
 
-            $sql = 'INSERT INTO ficherendezvous (idRDV, dateGeneration, piecesAApporter, consignesAvantConsultation, tarifConsultation, modeRemboursement, emailEnvoye, calendrierAjoute) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+            $sql = 'INSERT INTO ficherendezvous (idRDV, dateGeneration, piecesAApporter, consignesAvantConsultation, tarifConsultation, modeRemboursement, emailEnvoye, calendrierAjoute, antecedents, allergies, motifPrincipal, modeConsultation, statutPaiement) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
             $req = $this->pdo->prepare($sql);
             $success = $req->execute([
                 $data['idRDV'],
@@ -50,7 +50,12 @@ class FicheRendezVousController {
                 $data['tarifConsultation'] ?? 0.0,
                 htmlspecialchars($data['modeRemboursement'] ?? ''),
                 $data['emailEnvoye'] ?? 0,
-                $data['calendrierAjoute'] ?? 0
+                $data['calendrierAjoute'] ?? 0,
+                htmlspecialchars($data['antecedents'] ?? ''),
+                htmlspecialchars($data['allergies'] ?? ''),
+                htmlspecialchars($data['motifPrincipal'] ?? ''),
+                htmlspecialchars($data['modeConsultation'] ?? 'Présentiel'),
+                htmlspecialchars($data['statutPaiement'] ?? 'En attente')
             ]);
 
             if ($success) {
@@ -68,7 +73,7 @@ class FicheRendezVousController {
             $updates = [];
             $params = [];
             
-            $allowedFields = ['piecesAApporter', 'consignesAvantConsultation', 'tarifConsultation', 'modeRemboursement', 'emailEnvoye', 'calendrierAjoute'];
+            $allowedFields = ['piecesAApporter', 'consignesAvantConsultation', 'tarifConsultation', 'modeRemboursement', 'emailEnvoye', 'calendrierAjoute', 'antecedents', 'allergies', 'motifPrincipal', 'modeConsultation', 'statutPaiement'];
             foreach ($allowedFields as $field) {
                 if (isset($data[$field])) {
                     $updates[] = "$field = ?";

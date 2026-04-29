@@ -123,6 +123,7 @@ $stats = $ficheController->getStats('patient', $currentUser->getId());
         </div>
         
         <nav class="dashboard-nav">
+            <a href="/projet/views/frontoffice/home/index.php" class="dashboard-nav-item"><i class="bi bi-house"></i> Accueil</a>
             <div class="dashboard-nav-title">Navigation</div>
             <a href="../home/index.php" class="dashboard-nav-item">
                 <i class="bi bi-house-door-fill"></i> Accueil

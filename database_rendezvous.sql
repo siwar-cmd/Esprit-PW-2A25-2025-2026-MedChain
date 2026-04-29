@@ -25,10 +25,13 @@ CREATE TABLE IF NOT EXISTS `ficherendezvous` (
   `modeRemboursement` varchar(100) DEFAULT NULL,
   `emailEnvoye` tinyint(1) DEFAULT 0,
   `calendrierAjoute` tinyint(1) DEFAULT 0,
+  `antecedents` varchar(255) DEFAULT NULL,
+  `allergies` varchar(255) DEFAULT NULL,
+  `motifPrincipal` varchar(255) DEFAULT NULL,
+  `modeConsultation` varchar(50) DEFAULT 'Présentiel',
+  `statutPaiement` varchar(50) DEFAULT 'En attente',
   PRIMARY KEY (`idFiche`),
   UNIQUE KEY `fk_rdv` (`idRDV`),
   CONSTRAINT `fk_rdv` FOREIGN KEY (`idRDV`) REFERENCES `rendezvous` (`idRDV`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Insertion de quelques données de test si l'utilisateur de test existe
--- Assurez-vous d'avoir au moins un utilisateur avec role='user' et un avec role='admin' ou un medecin
