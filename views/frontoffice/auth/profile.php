@@ -821,7 +821,7 @@ $photo_url = getProfilePhotoUrl($user);
                 </a>
             <?php endif; ?>
             
-            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="confirmSwal(event, this, '')">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion
             </a>
         </nav>
@@ -1127,7 +1127,7 @@ $photo_url = getProfilePhotoUrl($user);
                             <i class="bi bi-calendar-check-fill"></i> Mes rendez-vous
                         </a>
                     <?php endif; ?>
-                    <a href="../../../controllers/logout.php" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+                    <a href="../../../controllers/logout.php" class="btn btn-danger" onclick="confirmSwal(event, this, '')">
                         <i class="bi bi-box-arrow-right"></i> Déconnexion
                     </a>
                 </div>
@@ -1279,5 +1279,7 @@ $photo_url = getProfilePhotoUrl($user);
         });
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

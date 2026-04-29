@@ -112,7 +112,7 @@ class FicheRendezVousController {
 
     public function getAllFiches($filters = [], $role = 'admin', $userId = null): array {
         try {
-            $sql = 'SELECT f.*, r.dateHeureDebut, r.dateHeureFin, r.statut, r.typeConsultation, r.motif, 
+            $sql = 'SELECT f.*, r.dateHeureDebut, r.statut, r.typeConsultation, r.motif, 
                            u1.nom as patient_nom, u1.prenom as patient_prenom, 
                            u2.nom as medecin_nom, u2.prenom as medecin_prenom 
                     FROM ficherendezvous f 

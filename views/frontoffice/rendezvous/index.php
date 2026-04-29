@@ -125,7 +125,7 @@ $stats = $rdvController->getStats('patient', $currentUser->getId());
             <a href="../ficherdv/index.php" class="dashboard-nav-item">
                 <i class="bi bi-file-medical"></i> Mes Fiches
             </a>
-            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="confirmSwal(event, this, 'Êtes-vous sûr de vouloir vous déconnecter ?')">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion
             </a>
         </nav>
@@ -204,7 +204,7 @@ $stats = $rdvController->getStats('patient', $currentUser->getId());
                         </td>
                         <td class="actions-col">
                             <a href="edit.php?id=<?= $rdv['idRDV'] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <form method="POST" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment annuler ce rendez-vous ?');">
+                            <form method="POST" style="display:inline;" onsubmit="confirmSwal(event, this, 'Voulez-vous vraiment annuler ce rendez-vous ?')">
                                 <input type="hidden" name="delete_id" value="<?= $rdv['idRDV'] ?>">
                                 <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>
@@ -280,5 +280,7 @@ function sortTable(n, tableId) {
     }
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

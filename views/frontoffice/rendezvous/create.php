@@ -24,11 +24,11 @@ $pdo = config::getConnexion();
 $req = $pdo->query("SELECT id_utilisateur, nom, prenom FROM utilisateur WHERE role IN ('admin', 'medecin') AND statut = 'actif'");
 $medecins = $req->fetchAll(PDO::FETCH_ASSOC);
 
-$error = null;
+$errorMsg = null;
+$errorField = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
         'dateHeureDebut' => $_POST['dateHeureDebut'],
-        'dateHeureFin' => $_POST['dateHeureFin'],
         'statut' => 'planifie',
         'typeConsultation' => $_POST['typeConsultation'],
         'motif' => $_POST['motif'],
@@ -42,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: index.php');
         exit;
     } else {
-        $error = $result['message'];
+        $errorMsg = $result['message'];
+        $errorField = $result['field'] ?? 'global';
     }
 }
 ?>
@@ -114,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="../ficherdv/index.php" class="dashboard-nav-item">
                 <i class="bi bi-file-medical"></i> Mes Fiches
             </a>
-            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="confirmSwal(event, this, '')">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion
             </a>
         </nav>
@@ -126,51 +127,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="card-mc">
         <h1 class="page-title">Réserver un Rendez-vous</h1>
         
-        <?php if($error): ?>
-            <div class="alert alert-danger"><?= $error ?></div>
+        <?php if($errorMsg && $errorField === 'global'): ?>
+            <div class="alert alert-danger"><?= htmlspecialchars($errorMsg) ?></div>
         <?php endif; ?>
 
         <form method="POST" id="rdvForm" novalidate>
             <div class="mb-3">
                 <label class="form-label"><i class="bi bi-person-badge text-success me-2"></i>Médecin</label>
-                <select name="idMedecin" id="idMedecin" class="form-select">
+                <select name="idMedecin" id="idMedecin" class="form-select <?= ($errorField === 'idMedecin') ? 'is-invalid' : '' ?>">
                     <option value="">Sélectionnez un médecin...</option>
                     <?php foreach($medecins as $med): ?>
-                        <option value="<?= $med['id_utilisateur'] ?>">Dr. <?= htmlspecialchars($med['nom'] . ' ' . $med['prenom']) ?></option>
+                        <option value="<?= $med['id_utilisateur'] ?>" <?= (isset($_POST['idMedecin']) && $_POST['idMedecin'] == $med['id_utilisateur']) ? 'selected' : '' ?>>Dr. <?= htmlspecialchars($med['nom'] . ' ' . $med['prenom']) ?></option>
                     <?php endforeach; ?>
                 </select>
                 <div class="text-danger mt-1 error-msg" id="err-idMedecin" style="display:none; font-size:0.875em;">Veuillez sélectionner un médecin.</div>
+                <?php if($errorField === 'idMedecin'): ?>
+                    <div class="text-danger mt-1" style="font-size:0.875em;"><?= htmlspecialchars($errorMsg) ?></div>
+                <?php endif; ?>
             </div>
             
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-12 mb-3">
                     <label class="form-label"><i class="bi bi-calendar-event text-success me-2"></i>Date & Heure Début</label>
-                    <input type="datetime-local" name="dateHeureDebut" id="dateHeureDebut" class="form-control">
+                    <input type="datetime-local" name="dateHeureDebut" id="dateHeureDebut" class="form-control <?= ($errorField === 'dateHeureDebut') ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['dateHeureDebut'] ?? '') ?>">
                     <div class="text-danger mt-1 error-msg" id="err-dateHeureDebut" style="display:none; font-size:0.875em;">Veuillez choisir une date de début.</div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label"><i class="bi bi-calendar-x text-success me-2"></i>Date & Heure Fin</label>
-                    <input type="datetime-local" name="dateHeureFin" id="dateHeureFin" class="form-control">
-                    <div class="text-danger mt-1 error-msg" id="err-dateHeureFin" style="display:none; font-size:0.875em;">Veuillez choisir une date de fin.</div>
+                    <?php if($errorField === 'dateHeureDebut'): ?>
+                        <div class="text-danger mt-1" style="font-size:0.875em;"><?= htmlspecialchars($errorMsg) ?></div>
+                    <?php endif; ?>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label"><i class="bi bi-activity text-success me-2"></i>Type de Consultation</label>
-                <select name="typeConsultation" id="typeConsultation" class="form-select">
+                <select name="typeConsultation" id="typeConsultation" class="form-select <?= ($errorField === 'typeConsultation') ? 'is-invalid' : '' ?>">
                     <option value="">Sélectionnez un type...</option>
-                    <option value="Consultation Générale">Consultation Générale</option>
-                    <option value="Suivi Médical">Suivi Médical</option>
-                    <option value="Urgence">Urgence</option>
-                    <option value="Spécialiste">Spécialiste</option>
+                    <option value="Consultation Générale" <?= (isset($_POST['typeConsultation']) && $_POST['typeConsultation'] == 'Consultation Générale') ? 'selected' : '' ?>>Consultation Générale</option>
+                    <option value="Suivi Médical" <?= (isset($_POST['typeConsultation']) && $_POST['typeConsultation'] == 'Suivi Médical') ? 'selected' : '' ?>>Suivi Médical</option>
+                    <option value="Urgence" <?= (isset($_POST['typeConsultation']) && $_POST['typeConsultation'] == 'Urgence') ? 'selected' : '' ?>>Urgence</option>
+                    <option value="Spécialiste" <?= (isset($_POST['typeConsultation']) && $_POST['typeConsultation'] == 'Spécialiste') ? 'selected' : '' ?>>Spécialiste</option>
                 </select>
                 <div class="text-danger mt-1 error-msg" id="err-typeConsultation" style="display:none; font-size:0.875em;">Veuillez sélectionner le type de consultation.</div>
+                <?php if($errorField === 'typeConsultation'): ?>
+                    <div class="text-danger mt-1" style="font-size:0.875em;"><?= htmlspecialchars($errorMsg) ?></div>
+                <?php endif; ?>
             </div>
 
             <div class="mb-3">
                 <label class="form-label"><i class="bi bi-card-text text-success me-2"></i>Motif</label>
-                <textarea name="motif" id="motif" class="form-control" rows="4" placeholder="Décrivez brièvement le motif de votre visite..."></textarea>
+                <textarea name="motif" id="motif" class="form-control <?= ($errorField === 'motif') ? 'is-invalid' : '' ?>" rows="4" placeholder="Décrivez brièvement le motif de votre visite..."><?= htmlspecialchars($_POST['motif'] ?? '') ?></textarea>
                 <div class="text-danger mt-1 error-msg" id="err-motif" style="display:none; font-size:0.875em;">Le motif est obligatoire (min 5 caractères).</div>
+                <?php if($errorField === 'motif'): ?>
+                    <div class="text-danger mt-1" style="font-size:0.875em;"><?= htmlspecialchars($errorMsg) ?></div>
+                <?php endif; ?>
             </div>
 
             <div class="text-end mt-4">
@@ -204,13 +212,6 @@ function validateForm() {
         isValid = false;
     }
 
-    const dateHeureFin = document.getElementById('dateHeureFin');
-    if (!dateHeureFin.value) {
-        document.getElementById('err-dateHeureFin').style.display = 'block';
-        dateHeureFin.classList.add('is-invalid');
-        isValid = false;
-    }
-
     const typeConsultation = document.getElementById('typeConsultation');
     if (!typeConsultation.value) {
         document.getElementById('err-typeConsultation').style.display = 'block';
@@ -231,5 +232,8 @@ function validateForm() {
 }
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>
+

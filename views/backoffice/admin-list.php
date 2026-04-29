@@ -192,7 +192,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
                             <td><?= date('d/m/Y', strtotime($user['date_inscription'])) ?></td>
                             <td class="actions">
                                 <a href="admin-edit.php?id=<?= $user['id_utilisateur'] ?>" class="btn btn-edit"><i class="bi bi-pencil-fill"></i> Modifier</a>
-                                <form method="POST" action="admin-delete.php" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                <form method="POST" action="admin-delete.php" style="display: inline;" onsubmit="confirmSwal(event, this, '')">
                                     <input type="hidden" name="user_id" value="<?= $user['id_utilisateur'] ?>">
                                     <button type="submit" class="btn btn-delete"><i class="bi bi-trash-fill"></i> Supprimer</button>
                                 </form>
@@ -225,5 +225,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
         });
     }, 5000);
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

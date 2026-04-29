@@ -423,7 +423,7 @@ $editUserUrl = 'admin-edit-user.php';
                                             <?php if (!$is_current_user): ?>
                                                 <?php if (($user['statut'] ?? '') === 'actif'): ?>
                                                     <form method="POST" action="admin-deactivate.php" 
-                                                          onsubmit="return confirm('Désactiver cet utilisateur ?')" 
+                                                          onsubmit="confirmSwal(event, this, '')" 
                                                           class="d-inline">
                                                         <input type="hidden" name="user_id" value="<?= e($user_id) ?>">
                                                         <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
@@ -433,7 +433,7 @@ $editUserUrl = 'admin-edit-user.php';
                                                     </form>
                                                 <?php else: ?>
                                                     <form method="POST" action="admin-activate.php" 
-                                                          onsubmit="return confirm('Activer cet utilisateur ?')" 
+                                                          onsubmit="confirmSwal(event, this, '')" 
                                                           class="d-inline">
                                                         <input type="hidden" name="user_id" value="<?= e($user_id) ?>">
                                                         <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
@@ -549,10 +549,21 @@ $editUserUrl = 'admin-edit-user.php';
     
         function confirmLogout(event) {
             event.preventDefault();
-            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                const logoutUrl = '<?= e($logoutUrl) ?>';
-                window.location.href = logoutUrl;
-            }
+            const logoutUrl = '<?= e($logoutUrl) ?>';
+            Swal.fire({
+                title: 'Êtes-vous sûr ?',
+                text: 'De vouloir vous déconnecter',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1D9E75',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Oui',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = logoutUrl;
+                }
+            });
         }
         
  
@@ -602,5 +613,7 @@ $editUserUrl = 'admin-edit-user.php';
             });
         });
     </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

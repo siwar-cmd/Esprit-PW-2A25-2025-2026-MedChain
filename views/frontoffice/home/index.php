@@ -807,7 +807,7 @@ if ($isLoggedIn) {
               </a>
             <?php endif; ?>
             <div class="dropdown-divider"></div>
-            <a href="../../../controllers/logout.php" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+            <a href="../../../controllers/logout.php" onclick="confirmSwal(event, this, '')">
               <i class="bi bi-box-arrow-right"></i> Déconnexion
             </a>
           </div>
@@ -841,7 +841,7 @@ if ($isLoggedIn) {
         <?php if ($userRole === 'admin'): ?>
           <a href="../../backoffice/admin-dashboard.php" class="btn-outline-mc">Admin</a>
         <?php endif; ?>
-        <a href="../../../controllers/logout.php" class="btn-solid-mc" onclick="return confirm('Déconnexion ?')">Déconnexion</a>
+        <a href="../../../controllers/logout.php" class="btn-solid-mc" onclick="confirmSwal(event, this, '')">Déconnexion</a>
       <?php else: ?>
         <a href="../auth/login.php" class="btn-outline-mc">Connexion</a>
         <a href="../auth/register.php" class="btn-solid-mc">Inscription</a>
@@ -1279,5 +1279,7 @@ if ($isLoggedIn) {
     });
   }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

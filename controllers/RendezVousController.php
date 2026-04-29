@@ -84,19 +84,33 @@ class RendezVousController {
 
     public function createRendezVous($data): array {
         try {
-            $required = ['dateHeureDebut', 'dateHeureFin', 'typeConsultation', 'idClient', 'idMedecin'];
+            $required = ['dateHeureDebut', 'typeConsultation', 'idClient', 'idMedecin'];
             foreach ($required as $field) {
                 if (empty($data[$field])) {
-                    return ["success" => false, "message" => "Le champ $field est obligatoire"];
+                    return ["success" => false, "message" => "Le champ $field est obligatoire", "field" => $field];
                 }
             }
+
+            // Validation: Date > Date Actuelle
+            $rdvTime = strtotime($data['dateHeureDebut']);
+            if ($rdvTime <= time()) {
+                return ["success" => false, "message" => "La date et l'heure du rendez-vous doivent être postérieures à la date actuelle.", "field" => "dateHeureDebut"];
+            }
+
+            // Validation: Chevauchement (30 min d'intervalle)
+            $sqlCheck = "SELECT COUNT(*) as count FROM rendezvous WHERE idMedecin = ? AND ABS(TIMESTAMPDIFF(MINUTE, dateHeureDebut, ?)) < 30";
+            $reqCheck = $this->pdo->prepare($sqlCheck);
+            $reqCheck->execute([$data['idMedecin'], $data['dateHeureDebut']]);
+            $count = $reqCheck->fetch(PDO::FETCH_ASSOC)['count'];
+            if ($count > 0) {
+                return ["success" => false, "message" => "Le praticien a déjà un rendez-vous dans cette plage horaire.", "field" => "dateHeureDebut"];
+            }
             
-            $sql = 'INSERT INTO rendezvous (dateHeureDebut, dateHeureFin, statut, typeConsultation, motif, idClient, idMedecin) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)';
+            $sql = 'INSERT INTO rendezvous (dateHeureDebut, statut, typeConsultation, motif, idClient, idMedecin) 
+                    VALUES (?, ?, ?, ?, ?, ?)';
             $req = $this->pdo->prepare($sql);
             $success = $req->execute([
                 $data['dateHeureDebut'],
-                $data['dateHeureFin'],
                 $data['statut'] ?? 'planifie',
                 htmlspecialchars($data['typeConsultation']),
                 htmlspecialchars($data['motif'] ?? ''),
@@ -121,10 +135,26 @@ class RendezVousController {
                 return ["success" => false, "message" => "Rendez-vous non trouvé"];
             }
             
+            if (isset($data['dateHeureDebut'])) {
+                $rdvTime = strtotime($data['dateHeureDebut']);
+                if ($rdvTime <= time()) {
+                    return ["success" => false, "message" => "La date et l'heure du rendez-vous doivent être postérieures à la date actuelle.", "field" => "dateHeureDebut"];
+                }
+
+                $idMedecin = isset($data['idMedecin']) ? $data['idMedecin'] : $rdv['idMedecin'];
+                $sqlCheck = "SELECT COUNT(*) as count FROM rendezvous WHERE idMedecin = ? AND ABS(TIMESTAMPDIFF(MINUTE, dateHeureDebut, ?)) < 30 AND idRDV != ?";
+                $reqCheck = $this->pdo->prepare($sqlCheck);
+                $reqCheck->execute([$idMedecin, $data['dateHeureDebut'], $id]);
+                $count = $reqCheck->fetch(PDO::FETCH_ASSOC)['count'];
+                if ($count > 0) {
+                    return ["success" => false, "message" => "Le praticien a déjà un rendez-vous dans cette plage horaire.", "field" => "dateHeureDebut"];
+                }
+            }
+
             $updates = [];
             $params = [];
             
-            $allowedFields = ['dateHeureDebut', 'dateHeureFin', 'statut', 'typeConsultation', 'motif', 'idMedecin'];
+            $allowedFields = ['dateHeureDebut', 'statut', 'typeConsultation', 'motif', 'idMedecin'];
             foreach ($allowedFields as $field) {
                 if (isset($data[$field])) {
                     $updates[] = "$field = ?";

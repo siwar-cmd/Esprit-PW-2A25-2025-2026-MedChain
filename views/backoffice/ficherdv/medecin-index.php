@@ -160,7 +160,7 @@ $stats = $ficheController->getStats('medecin', $userId);
                             <td><?= $fiche['tarifConsultation'] ? $fiche['tarifConsultation'] . ' TND' : '-' ?></td>
                             <td class="actions-col" style="display: flex; gap: 5px;">
                                 <a href="medecin-edit.php?id=<?= $fiche['idFiche'] ?>" class="btn btn-outline"><i class="bi bi-pencil"></i></a>
-                                <form method="POST" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette fiche ?');">
+                                <form method="POST" style="display:inline;" onsubmit="confirmSwal(event, this, '')">
                                     <input type="hidden" name="delete_id" value="<?= $fiche['idFiche'] ?>">
                                     <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i></button>
                                 </form>
@@ -239,5 +239,8 @@ function sortTable(n, tableId) {
     }
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>
+

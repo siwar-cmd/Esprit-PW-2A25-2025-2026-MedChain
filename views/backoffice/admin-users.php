@@ -261,7 +261,7 @@ function escape_data($data) { return htmlspecialchars($data ?? '', ENT_QUOTES, '
                                 <td class="actions">
                                     <a href="admin-edit.php?id=<?= $user['id_utilisateur'] ?>" class="btn btn-primary"><i class="bi bi-pencil-fill"></i> Modifier</a>
                                     <?php if (!$is_current_user): ?>
-                                        <form method="POST" action="admin-delete.php" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')"><input type="hidden" name="user_id" value="<?= $user['id_utilisateur'] ?>"><button type="submit" class="btn btn-danger"><i class="bi bi-trash-fill"></i> Supprimer</button></form>
+                                        <form method="POST" action="admin-delete.php" style="display: inline;" onsubmit="confirmSwal(event, this, '')"><input type="hidden" name="user_id" value="<?= $user['id_utilisateur'] ?>"><button type="submit" class="btn btn-danger"><i class="bi bi-trash-fill"></i> Supprimer</button></form>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -296,9 +296,11 @@ function escape_data($data) { return htmlspecialchars($data ?? '', ENT_QUOTES, '
     
     document.querySelectorAll('a[href*="logout"], form button[type="submit"]').forEach(link => {
         link.addEventListener('click', function(e) {
-            if (this.href && this.href.includes('logout') && !confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) e.preventDefault();
+            if(this.href && this.href.includes('logout')) confirmSwal(e, this, '');
         });
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

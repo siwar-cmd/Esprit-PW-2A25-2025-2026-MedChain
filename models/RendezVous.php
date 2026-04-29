@@ -4,7 +4,6 @@ class RendezVous
 {
     private $idRDV;
     private $dateHeureDebut;
-    private $dateHeureFin;
     private $statut; // planifie, termine, annule
     private $typeConsultation;
     private $motif;
@@ -13,7 +12,6 @@ class RendezVous
 
     public function __construct(
         $dateHeureDebut = null,
-        $dateHeureFin = null,
         $statut = 'planifie',
         $typeConsultation = null,
         $motif = null,
@@ -23,7 +21,6 @@ class RendezVous
     ) {
         $this->idRDV = $idRDV;
         $this->dateHeureDebut = $dateHeureDebut;
-        $this->dateHeureFin = $dateHeureFin;
         $this->statut = $statut;
         $this->typeConsultation = $typeConsultation;
         $this->motif = $motif;
@@ -34,7 +31,6 @@ class RendezVous
     // Getters
     public function getIdRDV() { return $this->idRDV; }
     public function getDateHeureDebut() { return $this->dateHeureDebut; }
-    public function getDateHeureFin() { return $this->dateHeureFin; }
     public function getStatut() { return $this->statut; }
     public function getTypeConsultation() { return $this->typeConsultation; }
     public function getMotif() { return $this->motif; }
@@ -44,7 +40,6 @@ class RendezVous
     // Setters
     public function setIdRDV($idRDV) { $this->idRDV = $idRDV; return $this; }
     public function setDateHeureDebut($dateHeureDebut) { $this->dateHeureDebut = $dateHeureDebut; return $this; }
-    public function setDateHeureFin($dateHeureFin) { $this->dateHeureFin = $dateHeureFin; return $this; }
     public function setStatut($statut) { $this->statut = $statut; return $this; }
     public function setTypeConsultation($typeConsultation) { $this->typeConsultation = $typeConsultation; return $this; }
     public function setMotif($motif) { $this->motif = $motif; return $this; }
@@ -55,7 +50,6 @@ class RendezVous
         return [
             'idRDV' => $this->idRDV,
             'dateHeureDebut' => $this->dateHeureDebut,
-            'dateHeureFin' => $this->dateHeureFin,
             'statut' => $this->statut,
             'typeConsultation' => $this->typeConsultation,
             'motif' => $this->motif,

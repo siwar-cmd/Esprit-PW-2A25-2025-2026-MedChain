@@ -2,7 +2,6 @@
 CREATE TABLE IF NOT EXISTS `rendezvous` (
   `idRDV` int(11) NOT NULL AUTO_INCREMENT,
   `dateHeureDebut` datetime DEFAULT NULL,
-  `dateHeureFin` datetime DEFAULT NULL,
   `statut` varchar(20) DEFAULT 'planifie',
   `typeConsultation` varchar(100) DEFAULT NULL,
   `motif` text DEFAULT NULL,
@@ -27,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `ficherendezvous` (
   `emailEnvoye` tinyint(1) DEFAULT 0,
   `calendrierAjoute` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`idFiche`),
-  KEY `fk_rdv` (`idRDV`),
+  UNIQUE KEY `fk_rdv` (`idRDV`),
   CONSTRAINT `fk_rdv` FOREIGN KEY (`idRDV`) REFERENCES `rendezvous` (`idRDV`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

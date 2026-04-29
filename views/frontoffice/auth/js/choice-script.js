@@ -132,8 +132,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutLinks = document.querySelectorAll('a[href*="logout"]');
     logoutLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                e.preventDefault();
+            if (typeof confirmSwal !== 'undefined') {
+                confirmSwal(e, this, 'Êtes-vous sûr de vouloir vous déconnecter ?');
+            } else {
+                if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                    e.preventDefault();
+                }
             }
         });
     });

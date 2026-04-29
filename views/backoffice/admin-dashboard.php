@@ -260,7 +260,7 @@ function formatDate($dateString) {
             <a href="../frontoffice/auth/profile.php" class="dashboard-nav-item">
                 <i class="bi bi-person-circle"></i> Mon profil
             </a>
-            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="confirmSwal(event, this, '')">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion
             </a>
         </nav>
@@ -379,9 +379,11 @@ function formatDate($dateString) {
     
     document.querySelectorAll('a[href*="logout"]').forEach(link => {
         link.addEventListener('click', function(e) {
-            if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) e.preventDefault();
+            confirmSwal(e, this, '');
         });
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

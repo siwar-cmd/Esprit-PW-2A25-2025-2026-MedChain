@@ -888,7 +888,7 @@ function getStatusColor($status) {
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item" href="../../../controllers/logout.php" 
-                               onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+                               onclick="confirmSwal(event, this, '')">
                                 <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
                             </a>
                         </li>
@@ -999,7 +999,7 @@ function getStatusColor($status) {
                 
                 <div class="dashboard-nav-section mt-auto">
                     <a class="dashboard-nav-item logout" href="../../../controllers/logout.php" 
-                       onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+                       onclick="confirmSwal(event, this, '')">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>Déconnexion</span>
                     </a>
@@ -1409,13 +1409,10 @@ function getStatusColor($status) {
         });
 
        
-        document.querySelectorAll('a[href*="logout"]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                    e.preventDefault();
-                }
-            });
-        });
+        
     </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>
+

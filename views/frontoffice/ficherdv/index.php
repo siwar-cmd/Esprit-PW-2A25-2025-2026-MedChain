@@ -136,7 +136,7 @@ $stats = $ficheController->getStats('patient', $currentUser->getId());
             <a href="index.php" class="dashboard-nav-item active">
                 <i class="bi bi-file-medical"></i> Mes Fiches
             </a>
-            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="confirmSwal(event, this, '')">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion
             </a>
         </nav>
@@ -292,5 +292,8 @@ $stats = $ficheController->getStats('patient', $currentUser->getId());
         }
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>
+
