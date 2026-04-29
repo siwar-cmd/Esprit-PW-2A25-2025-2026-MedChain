@@ -803,11 +803,21 @@ $photo_url = getProfilePhotoUrl($user);
                 <i class="bi bi-file-medical"></i> Mes Fiches
             </a>
             <?php elseif ($user->getRole() === 'medecin'): ?>
+            <a href="../../backoffice/medecin-dashboard.php" class="dashboard-nav-item">
+                <i class="bi bi-speedometer2"></i> Tableau de bord
+            </a>
             <a href="../../backoffice/rendezvous/medecin-index.php" class="dashboard-nav-item">
                 <i class="bi bi-calendar-check"></i> Rendez-vous
             </a>
             <a href="../../backoffice/ficherdv/medecin-index.php" class="dashboard-nav-item">
                 <i class="bi bi-file-earmark-medical"></i> Fiches Médicales
+            </a>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748B;padding:12px 16px 6px;font-weight:600;">Flotte &amp; Missions</div>
+            <a href="../../backoffice/ambulances/medecin-index.php" class="dashboard-nav-item" style="padding-left:28px;">
+                <i class="bi bi-truck-front-fill"></i> Ambulances
+            </a>
+            <a href="../../backoffice/missions/medecin-index.php" class="dashboard-nav-item" style="padding-left:28px;">
+                <i class="bi bi-geo-alt-fill"></i> Missions
             </a>
             <?php endif; ?>
             

@@ -90,8 +90,16 @@ $stats = $rdvController->getStats('medecin', $userId);
             <a href="#" class="dashboard-logo-text">Med<span>Chain</span></a>
         </div>
         <nav class="dashboard-nav">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748B;padding:12px 16px 6px;font-weight:600;">Navigation</div>
+            <a href="../medecin-dashboard.php" class="dashboard-nav-item"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
             <a href="medecin-index.php" class="dashboard-nav-item active"><i class="bi bi-calendar-check"></i> Rendez-vous</a>
-            <a href="../../../controllers/logout.php" class="dashboard-nav-item" style="color: #F87171; margin-top: auto;"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+            <a href="../ficherdv/medecin-index.php" class="dashboard-nav-item"><i class="bi bi-file-earmark-medical"></i> Fiches Médicales</a>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748B;padding:12px 16px 6px;font-weight:600;">Flotte &amp; Missions</div>
+            <a href="../ambulances/medecin-index.php" class="dashboard-nav-item" style="padding-left:28px;"><i class="bi bi-truck-front-fill"></i> Ambulances</a>
+            <a href="../missions/medecin-index.php" class="dashboard-nav-item" style="padding-left:28px;"><i class="bi bi-geo-alt-fill"></i> Missions</a>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748B;padding:12px 16px 6px;font-weight:600;">Compte</div>
+            <a href="../../frontoffice/auth/profile.php" class="dashboard-nav-item"><i class="bi bi-person-circle"></i> Mon profil</a>
+            <a href="../../../controllers/logout.php" class="dashboard-nav-item" style="color:#F87171;"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
         </nav>
     </aside>
 

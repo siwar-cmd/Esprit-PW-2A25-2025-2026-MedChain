@@ -87,6 +87,10 @@ $stats = $rdvController->getStats('admin');
             <a href="../admin-dashboard.php" class="dashboard-nav-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
             <a href="../admin-users.php" class="dashboard-nav-item"><i class="bi bi-people"></i> Utilisateurs</a>
             <a href="admin-index.php" class="dashboard-nav-item active"><i class="bi bi-calendar-check"></i> Rendez-vous</a>
+            <a href="../ficherdv/admin-index.php" class="dashboard-nav-item"><i class="bi bi-file-earmark-medical"></i> Fiches Médicales</a>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748B;padding:12px 16px 6px;font-weight:600;">Flotte &amp; Missions</div>
+            <a href="../ambulances/admin-index.php" class="dashboard-nav-item" style="padding-left:28px;"><i class="bi bi-truck-front-fill"></i> Gestion Ambulances</a>
+            <a href="../missions/admin-index.php" class="dashboard-nav-item" style="padding-left:28px;"><i class="bi bi-geo-alt-fill"></i> Registre Missions</a>
             <a href="../../../controllers/logout.php" class="dashboard-nav-item" style="color: #F87171; margin-top: auto;"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
         </nav>
     </aside>
