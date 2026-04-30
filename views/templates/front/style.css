@@ -117,3 +117,37 @@ body {
     background-color: var(--accent);
     color: var(--secondary);
 }
+
+.joke-box form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.joke-box select {
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.joke-box button {
+    padding: 10px 15px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+.joke-box button:hover {
+    background-color: var(--secondary);
+}
+
+.joke-box h1 {
+    color: var(--secondary);
+    margin-bottom: 15px;
+}

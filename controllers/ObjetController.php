@@ -125,39 +125,44 @@ class ObjetController
     {
         $errors = [];
 
+        // NAME
         if ($data['nom_objet'] === '') {
-            $errors[] = 'Object name is required.';
+            $errors['nom_objet'] = 'Object name is required.';
         } elseif ($this->textLength($data['nom_objet']) < 2 || $this->textLength($data['nom_objet']) > 100) {
-            $errors[] = 'Object name must contain between 2 and 100 characters.';
+            $errors['nom_objet'] = 'Object name must be between 2 and 100 characters.';
         } elseif (!$this->isValidObjectText($data['nom_objet'])) {
-            $errors[] = 'Object name contains invalid characters.';
+            $errors['nom_objet'] = 'Object name contains invalid characters.';
         }
 
+        // TYPE
         if ($data['type_objet'] === '') {
-            $errors[] = 'Object type is required.';
+            $errors['type_objet'] = 'Object type is required.';
         } elseif (!in_array($data['type_objet'], $this->allowedObjectTypes(), true)) {
-            $errors[] = 'Selected object type is invalid.';
+            $errors['type_objet'] = 'Selected object type is invalid.';
         }
 
+        // QUANTITY
         if ($data['quantite'] === '') {
-            $errors[] = 'Quantity is required.';
+            $errors['quantite'] = 'Quantity is required.';
         } elseif (!preg_match('/^\d+$/', $data['quantite'])) {
-            $errors[] = 'Quantity must be a whole number.';
+            $errors['quantite'] = 'Quantity must be a whole number.';
         } elseif ((int) $data['quantite'] > 9999) {
-            $errors[] = 'Quantity must be 9999 or less.';
+            $errors['quantite'] = 'Quantity must be 9999 or less.';
         }
 
+        // ETAT
         if ($data['etat'] === '') {
-            $errors[] = 'Object condition is required.';
+            $errors['etat'] = 'Object condition is required.';
         } elseif (!in_array($data['etat'], $this->allowedObjectStates(), true)) {
-            $errors[] = 'Selected object condition is invalid.';
+            $errors['etat'] = 'Selected object condition is invalid.';
         }
 
+        // DESCRIPTION
         if ($data['description'] !== '') {
             if ($this->textLength($data['description']) > 500) {
-                $errors[] = 'Description must not exceed 500 characters.';
+                $errors['description'] = 'Description must not exceed 500 characters.';
             } elseif (preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $data['description'])) {
-                $errors[] = 'Description contains invalid characters.';
+                $errors['description'] = 'Description contains invalid characters.';
             }
         }
 
@@ -300,4 +305,11 @@ class ObjetController
     {
         return function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
     }
+
+
+
+
+
+
+    
 }

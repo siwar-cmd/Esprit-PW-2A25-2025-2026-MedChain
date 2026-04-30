@@ -36,6 +36,7 @@ require_once BASE_PATH . '/models/Pret.php';
 require_once BASE_PATH . '/controllers/AdminController.php';
 require_once BASE_PATH . '/controllers/ObjetController.php';
 require_once BASE_PATH . '/controllers/PretController.php';
+require_once BASE_PATH . '/controllers/JokeController.php';
 
 $office = isset($_GET['office']) && $_GET['office'] === 'back' ? 'back' : 'front';
 $controller = trim($_GET['controller'] ?? ($office === 'back' ? 'admin' : 'objet'));
@@ -45,6 +46,7 @@ $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $adminController = new AdminController();
 $objetController = new ObjetController();
 $pretController = new PretController();
+$jokeController = new JokeController();
 
 try {
     switch ($controller) {
@@ -176,6 +178,14 @@ try {
                 default:
                     redirectToRoute('objet', 'list', ['office' => $office]);
             }
+            break;
+        
+        case 'joke':
+            if ($office !== 'front') {
+                redirectToRoute('objet', 'list', ['office' => 'front']);
+            }
+
+            $jokeController->index();
             break;
 
         default:

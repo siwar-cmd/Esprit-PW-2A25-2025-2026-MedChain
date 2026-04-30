@@ -22,7 +22,7 @@
 <li><a href="partage.php" class="nav-item">💉 Bloc opératoire</a></li>
 <li><a href="alertes.php" class="nav-item">🔄 Remplacements</a></li>
 <li><a href="rapports.php" class="nav-item">🚑 Ambulances</a></li>
-<li><a href="../../back/admin_dashboard.php" class="nav-item">🎲 Loisirs</a></li>
+<li><a href="http://localhost/midchaine/index1.php?office=back&controller=objet&action=list" class="nav-item">🎲 Loisirs</a></li>
                    
                 </ul>
             </nav>
