@@ -1,0 +1,92 @@
+/* --- CONFIGURATION --- */
+:root {
+    --main-green: #1D9E75;
+    --dark-green: #0F6E56;
+    --sidebar-bg: #1A1D21;
+    --light-bg: #f8fafb;
+    --border-color: #eef2f4;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--light-bg); }
+
+.app-wrapper { display: flex; }
+
+/* --- SIDEBAR & HOVER MENU --- */
+.sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; padding: 20px 0; }
+.img-logo { max-width: 160px; display: block; margin: 0 auto 40px; }
+
+.nav-item {
+    display: flex;
+    padding: 15px 25px;
+    color: #A9B1BD;
+    text-decoration: none;
+    transition: 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.nav-item:hover, .active .nav-item {
+    background: rgba(29, 158, 117, 0.1);
+    color: #fff;
+    border-left-color: var(--main-green);
+    padding-left: 35px; /* Effet de décalage */
+}
+
+/* --- MAIN CONTENT & KPI HOVER --- */
+.content-main { margin-left: 260px; flex: 1; padding: 30px; }
+.content-header { margin-bottom: 30px; }
+
+.kpi-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+
+.card-kpi {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--border-color);
+    transition: 0.3s;
+}
+
+.card-kpi:hover {
+    transform: translateY(-5px); /* Effet de soulèvement */
+    border-color: var(--main-green);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.card-kpi img { width: 45px; margin-right: 15px; }
+.text-alert { color: #e74c3c; font-weight: bold; }
+
+/* --- GRID LAYOUT --- */
+.dashboard-grid { display: flex; gap: 25px; }
+.panel { background: #fff; padding: 25px; border-radius: 15px; border: 1px solid var(--border-color); }
+.chart-box { flex: 1.3; }
+.activity-box { flex: 1.7; }
+.canvas-wrap { height: 300px; margin-top: 15px; }
+
+/* --- TABLEAU STYLE (EXACTEMENT COMME L'IMAGE) --- */
+.table-custom { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.table-custom th {
+    text-align: left;
+    padding: 12px;
+    color: #888;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.table-custom td { padding: 15px 12px; font-size: 0.85rem; border-bottom: 1px solid #f9f9f9; }
+
+/* BADGES DATAPOINT */
+.badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+.b-primary { background: #e6f5f0; color: var(--main-green); }
+.b-secondary { background: #ebf1f0; color: var(--dark-green); }
