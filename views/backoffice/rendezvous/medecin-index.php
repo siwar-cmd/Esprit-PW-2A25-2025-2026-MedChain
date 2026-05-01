@@ -98,6 +98,8 @@ $stats = $rdvController->getStats('medecin', $userId);
         .btn-primary { background: var(--green); color: white; }
         .btn-secondary { background: var(--gray-500); color: white; }
         .btn-outline { background: white; border: 1px solid var(--green); color: var(--green); }
+        .btn-stats { background: linear-gradient(135deg, var(--green), var(--navy)); color: white; border: none; }
+        .btn-stats:hover { background: linear-gradient(135deg, var(--green-dark), var(--navy)); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3); }
         .alert-success { background: #DCFCE7; color: #16A34A; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         @media print { .dashboard-sidebar, .search-form, .btn, .actions-col { display: none !important; } .dashboard-container { display: block; } .dashboard-main { padding: 0; } }
     </style>
@@ -188,10 +190,13 @@ $stats = $rdvController->getStats('medecin', $userId);
         <div class="card">
             <div class="card-header">
                 <h2>Liste des rendez-vous</h2>
-                <form class="search-form" method="GET">
-                    <input type="text" name="search" id="searchInput" class="search-input" placeholder="Rechercher patient..." value="<?= htmlspecialchars($search) ?>" onkeyup="filterTable()">
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
-                </form>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <a href="medecin-stats.php" class="btn btn-stats"><i class="bi bi-bar-chart-line-fill"></i> Statistiques</a>
+                    <form class="search-form" method="GET">
+                        <input type="text" name="search" id="searchInput" class="search-input" placeholder="Rechercher patient..." value="<?= htmlspecialchars($search) ?>" onkeyup="filterTable()">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                    </form>
+                </div>
             </div>
             <div class="card-body">
                 <table class="table" id="rdvTable">

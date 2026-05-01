@@ -250,11 +250,19 @@ function formatDate($dateString) {
             <a href="admin-create-user.php" class="dashboard-nav-item">
                 <i class="bi bi-person-plus-fill"></i> Nouvel utilisateur
             </a>
-            <a href="admin-reports-statistics.php" class="dashboard-nav-item">
-                <i class="bi bi-graph-up"></i> Statistiques
+            <a href="rendezvous/medecin-index.php" class="dashboard-nav-item">
+                <i class="bi bi-calendar-check"></i> Rendez-vous
             </a>
-            <a href="rendezvous/admin-index.php" class="dashboard-nav-item"><i class="bi bi-calendar-check"></i> Rendez-vous</a>
-            <a href="ficherdv/admin-index.php" class="dashboard-nav-item"><i class="bi bi-file-earmark-medical"></i> Fiches Médicales</a>
+            <a href="ficherdv/medecin-index.php" class="dashboard-nav-item">
+                <i class="bi bi-file-earmark-medical"></i> Fiches Médicales
+            </a>
+            <div class="dashboard-nav-title mt-4">Analytiques</div>
+            <a href="rendezvous/medecin-stats.php" class="dashboard-nav-item">
+                <i class="bi bi-bar-chart-line-fill"></i> Stats Rendez-vous
+            </a>
+            <a href="ficherdv/medecin-stats.php" class="dashboard-nav-item">
+                <i class="bi bi-bar-chart-fill"></i> Stats Fiches Médicales
+            </a>
             
             <div class="dashboard-nav-title mt-4">Gestion</div>
             <a href="../frontoffice/auth/profile.php" class="dashboard-nav-item">

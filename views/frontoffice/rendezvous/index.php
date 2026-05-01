@@ -257,6 +257,10 @@ $stats = $rdvController->getStats('patient', $currentUser->getId());
         #print-area { position: absolute; left: 0; top: 0; width: 100%; }
         .action-bar, .actions-col { display: none !important; }
     }
+    .btn-mc { background-color: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-mc:hover { background-color: var(--green-dark); color: white; transform: translateY(-2px); }
+    .btn-stats { background: linear-gradient(135deg, var(--green), var(--navy)); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-stats:hover { background: linear-gradient(135deg, var(--green-dark), var(--navy)); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3); }
   </style>
 </head>
 <body>
@@ -373,6 +377,7 @@ $stats = $rdvController->getStats('patient', $currentUser->getId());
             <button type="submit" class="btn btn-mc"><i class="bi bi-search"></i></button>
         </form>
         <div>
+            <a href="stats.php" class="btn btn-stats me-2"><i class="bi bi-bar-chart-line-fill"></i> Statistiques</a>
             <button onclick="window.print()" class="btn btn-secondary me-2"><i class="bi bi-file-pdf"></i> Exporter PDF</button>
             <a href="create.php" class="btn btn-mc"><i class="bi bi-plus-lg"></i> Nouveau Rendez-vous</a>
         </div>
