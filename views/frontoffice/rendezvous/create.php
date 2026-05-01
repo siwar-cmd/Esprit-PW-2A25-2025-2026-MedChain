@@ -57,69 +57,133 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
   <style>
     :root {
-      --green: #1D9E75; --green-dark: #0F6E56; --navy: #1E3A52;
-      --gray-200: #E5E7EB; --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
-      --radius-md: 12px;
+      --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E8F7F2; --green-pale: #F0FDF9;
+      --navy: #1E3A52; --gray-700: #374151; --gray-500: #6B7280; --gray-200: #E5E7EB; --white: #ffffff;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08); --shadow-green: 0 8px 30px rgba(29,158,117,.18);
+      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px;
     }
-    body { font-family: 'DM Sans', sans-serif; background: #f9fafb; }
-    .dashboard-container { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
-    .dashboard-sidebar { background: linear-gradient(180deg, var(--navy) 0%, #0F172A 100%); position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; overflow-y: auto; }
-    .dashboard-logo { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-    .dashboard-logo a { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .dashboard-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--green), var(--green-dark)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
-    .dashboard-logo-icon i { font-size: 18px; color: white; }
-    .dashboard-logo-text { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: white; }
-    .dashboard-logo-text span { color: var(--green); }
-    .dashboard-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
-    .dashboard-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #94A3B8; text-decoration: none; border-radius: var(--radius-md); transition: all 0.3s; font-size: 14px; font-weight: 500; }
-    .dashboard-nav-item i { font-size: 18px; width: 24px; }
-    .dashboard-nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
-    .dashboard-nav-item.active { background: rgba(29,158,117,0.2); color: var(--green); }
-    .dashboard-nav-item.logout { margin-top: auto; margin-bottom: 20px; color: #F87171; }
-    .dashboard-nav-item.logout:hover { background: rgba(248,113,113,0.1); color: #F87171; }
-    .dashboard-nav-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748B; padding: 16px 16px 8px; font-weight: 600; }
+    body { font-family: 'DM Sans', sans-serif; background: #f0faf6; }
+
+    /* ════ FRONTOFFICE SIDEBAR ════ */
+    .dashboard-container { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+    .dashboard-sidebar {
+      background: linear-gradient(160deg, #ffffff 0%, #f0fdf9 60%, #e6faf3 100%);
+      border-right: 1px solid rgba(29,158,117,.15);
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column; overflow-y: auto;
+      box-shadow: 4px 0 24px rgba(29,158,117,.08);
+    }
+    .sidebar-logo-zone { padding: 26px 22px 20px; border-bottom: 1px solid rgba(29,158,117,.12); }
+    .sidebar-logo-link { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .sidebar-logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--green), var(--green-dark)); border-radius: 13px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(29,158,117,.35); }
+    .sidebar-logo-icon i { font-size: 20px; color: white; }
+    .sidebar-logo-text { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: -.3px; }
+    .sidebar-logo-text span { color: var(--green); }
+    .sidebar-tagline { font-size: 11px; color: var(--gray-500); margin-top: 3px; letter-spacing: .03em; }
+    .sidebar-user-card { margin: 18px 16px; background: linear-gradient(135deg, var(--green), var(--green-dark)); border-radius: var(--radius-lg); padding: 18px 16px; box-shadow: var(--shadow-green); position: relative; overflow: hidden; }
+    .sidebar-user-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 90px; height: 90px; border-radius: 50%; background: rgba(255,255,255,.1); }
+    .sidebar-user-card::after { content: ''; position: absolute; bottom: -15px; left: -15px; width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,.06); }
+    .sidebar-user-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.25); border: 2.5px solid rgba(255,255,255,.5); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .sidebar-user-avatar i { font-size: 22px; color: white; }
+    .sidebar-user-name { font-size: 15px; font-weight: 700; color: white; margin-bottom: 2px; }
+    .sidebar-user-role { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(255,255,255,.85); background: rgba(255,255,255,.18); padding: 3px 10px; border-radius: 20px; margin-top: 4px; }
+    .sidebar-health-widget { margin: 0 16px 6px; background: var(--white); border: 1px solid rgba(29,158,117,.15); border-radius: var(--radius-md); padding: 14px 16px; }
+    .sidebar-health-label { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+    .sidebar-health-bar-wrap { background: var(--gray-200); border-radius: 6px; height: 6px; overflow: hidden; }
+    .sidebar-health-bar { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--green), #34D399); animation: health-grow 1.2s ease-out forwards; }
+    @keyframes health-grow { from { width: 0; } to { width: 78%; } }
+    .sidebar-health-stats { display: flex; justify-content: space-between; margin-top: 8px; }
+    .sidebar-health-stat { font-size: 12px; color: var(--gray-500); }
+    .sidebar-health-stat strong { color: var(--green); font-weight: 700; }
+    .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 3px; padding: 12px 12px 0; }
+    .sidebar-nav-section-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #A0AEC0; padding: 14px 12px 6px; }
+    .sidebar-nav-item { display: flex; align-items: center; gap: 13px; padding: 11px 14px; color: var(--gray-500); text-decoration: none; border-radius: var(--radius-md); transition: all 0.25s; font-size: 14px; font-weight: 500; position: relative; }
+    .sidebar-nav-item .nav-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; background: rgba(29,158,117,.08); color: var(--green); transition: all 0.25s; }
+    .sidebar-nav-item:hover { background: rgba(29,158,117,.07); color: var(--green-dark); }
+    .sidebar-nav-item:hover .nav-icon { background: rgba(29,158,117,.15); transform: scale(1.08); }
+    .sidebar-nav-item.active { background: linear-gradient(90deg, rgba(29,158,117,.12), rgba(29,158,117,.04)); color: var(--green-dark); font-weight: 600; }
+    .sidebar-nav-item.active .nav-icon { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: white; box-shadow: 0 4px 12px rgba(29,158,117,.30); }
+    .sidebar-nav-item.active::before { content: ''; position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 0 3px 3px 0; background: var(--green); }
+    .sidebar-nav-item.logout { color: #E53E3E; margin: 0 0 4px; }
+    .sidebar-nav-item.logout .nav-icon { background: rgba(229,62,62,.08); color: #E53E3E; }
+    .sidebar-nav-item.logout:hover { background: rgba(229,62,62,.07); }
+    .sidebar-footer { padding: 16px; border-top: 1px solid rgba(29,158,117,.10); margin-top: auto; }
+    .sidebar-footer-back { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-md); background: var(--green-pale); color: var(--green-dark); font-size: 13px; font-weight: 600; text-decoration: none; transition: all .2s; border: 1px solid rgba(29,158,117,.2); }
+    .sidebar-footer-back:hover { background: rgba(29,158,117,.15); transform: translateX(-3px); }
     .dashboard-main { padding: 32px 40px; overflow-y: auto; width: 100%; }
+    @media (max-width: 768px) { .dashboard-container { grid-template-columns: 1fr; } .dashboard-sidebar { position: fixed; left: -290px; top: 0; bottom: 0; width: 280px; z-index: 1000; transition: left 0.3s; } .dashboard-sidebar.open { left: 0; } }
 
     .mc-container { max-width: 800px; margin: 0 auto; padding: 0 20px; }
     .card-mc { background: white; border-radius: var(--radius-md); padding: 30px; box-shadow: var(--shadow-sm); margin-bottom: 50px; }
     .page-title { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--navy); margin-bottom: 20px; }
-    .btn-mc { background: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500; }
-    .btn-mc:hover { background: var(--green-dark); color: white; }
+    .btn-mc { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; box-shadow: 0 3px 12px rgba(29,158,117,.30); transition: all .25s; }
+    .btn-mc:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(29,158,117,.40); color: white; }
   </style>
 </head>
 <body>
 
 <div class="dashboard-container">
-    <!-- Sidebar -->
+    <!-- Sidebar FrontOffice Moderne -->
     <aside class="dashboard-sidebar" id="sidebar">
-        <div class="dashboard-logo">
-            <a href="../home/index.php">
-                <div class="dashboard-logo-icon">
-                    <i class="bi bi-plus-square-fill"></i>
-                </div>
-                <div class="dashboard-logo-text">Med<span>Chain</span></div>
-            </a>
+
+      <!-- Logo -->
+      <div class="sidebar-logo-zone">
+        <a href="../home/index.php" class="sidebar-logo-link">
+          <div class="sidebar-logo-icon"><i class="bi bi-plus-square-fill"></i></div>
+          <div>
+            <div class="sidebar-logo-text">Med<span>Chain</span></div>
+            <div class="sidebar-tagline">Espace Patient</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- User Card -->
+      <div class="sidebar-user-card">
+        <div class="sidebar-user-avatar"><i class="bi bi-person-fill"></i></div>
+        <div class="sidebar-user-name"><?= htmlspecialchars($_SESSION['user_prenom'] ?? 'Patient') ?> <?= htmlspecialchars($_SESSION['user_nom'] ?? '') ?></div>
+        <div class="sidebar-user-role"><i class="bi bi-heart-pulse-fill"></i> Patient</div>
+      </div>
+
+      <!-- Health Widget -->
+      <div class="sidebar-health-widget">
+        <div class="sidebar-health-label"><i class="bi bi-activity" style="color:var(--green);margin-right:5px;"></i>Suivi de santé</div>
+        <div class="sidebar-health-bar-wrap"><div class="sidebar-health-bar"></div></div>
+        <div class="sidebar-health-stats">
+          <span class="sidebar-health-stat">Profil <strong>78%</strong> complet</span>
+          <span class="sidebar-health-stat" style="color:var(--green);"><i class="bi bi-shield-check"></i> Actif</span>
         </div>
-        
-        <nav class="dashboard-nav">
-            <a href="/projet/views/frontoffice/home/index.php" class="dashboard-nav-item"><i class="bi bi-house"></i> Accueil</a>
-            <div class="dashboard-nav-title">Navigation</div>
-            <a href="../home/index.php" class="dashboard-nav-item">
-                <i class="bi bi-house-door-fill"></i> Accueil
-            </a>
-            <a href="../auth/profile.php" class="dashboard-nav-item">
-                <i class="bi bi-person-fill"></i> Mon Profil
-            </a>
-            <a href="index.php" class="dashboard-nav-item active">
-                <i class="bi bi-calendar-check"></i> Mes Rendez-vous
-            </a>
-            <a href="../ficherdv/index.php" class="dashboard-nav-item">
-                <i class="bi bi-file-medical"></i> Mes Fiches
-            </a>
-            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="confirmSwal(event, this, '')">
-                <i class="bi bi-box-arrow-right"></i> Déconnexion
-            </a>
-        </nav>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-section-label">Navigation</div>
+        <a href="../home/index.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="bi bi-house-door-fill"></i></span> Accueil
+        </a>
+        <a href="../auth/profile.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="bi bi-person-fill"></i></span> Mon Profil
+        </a>
+        <div class="sidebar-nav-section-label">Mes Services</div>
+        <a href="index.php" class="sidebar-nav-item active">
+          <span class="nav-icon"><i class="bi bi-calendar-check"></i></span> Mes Rendez-vous
+        </a>
+        <a href="../ficherdv/index.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="bi bi-file-earmark-medical"></i></span> Mes Fiches Médicales
+        </a>
+      </nav>
+
+      <!-- Footer Sidebar -->
+      <div class="sidebar-footer">
+        <a href="../../../controllers/logout.php" class="sidebar-nav-item logout" onclick="confirmSwal(event, this, '')">
+          <span class="nav-icon"><i class="bi bi-box-arrow-left"></i></span> Déconnexion
+        </a>
+        <div style="margin-top:10px;">
+          <a href="../home/index.php" class="sidebar-footer-back">
+            <i class="bi bi-arrow-left-circle-fill"></i> Retour au site
+          </a>
+        </div>
+      </div>
+
     </aside>
 
     <main class="dashboard-main">
