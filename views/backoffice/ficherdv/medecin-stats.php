@@ -60,18 +60,30 @@ $backLink = ($role === 'patient') ? "../../frontoffice/ficherdv/index.php" : "me
     body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); color: var(--navy); }
     
     .dashboard-container { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
-    .dashboard-sidebar { background: linear-gradient(160deg, #ffffff 0%, #f0fdf9 60%, #e6faf3 100%); border-right: 1px solid rgba(29,158,117,.15); position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; box-shadow: 4px 0 24px rgba(29,158,117,.08); }
-    .sidebar-logo-zone { padding: 26px 22px 20px; border-bottom: 1px solid rgba(29,158,117,.12); }
+    .dashboard-sidebar { 
+      background: linear-gradient(180deg, var(--green-dark) 0%, var(--green-deep, #094D3C) 100%); 
+      border-right: none; 
+      position: sticky; 
+      top: 0; 
+      height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15); 
+      color: white;
+    }
+    .sidebar-logo-zone { padding: 26px 22px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .sidebar-logo-link { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-    .sidebar-logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--green), var(--green-dark)); border-radius: 13px; display: flex; align-items: center; justify-content: center; color: white; }
-    .sidebar-logo-text { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--navy); }
-    .sidebar-logo-text span { color: var(--green); }
-    .sidebar-user-card { margin: 18px 16px; background: linear-gradient(135deg, var(--green), var(--green-dark)); border-radius: var(--radius-lg); padding: 18px 16px; color: white; }
-    .sidebar-nav { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
-    .sidebar-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; color: var(--gray-500); text-decoration: none; border-radius: 12px; transition: 0.3s; }
-    .sidebar-nav-item:hover { background: rgba(29,158,117,.08); color: var(--green-dark); }
-    .sidebar-nav-item.active { background: rgba(29,158,117,.12); color: var(--green-dark); font-weight: 600; }
-    .sidebar-footer { padding: 16px; border-top: 1px solid rgba(29,158,117,.1); }
+    .sidebar-logo-icon { width: 42px; height: 42px; background: rgba(255,255,255,0.1); border-radius: 13px; display: flex; align-items: center; justify-content: center; color: white; }
+    .sidebar-logo-text { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: white; }
+    .sidebar-logo-text span { color: #34D399; }
+    .sidebar-user-card { margin: 18px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); padding: 18px 16px; color: white; }
+    .dashboard-nav { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+    .dashboard-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: rgba(255,255,255,0.7); text-decoration: none; border-radius: 12px; transition: 0.3s; font-size: 14px; font-weight: 500; }
+    .dashboard-nav-item i { font-size: 18px; width: 24px; text-align: center; }
+    .dashboard-nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+    .dashboard-nav-item.active { background: rgba(255,255,255,0.15); color: white; font-weight: 600; }
+    .dashboard-nav-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); padding: 16px 16px 8px; font-weight: 600; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.1); }
 
     .dashboard-main { padding: 32px 40px; }
     .stats-container { max-width: 1200px; margin: 0 auto; }

@@ -92,7 +92,7 @@ $backLink = ($role === 'patient') ? "../../frontoffice/rendezvous/index.php" : "
     }
 
     .dashboard-sidebar {
-      background: linear-gradient(180deg, var(--navy) 0%, #0F172A 100%);
+      background: linear-gradient(180deg, var(--green-dark) 0%, var(--green-deep, #094D3C) 100%);
       position: sticky;
       top: 0;
       height: 100vh;
@@ -108,14 +108,23 @@ $backLink = ($role === 'patient') ? "../../frontoffice/rendezvous/index.php" : "
     .dashboard-logo-text { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: white; }
     .dashboard-logo-text span { color: var(--green); }
 
+    .sidebar-user-card { 
+      margin: 18px 16px; 
+      background: rgba(255,255,255,0.05); 
+      border: 1px solid rgba(255,255,255,0.1); 
+      border-radius: var(--radius-lg); 
+      padding: 18px 16px; 
+      color: white; 
+    }
+
     .dashboard-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
     .dashboard-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #94A3B8; text-decoration: none; border-radius: var(--radius-md); transition: all 0.3s; font-size: 14px; font-weight: 500; }
     .dashboard-nav-item i { font-size: 18px; width: 24px; text-align: center; }
     .dashboard-nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
-    .dashboard-nav-item.active { background: rgba(29,158,117,0.2); color: var(--green); }
+    .dashboard-nav-item.active { background: rgba(255,255,255,0.15); color: white; font-weight: 600; }
     .dashboard-nav-item.logout { margin-top: auto; margin-bottom: 20px; color: #F87171; }
     .dashboard-nav-item.logout:hover { background: rgba(248,113,113,0.1); }
-    .dashboard-nav-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748B; padding: 16px 16px 8px; font-weight: 600; }
+    .dashboard-nav-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); padding: 16px 16px 8px; font-weight: 600; }
 
     .dashboard-main { padding: 32px 40px; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
