@@ -85,37 +85,76 @@ $backLink = ($role === 'patient') ? "../../frontoffice/ficherdv/index.php" : "me
     canvas { max-width: 100%; height: auto !important; }
     @media (max-width: 1024px) { .dashboard-container { grid-template-columns: 1fr; } .dashboard-sidebar { display: none; } }
     @media (max-width: 992px) { .charts-grid { grid-template-columns: 1fr; } }
+        <?php if ($role === 'admin'): ?>
+        /* Admin Blue Theme Override */
+        .dashboard-sidebar {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+            border-right: none !important;
+        }
+        .dashboard-logo-icon {
+            background: rgba(255,255,255,0.1) !important;
+        }
+        .dashboard-logo-text span {
+            color: #3b82f6 !important;
+        }
+        .dashboard-nav-item.active {
+            background: rgba(59,130,246,0.2) !important;
+            color: #3b82f6 !important;
+        }
+        .dashboard-nav-item:not(.active) {
+            color: #94A3B8 !important;
+        }
+        .dashboard-nav-item:not(.active):hover {
+            background: rgba(255,255,255,0.1) !important;
+            color: white !important;
+        }
+        .sidebar-user-card {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: white !important;
+        }
+        .dashboard-nav-title {
+            color: #64748B !important;
+        }
+        .dashboard-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
+        .dashboard-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; transition: all 0.3s; font-size: 14px; font-weight: 500; border-radius: 12px; text-decoration: none; }
+        .dashboard-nav-item i { font-size: 18px; width: 24px; text-align: center; }
+        .dashboard-nav-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; padding: 16px 16px 8px; font-weight: 600; }
+        <?php endif; ?>
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
 <div class="dashboard-container">
   <aside class="dashboard-sidebar">
-    <div class="sidebar-logo-zone">
+    <div class="sidebar-logo-zone" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
       <a href="../../frontoffice/home/index.php" class="sidebar-logo-link">
-        <div class="sidebar-logo-icon"><i class="bi bi-plus-square-fill"></i></div>
-        <div><div class="sidebar-logo-text">Med<span>Chain</span></div><div class="sidebar-tagline"><?= $role === 'admin' ? 'Espace Admin' : 'Espace Médecin' ?></div></div>
+        <div class="sidebar-logo-icon" style="<?= $role === 'admin' ? 'background: rgba(255,255,255,0.1);' : '' ?>"><i class="<?= $role === 'admin' ? 'fas fa-hospital-alt' : 'bi bi-plus-square-fill' ?>"></i></div>
+        <div class="sidebar-logo-text" style="<?= $role === 'admin' ? 'color: white;' : '' ?>">Med<span style="<?= $role === 'admin' ? 'color: #3b82f6;' : '' ?>">Chain</span></div>
       </a>
     </div>
     <div class="sidebar-user-card">
-      <div style="font-size: 24px; margin-bottom: 10px;"><i class="bi bi-person-badge-fill"></i></div>
+      <div style="font-size: 24px; margin-bottom: 10px;"><i class="<?= $role === 'admin' ? 'fas fa-user-shield' : 'bi bi-person-badge-fill' ?>"></i></div>
       <div style="font-weight: 700;"><?= $role === 'medecin' ? 'Dr. ' : '' ?><?= htmlspecialchars($currentUser->getPrenom()) ?> <?= htmlspecialchars($currentUser->getNom()) ?></div>
-      <div style="font-size: 12px; opacity: 0.8;"><?= ucfirst($role) ?></div>
+      <div style="font-size: 12px; opacity: 0.8;"><?= $role === 'admin' ? 'Administration' : ucfirst($role) ?></div>
     </div>
-    <nav class="sidebar-nav">
-      <div style="font-size: 11px; font-weight: 700; color: #A0AEC0; padding: 10px; text-transform: uppercase;">Navigation</div>
+    <nav class="dashboard-nav">
+      <div class="dashboard-nav-title">Navigation</div>
       <?php if ($role === 'admin'): ?>
-        <a href="../admin-dashboard.php" class="sidebar-nav-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <a href="../rendezvous/medecin-index.php" class="sidebar-nav-item"><i class="bi bi-calendar-check"></i> Rendez-vous</a>
-        <a href="medecin-index.php" class="sidebar-nav-item active"><i class="bi bi-file-earmark-medical"></i> Fiches Médicales</a>
+        <a href="../admin-dashboard.php" class="dashboard-nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="../rendezvous/medecin-index.php" class="dashboard-nav-item"><i class="fas fa-calendar-check"></i> Rendez-vous</a>
+        <a href="medecin-index.php" class="dashboard-nav-item active"><i class="fas fa-file-medical-alt"></i> Fiches Médicales</a>
+        <a href="../admin-reports-statistics.php" class="dashboard-nav-item"><i class="fas fa-chart-pie"></i> Statistiques</a>
       <?php else: ?>
-        <a href="../../frontoffice/home/index.php" class="sidebar-nav-item"><i class="bi bi-house-door-fill"></i> Accueil</a>
-        <a href="../rendezvous/medecin-index.php" class="sidebar-nav-item"><i class="bi bi-calendar-check"></i> Rendez-vous</a>
-        <a href="medecin-index.php" class="sidebar-nav-item active"><i class="bi bi-file-earmark-medical"></i> Fiches Médicales</a>
+        <a href="../rendezvous/medecin-index.php" class="dashboard-nav-item"><i class="fas fa-calendar-check"></i> Rendez-vous</a>
+        <a href="medecin-index.php" class="dashboard-nav-item active"><i class="fas fa-file-medical-alt"></i> Fiches Médicales</a>
       <?php endif; ?>
     </nav>
-    <div class="sidebar-footer">
-      <a href="../../../controllers/logout.php" class="sidebar-nav-item logout"><i class="bi bi-box-arrow-left"></i> Déconnexion</a>
+    <div class="sidebar-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
+      <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" style="color: #F87171;" onclick="confirmSwal(event, this, 'Déconnexion ?', 'Voulez-vous vraiment vous déconnecter ?')">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+      </a>
     </div>
   </aside>
 
@@ -173,5 +212,8 @@ new Chart(document.getElementById('paiementChart'), {
 });
 </script>
 
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

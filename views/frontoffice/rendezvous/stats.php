@@ -98,15 +98,12 @@ $typeData     = json_encode(array_column($byType, 'count'));
         <div class="sidebar-user-role"><i class="bi bi-heart-pulse-fill"></i> Patient</div>
       </div>
       <nav class="sidebar-nav">
-        <div class="sidebar-nav-section-label">Navigation</div>
-        <a href="../home/index.php" class="sidebar-nav-item"><span class="nav-icon"><i class="bi bi-house-door-fill"></i></span> Accueil</a>
-        <a href="../auth/profile.php" class="sidebar-nav-item"><span class="nav-icon"><i class="bi bi-person-fill"></i></span> Mon Profil</a>
         <div class="sidebar-nav-section-label">Mes Services</div>
         <a href="index.php" class="sidebar-nav-item active"><span class="nav-icon"><i class="bi bi-calendar-check"></i></span> Mes Rendez-vous</a>
         <a href="../ficherdv/index.php" class="sidebar-nav-item"><span class="nav-icon"><i class="bi bi-file-earmark-medical"></i></span> Mes Fiches Médicales</a>
       </nav>
       <div class="sidebar-footer">
-        <a href="../../../controllers/logout.php" class="sidebar-nav-item logout"><span class="nav-icon"><i class="bi bi-box-arrow-left"></i></span> Déconnexion</a>
+        <a href="../../../controllers/logout.php" class="sidebar-nav-item logout" onclick="confirmSwal(event, this, 'Déconnexion ?', 'Voulez-vous vraiment vous déconnecter ?')"><span class="nav-icon"><i class="bi bi-box-arrow-left"></i></span> Déconnexion</a>
         <div style="margin-top:10px;"><a href="../home/index.php" class="sidebar-footer-back"><i class="bi bi-arrow-left-circle-fill"></i> Retour au site</a></div>
       </div>
     </aside>
@@ -157,5 +154,8 @@ new Chart(document.getElementById('typeChart'), {
   options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
 });
 </script>
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

@@ -96,6 +96,7 @@ $photo_url = getProfilePhotoUrl($user);
     
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
     
     <style>
@@ -694,6 +695,59 @@ $photo_url = getProfilePhotoUrl($user);
                 justify-content: center;
             }
         }
+        <?php if ($isAdmin): ?>
+        /* Admin Blue Theme Override */
+        .dashboard-sidebar {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+            border-right: none !important;
+        }
+        .sidebar-logo-icon {
+            background: rgba(255,255,255,0.1) !important;
+        }
+        .sidebar-logo-text span {
+            color: #3b82f6 !important;
+        }
+        .sidebar-nav-item.active {
+            background: rgba(59,130,246,0.2) !important;
+            color: #3b82f6 !important;
+        }
+        .sidebar-nav-item.active .nav-icon {
+            background: #3b82f6 !important;
+            color: white !important;
+        }
+        .sidebar-nav-item.active::before {
+            background: #3b82f6 !important;
+        }
+        .sidebar-nav-item:not(.active) {
+            color: #94A3B8 !important;
+        }
+        .sidebar-nav-item:not(.active):hover {
+            background: rgba(255,255,255,0.1) !important;
+            color: white !important;
+        }
+        .sidebar-nav-item:not(.active):hover .nav-icon {
+            background: rgba(255,255,255,0.15) !important;
+        }
+        .sidebar-nav-section-label {
+            color: #64748B !important;
+        }
+        .sidebar-health-widget {
+            display: none !important; /* Admins don't need the health widget */
+        }
+        .sidebar-user-card {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+        }
+        .sidebar-user-avatar {
+            background: rgba(255,255,255,0.1) !important;
+            border-color: rgba(255,255,255,0.2) !important;
+        }
+        .sidebar-footer-back {
+            background: rgba(255,255,255,0.05) !important;
+            color: white !important;
+            border-color: rgba(255,255,255,0.1) !important;
+        }
+        <?php endif; ?>
     </style>
 </head>
 <body>
@@ -703,7 +757,7 @@ $photo_url = getProfilePhotoUrl($user);
     <aside class="dashboard-sidebar" id="sidebar">
       <div class="sidebar-logo-zone">
         <a href="../home/index.php" class="sidebar-logo-link">
-          <div class="sidebar-logo-icon"><i class="bi bi-plus-square-fill"></i></div>
+          <div class="sidebar-logo-icon"><i class="<?= $isAdmin ? 'fas fa-hospital-alt' : 'bi bi-plus-square-fill' ?>"></i></div>
           <div>
             <div class="sidebar-logo-text">Med<span>Chain</span></div>
             <div class="sidebar-tagline"><?php
@@ -715,9 +769,9 @@ $photo_url = getProfilePhotoUrl($user);
         </a>
       </div>
       <div class="sidebar-user-card">
-        <div class="sidebar-user-avatar"><i class="bi bi-person-fill"></i></div>
+        <div class="sidebar-user-avatar"><i class="<?= $isAdmin ? 'fas fa-user-shield' : 'bi bi-person-fill' ?>"></i></div>
         <div class="sidebar-user-name"><?= htmlspecialchars($user->getPrenom() . ' ' . $user->getNom()) ?></div>
-        <div class="sidebar-user-role"><i class="bi bi-heart-pulse-fill"></i> <?= ucfirst($user->getRole()) ?></div>
+        <div class="sidebar-user-role"><i class="<?= $isAdmin ? 'fas fa-shield-alt' : 'bi bi-heart-pulse-fill' ?>"></i> <?= ucfirst($user->getRole()) ?></div>
       </div>
       <div class="sidebar-health-widget">
         <div class="sidebar-health-label"><i class="bi bi-activity" style="color:var(--green);margin-right:5px;"></i>Suivi de santé</div>
@@ -730,10 +784,10 @@ $photo_url = getProfilePhotoUrl($user);
       <nav class="sidebar-nav">
         <div class="sidebar-nav-section-label">Navigation</div>
         <a href="../home/index.php" class="sidebar-nav-item">
-          <span class="nav-icon"><i class="bi bi-house-door-fill"></i></span> Accueil
+          <span class="nav-icon"><i class="<?= $isAdmin ? 'fas fa-home' : 'bi bi-house-door-fill' ?>"></i></span> Accueil
         </a>
         <a href="profile.php" class="sidebar-nav-item active">
-          <span class="nav-icon"><i class="bi bi-person-fill"></i></span> Mon Profil
+          <span class="nav-icon"><i class="<?= $isAdmin ? 'fas fa-user-circle' : 'bi bi-person-fill' ?>"></i></span> Mon Profil
         </a>
         <?php if ($user->getRole() === 'patient'): ?>
         <div class="sidebar-nav-section-label">Mes Services</div>
@@ -755,20 +809,32 @@ $photo_url = getProfilePhotoUrl($user);
         <?php if ($isAdmin): ?>
         <div class="sidebar-nav-section-label">Administration</div>
         <a href="../../backoffice/admin-dashboard.php" class="sidebar-nav-item">
-          <span class="nav-icon"><i class="bi bi-speedometer2"></i></span> Tableau de bord
+          <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Tableau de bord
         </a>
         <a href="../../backoffice/admin-users.php" class="sidebar-nav-item">
-          <span class="nav-icon"><i class="bi bi-people-fill"></i></span> Utilisateurs
+          <span class="nav-icon"><i class="fas fa-users"></i></span> Utilisateurs
+        </a>
+        <a href="../../backoffice/admin-create-user.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="fas fa-user-plus"></i></span> Nouvel utilisateur
+        </a>
+        <a href="../../backoffice/rendezvous/admin-index.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="fas fa-calendar-check"></i></span> Rendez-vous
+        </a>
+        <a href="../../backoffice/ficherdv/admin-index.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="fas fa-file-medical-alt"></i></span> Fiches Médicales
+        </a>
+        <a href="../../backoffice/admin-reports-statistics.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="fas fa-chart-pie"></i></span> Statistiques
         </a>
         <?php endif; ?>
       </nav>
       <div class="sidebar-footer">
         <a href="../../../controllers/logout.php" class="sidebar-nav-item logout" onclick="confirmSwal(event, this, '')">
-          <span class="nav-icon"><i class="bi bi-box-arrow-left"></i></span> Déconnexion
+          <span class="nav-icon"><i class="<?= $isAdmin ? 'fas fa-sign-out-alt' : 'bi bi-box-arrow-left' ?>"></i></span> Déconnexion
         </a>
         <div style="margin-top:10px;">
           <a href="../home/index.php" class="sidebar-footer-back">
-            <i class="bi bi-arrow-left-circle-fill"></i> Retour au site
+            <i class="<?= $isAdmin ? 'fas fa-arrow-circle-left' : 'bi bi-arrow-left-circle-fill' ?>"></i> Retour au site
           </a>
         </div>
       </div>

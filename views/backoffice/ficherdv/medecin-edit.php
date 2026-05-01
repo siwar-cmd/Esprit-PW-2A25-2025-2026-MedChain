@@ -196,7 +196,7 @@ $stats = $rdvController->getStats('medecin', $userId);
         <a href="medecin-index.php" class="sidebar-nav-item active"><i class="bi bi-file-earmark-medical"></i> Fiches Médicales</a>
       </nav>
       <div class="sidebar-footer">
-        <a href="../../../controllers/logout.php" class="sidebar-nav-item logout" onclick="return confirm('Déconnexion ?')"><i class="bi bi-box-arrow-left"></i> Déconnexion</a>
+        <a href="../../../controllers/logout.php" class="sidebar-nav-item logout" onclick="confirmSwal(event, this, 'Déconnexion ?', 'Voulez-vous vraiment vous déconnecter ?')"><i class="bi bi-box-arrow-left"></i> Déconnexion</a>
         <div style="margin-top:10px;"><a href="../../frontoffice/home/index.php" class="sidebar-footer-back"><i class="bi bi-arrow-left"></i> Retour au site</a></div>
       </div>
     </aside>
@@ -282,5 +282,7 @@ $stats = $rdvController->getStats('medecin', $userId);
         document.getElementById('check_autre').checked = (this.value.trim() !== '');
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>
 </html>

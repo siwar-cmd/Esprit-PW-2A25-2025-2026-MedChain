@@ -10,6 +10,17 @@ $adminController = new AdminController();
 $usersResult = $adminController->getAllUsers();
 $users = $usersResult['success'] ? $usersResult['users'] : [];
 
+// Pagination Logic
+$items_per_page = 5;
+$total_items = count($users);
+$total_pages = ceil($total_items / $items_per_page);
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($current_page < 1) $current_page = 1;
+if ($current_page > $total_pages && $total_pages > 0) $current_page = $total_pages;
+
+$offset = ($current_page - 1) * $items_per_page;
+$paginated_users = array_slice($users, $offset, $items_per_page);
+
 $success_message = $_SESSION['success_message'] ?? null;
 $error_message = $_SESSION['error_message'] ?? null;
 unset($_SESSION['success_message'], $_SESSION['error_message']);
@@ -134,6 +145,11 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
             .actions { flex-direction: column; }
             .btn { justify-content: center; }
         }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 24px; padding-bottom: 10px; }
+        .page-link { padding: 8px 16px; border-radius: 8px; background: white; border: 1px solid var(--gray-200); color: var(--navy); text-decoration: none; transition: 0.3s; font-weight: 500; font-size: 13px; }
+        .page-link:hover { border-color: var(--green); color: var(--green); }
+        .page-link.active { background: var(--green); color: white; border-color: var(--green); }
+        .page-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -181,7 +197,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
                             <td colspan="8" style="text-align: center;">Aucun utilisateur trouvé</td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($users as $user): ?>
+                        <?php foreach ($paginated_users as $user): ?>
                         <tr>
                             <td><?= $user['id_utilisateur'] ?></td>
                             <td><?= htmlspecialchars($user['nom']) ?></td>
@@ -203,6 +219,27 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
                 </tbody>
             </table>
         </div>
+
+        <?php if ($total_pages > 1): ?>
+        <div class="pagination">
+            <a href="?page=<?= $current_page - 1 ?>" 
+               class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            
+            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                <a href="?page=<?= $i ?>" 
+                   class="page-link <?= $current_page == $i ? 'active' : '' ?>">
+                    <?= $i ?>
+                </a>
+            <?php endfor; ?>
+            
+            <a href="?page=<?= $current_page + 1 ?>" 
+               class="page-link <?= $current_page >= $total_pages ? 'disabled' : '' ?>">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+        <?php endif; ?>
         
         <div class="footer-actions">
             <a href="admin-dashboard.php" class="btn btn-primary"><i class="bi bi-speedometer2"></i> Dashboard</a>

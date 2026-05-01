@@ -54,6 +54,7 @@ function formatDate($dateString) {
     
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
     
     <style>
@@ -120,7 +121,7 @@ function formatDate($dateString) {
         }
 
         .dashboard-sidebar {
-            background: linear-gradient(180deg, var(--navy) 0%, #0F172A 100%);
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             position: sticky;
             top: 0;
             height: 100vh;
@@ -131,16 +132,16 @@ function formatDate($dateString) {
 
         .dashboard-logo { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
         .dashboard-logo a { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .dashboard-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--green), var(--green-dark)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+        .dashboard-logo-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.1); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
         .dashboard-logo-icon i { font-size: 18px; color: white; }
         .dashboard-logo-text { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: white; }
-        .dashboard-logo-text span { color: var(--green); }
+        .dashboard-logo-text span { color: #3b82f6; }
 
         .dashboard-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
         .dashboard-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #94A3B8; text-decoration: none; border-radius: var(--radius-md); transition: all 0.3s; font-size: 14px; font-weight: 500; }
         .dashboard-nav-item i { font-size: 18px; width: 24px; }
         .dashboard-nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
-        .dashboard-nav-item.active { background: rgba(29,158,117,0.2); color: var(--green); }
+        .dashboard-nav-item.active { background: rgba(59,130,246,0.2); color: #3b82f6; }
         .dashboard-nav-item.logout { margin-top: auto; margin-bottom: 20px; color: #F87171; }
         .dashboard-nav-item.logout:hover { background: rgba(248,113,113,0.1); }
         .dashboard-nav-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748B; padding: 16px 16px 8px; font-weight: 600; }
@@ -234,7 +235,7 @@ function formatDate($dateString) {
     <aside class="dashboard-sidebar" id="sidebar">
         <div class="dashboard-logo">
             <a href="admin-dashboard.php">
-                <div class="dashboard-logo-icon"><i class="bi bi-plus-square-fill"></i></div>
+                <div class="dashboard-logo-icon"><i class="fas fa-hospital-alt"></i></div>
                 <div class="dashboard-logo-text">Med<span>Chain</span></div>
             </a>
         </div>
@@ -242,34 +243,30 @@ function formatDate($dateString) {
         <nav class="dashboard-nav">
             <div class="dashboard-nav-title">Navigation</div>
             <a href="admin-dashboard.php" class="dashboard-nav-item active">
-                <i class="bi bi-speedometer2"></i> Dashboard
+                <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
             <a href="admin-users.php" class="dashboard-nav-item">
-                <i class="bi bi-people-fill"></i> Utilisateurs
+                <i class="fas fa-users"></i> Utilisateurs
             </a>
             <a href="admin-create-user.php" class="dashboard-nav-item">
-                <i class="bi bi-person-plus-fill"></i> Nouvel utilisateur
+                <i class="fas fa-user-plus"></i> Nouvel utilisateur
             </a>
-            <a href="rendezvous/medecin-index.php" class="dashboard-nav-item">
-                <i class="bi bi-calendar-check"></i> Rendez-vous
+            <a href="rendezvous/admin-index.php" class="dashboard-nav-item">
+                <i class="fas fa-calendar-check"></i> Rendez-vous
             </a>
-            <a href="ficherdv/medecin-index.php" class="dashboard-nav-item">
-                <i class="bi bi-file-earmark-medical"></i> Fiches Médicales
+            <a href="ficherdv/admin-index.php" class="dashboard-nav-item">
+                <i class="fas fa-file-medical-alt"></i> Fiches Médicales
             </a>
-            <div class="dashboard-nav-title mt-4">Analytiques</div>
-            <a href="rendezvous/medecin-stats.php" class="dashboard-nav-item">
-                <i class="bi bi-bar-chart-line-fill"></i> Stats Rendez-vous
-            </a>
-            <a href="ficherdv/medecin-stats.php" class="dashboard-nav-item">
-                <i class="bi bi-bar-chart-fill"></i> Stats Fiches Médicales
+            <a href="admin-reports-statistics.php" class="dashboard-nav-item">
+                <i class="fas fa-chart-pie"></i> Statistiques
             </a>
             
-            <div class="dashboard-nav-title mt-4">Gestion</div>
+            <div class="dashboard-nav-title">Gestion</div>
             <a href="../frontoffice/auth/profile.php" class="dashboard-nav-item">
-                <i class="bi bi-person-circle"></i> Mon profil
+                <i class="fas fa-user-circle"></i> Mon profil
             </a>
-            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="confirmSwal(event, this, '')">
-                <i class="bi bi-box-arrow-right"></i> Déconnexion
+            <a href="../../controllers/logout.php" class="dashboard-nav-item logout" onclick="return confirmLogout(event)">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
             </a>
         </nav>
     </aside>

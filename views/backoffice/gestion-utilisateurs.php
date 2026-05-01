@@ -39,7 +39,19 @@ try {
     
     $usersResult = $adminController->getAllUsers($filters);
     $allUsers = $usersResult['success'] ? $usersResult['users'] : [];
-    $totalUsers = count($allUsers);
+    
+    // Pagination Logic
+    $items_per_page = 5;
+    $total_items = count($allUsers);
+    $total_pages = ceil($total_items / $items_per_page);
+    $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    if ($current_page < 1) $current_page = 1;
+    if ($current_page > $total_pages && $total_pages > 0) $current_page = $total_pages;
+
+    $offset = ($current_page - 1) * $items_per_page;
+    $paginated_users = array_slice($allUsers, $offset, $items_per_page);
+
+    $totalUsers = $total_items;
     
     $stats = [
         'total' => $totalUsers,
@@ -92,6 +104,13 @@ $editUserUrl = 'admin-edit-user.php';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 24px; }
+        .page-link { padding: 8px 16px; border-radius: 8px; background: white; border: 1px solid #dee2e6; color: #1E3A52; text-decoration: none; transition: 0.3s; font-weight: 500; font-size: 13px; }
+        .page-link:hover { border-color: #1D9E75; color: #1D9E75; }
+        .page-link.active { background: #1D9E75; color: white; border-color: #1D9E75; }
+        .page-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+    </style>
  
    
 </head>
@@ -370,7 +389,7 @@ $editUserUrl = 'admin-edit-user.php';
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($allUsers as $user): 
+                                <?php foreach ($paginated_users as $user): 
                                     $user_id = $user['id_utilisateur'] ?? $user['id'];
                                     $is_current_user = $user_id == $_SESSION['user_id'];
                                     $initials = strtoupper(substr($user['prenom'] ?? '', 0, 1) . substr($user['nom'] ?? '', 0, 1));
@@ -454,6 +473,27 @@ $editUserUrl = 'admin-edit-user.php';
                             </tbody>
                         </table>
                     </div>
+
+                    <?php if ($total_pages > 1): ?>
+                    <div class="pagination mb-4">
+                        <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>&role=<?= urlencode($role_filter) ?>&statut=<?= urlencode($statut_filter) ?>" 
+                           class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&role=<?= urlencode($role_filter) ?>&statut=<?= urlencode($statut_filter) ?>" 
+                               class="page-link <?= $current_page == $i ? 'active' : '' ?>">
+                                <?= $i ?>
+                            </a>
+                        <?php endfor; ?>
+                        
+                        <a href="?page=<?= $current_page + 1 ?>&search=<?= urlencode($search) ?>&role=<?= urlencode($role_filter) ?>&statut=<?= urlencode($statut_filter) ?>" 
+                           class="page-link <?= $current_page >= $total_pages ? 'disabled' : '' ?>">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>

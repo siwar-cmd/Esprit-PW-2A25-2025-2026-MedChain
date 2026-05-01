@@ -17,6 +17,17 @@ $rdvData = $rdvController->getAllRendezVous($filters, 'medecin', $userId);
 $rendezvous = $rdvData['success'] ? $rdvData['rdvs'] : [];
 
 $stats = $rdvController->getStats('medecin', $userId);
+
+// Pagination Logic
+$items_per_page = 5;
+$total_items = count($rendezvous);
+$total_pages = ceil($total_items / $items_per_page);
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($current_page < 1) $current_page = 1;
+if ($current_page > $total_pages && $total_pages > 0) $current_page = $total_pages;
+
+$offset = ($current_page - 1) * $items_per_page;
+$paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -104,6 +115,11 @@ $stats = $rdvController->getStats('medecin', $userId);
         .sort-select:hover { border-color: var(--green); }
         .alert-success { background: #DCFCE7; color: #16A34A; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         @media print { .dashboard-sidebar, .search-form, .btn, .actions-col { display: none !important; } .dashboard-container { display: block; } .dashboard-main { padding: 0; } }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 24px; padding: 0 20px 20px; }
+        .page-link { padding: 8px 16px; border-radius: 8px; background: white; border: 1px solid var(--gray-200); color: var(--navy); text-decoration: none; transition: 0.3s; font-weight: 500; font-size: 13px; }
+        .page-link:hover { border-color: var(--green); color: var(--green); }
+        .page-link.active { background: var(--green); color: white; border-color: var(--green); }
+        .page-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -147,7 +163,7 @@ $stats = $rdvController->getStats('medecin', $userId);
         </a>
       </nav>
       <div class="sidebar-footer">
-        <a href="../../../controllers/logout.php" class="sidebar-nav-item logout" onclick="return confirm('Déconnexion ?')">
+        <a href="../../../controllers/logout.php" class="sidebar-nav-item logout" onclick="confirmSwal(event, this, 'Déconnexion ?', 'Voulez-vous vraiment vous déconnecter ?')">
           <span class="nav-icon"><i class="bi bi-box-arrow-left"></i></span> Déconnexion
         </a>
         <div style="margin-top:10px;">
@@ -213,7 +229,7 @@ $stats = $rdvController->getStats('medecin', $userId);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach($rendezvous as $rdv): ?>
+                        <?php foreach($paginated_rdv as $rdv): ?>
                         <tr>
                             <td><?= date('d/m/Y H:i', strtotime($rdv['dateHeureDebut'])) ?></td>
                             <td><?= htmlspecialchars($rdv['client_nom'] . ' ' . $rdv['client_prenom']) ?></td>
@@ -228,6 +244,27 @@ $stats = $rdvController->getStats('medecin', $userId);
                     </tbody>
                 </table>
             </div>
+            
+            <?php if ($total_pages > 1): ?>
+            <div class="pagination">
+                <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>" 
+                   class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+                
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>" 
+                       class="page-link <?= $current_page == $i ? 'active' : '' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
+                
+                <a href="?page=<?= $current_page + 1 ?>&search=<?= urlencode($search) ?>" 
+                   class="page-link <?= $current_page >= $total_pages ? 'disabled' : '' ?>">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
     </main>
 </div>
