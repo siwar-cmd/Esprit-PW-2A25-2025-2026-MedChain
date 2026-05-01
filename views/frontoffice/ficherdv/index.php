@@ -99,6 +99,8 @@ $stats = $ficheController->getStats('patient', $currentUser->getId());
         .btn-secondary { background: var(--white); color: var(--gray-500); border: 1px solid var(--gray-200); }
         .btn-stats { background: linear-gradient(135deg, var(--green), var(--navy)); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
         .btn-stats:hover { background: linear-gradient(135deg, var(--green-dark), var(--navy)); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3); }
+        .sort-select { padding: 9px 15px; border-radius: 8px; border: 1px solid var(--gray-200); background: white; color: var(--navy); font-weight: 500; font-size: 14px; outline: none; cursor: pointer; transition: all 0.3s; }
+        .sort-select:hover { border-color: var(--green); }
         
         .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
         .stat-card { background: var(--white); padding: 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 20px; border: 1px solid rgba(29,158,117,.1); }
@@ -183,9 +185,15 @@ $stats = $ficheController->getStats('patient', $currentUser->getId());
             <h1>Mes Fiches Médicales</h1>
             <p>Retrouvez toutes vos fiches et consignes de consultations</p>
         </div>
-        <div class="page-actions">
-            <a href="stats.php" class="btn btn-stats me-2"><i class="bi bi-bar-chart-line-fill"></i> Statistiques</a>
-            <button onclick="window.print()" class="btn btn-secondary"><i class="bi bi-file-pdf"></i> Exporter PDF</button>
+        <div class="page-actions" style="display:flex; align-items:center; gap:10px;">
+            <select class="sort-select" onchange="handleSortChange(this, 'ficheTable')">
+                <option value="">Tri par...</option>
+                <option value="0">Date Consultation</option>
+                <option value="1">Médecin</option>
+                <option value="4">Tarif</option>
+            </select>
+            <a href="stats.php" class="btn btn-stats"><i class="bi bi-bar-chart-line-fill"></i> Statistiques</a>
+            <button onclick="window.print()" class="btn btn-secondary"><i class="bi bi-file-pdf"></i> PDF</button>
         </div>
     </div>
     
@@ -289,6 +297,12 @@ $stats = $ficheController->getStats('patient', $currentUser->getId());
                     }
                 }
             }
+        }
+    }
+
+    function handleSortChange(select, tableId) {
+        if (select.value !== "") {
+            sortTable(parseInt(select.value), tableId);
         }
     }
 

@@ -100,6 +100,8 @@ $stats = $rdvController->getStats('medecin', $userId);
         .btn-outline { background: white; border: 1px solid var(--green); color: var(--green); }
         .btn-stats { background: linear-gradient(135deg, var(--green), var(--navy)); color: white; border: none; }
         .btn-stats:hover { background: linear-gradient(135deg, var(--green-dark), var(--navy)); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3); }
+        .sort-select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--gray-200); background: white; color: var(--navy); font-weight: 600; font-size: 13px; outline: none; cursor: pointer; transition: all 0.3s; }
+        .sort-select:hover { border-color: var(--green); }
         .alert-success { background: #DCFCE7; color: #16A34A; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         @media print { .dashboard-sidebar, .search-form, .btn, .actions-col { display: none !important; } .dashboard-container { display: block; } .dashboard-main { padding: 0; } }
     </style>
@@ -136,13 +138,6 @@ $stats = $rdvController->getStats('medecin', $userId);
         </div>
       </div>
       <nav class="sidebar-nav">
-        <div class="sidebar-nav-section-label">Navigation</div>
-        <a href="../../frontoffice/home/index.php" class="sidebar-nav-item">
-          <span class="nav-icon"><i class="bi bi-house-door-fill"></i></span> Accueil
-        </a>
-        <a href="../../frontoffice/auth/profile.php" class="sidebar-nav-item">
-          <span class="nav-icon"><i class="bi bi-person-fill"></i></span> Mon Profil
-        </a>
         <div class="sidebar-nav-section-label">Mes Consultations</div>
         <a href="medecin-index.php" class="sidebar-nav-item active">
           <span class="nav-icon"><i class="bi bi-calendar-check"></i></span> Rendez-vous
@@ -191,6 +186,13 @@ $stats = $rdvController->getStats('medecin', $userId);
             <div class="card-header">
                 <h2>Liste des rendez-vous</h2>
                 <div style="display:flex; gap:10px; align-items:center;">
+                    <select class="sort-select" onchange="handleSortChange(this, 'rdvTable')">
+                        <option value="">Tri par...</option>
+                        <option value="0">Date & Heure</option>
+                        <option value="1">Patient</option>
+                        <option value="2">Type</option>
+                        <option value="4">Statut</option>
+                    </select>
                     <a href="medecin-stats.php" class="btn btn-stats"><i class="bi bi-bar-chart-line-fill"></i> Statistiques</a>
                     <form class="search-form" method="GET">
                         <input type="text" name="search" id="searchInput" class="search-input" placeholder="Rechercher patient..." value="<?= htmlspecialchars($search) ?>" onkeyup="filterTable()">
@@ -250,6 +252,12 @@ function filterTable() {
                     }
                 }
             }
+        }
+    }
+
+    function handleSortChange(select, tableId) {
+        if (select.value !== "") {
+            sortTable(parseInt(select.value), tableId);
         }
     }
 

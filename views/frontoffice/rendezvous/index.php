@@ -261,6 +261,8 @@ $stats = $rdvController->getStats('patient', $currentUser->getId());
     .btn-mc:hover { background-color: var(--green-dark); color: white; transform: translateY(-2px); }
     .btn-stats { background: linear-gradient(135deg, var(--green), var(--navy)); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
     .btn-stats:hover { background: linear-gradient(135deg, var(--green-dark), var(--navy)); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3); }
+    .sort-select { padding: 9px 15px; border-radius: 8px; border: 1px solid var(--gray-200); background: white; color: var(--navy); font-weight: 500; font-size: 14px; outline: none; cursor: pointer; transition: all 0.3s; }
+    .sort-select:hover { border-color: var(--green); }
   </style>
 </head>
 <body>
@@ -376,10 +378,17 @@ $stats = $rdvController->getStats('patient', $currentUser->getId());
             <input type="text" name="search" id="searchInput" class="form-control" placeholder="Rechercher..." value="<?= htmlspecialchars($search) ?>" onkeyup="filterTable()">
             <button type="submit" class="btn btn-mc"><i class="bi bi-search"></i></button>
         </form>
-        <div>
-            <a href="stats.php" class="btn btn-stats me-2"><i class="bi bi-bar-chart-line-fill"></i> Statistiques</a>
-            <button onclick="window.print()" class="btn btn-secondary me-2"><i class="bi bi-file-pdf"></i> Exporter PDF</button>
-            <a href="create.php" class="btn btn-mc"><i class="bi bi-plus-lg"></i> Nouveau Rendez-vous</a>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <select class="sort-select" onchange="handleSortChange(this, 'rdvTable')">
+                <option value="">Tri par...</option>
+                <option value="0">Date & Heure</option>
+                <option value="1">Médecin</option>
+                <option value="2">Type</option>
+                <option value="4">Statut</option>
+            </select>
+            <a href="stats.php" class="btn btn-stats"><i class="bi bi-bar-chart-line-fill"></i> Statistiques</a>
+            <button onclick="window.print()" class="btn btn-secondary"><i class="bi bi-file-pdf"></i> PDF</button>
+            <a href="create.php" class="btn btn-mc"><i class="bi bi-plus-lg"></i> Nouveau RDV</a>
         </div>
     </div>
 
@@ -450,6 +459,12 @@ function filterTable() {
         }
     }
 }
+
+    function handleSortChange(select, tableId) {
+        if (select.value !== "") {
+            sortTable(parseInt(select.value), tableId);
+        }
+    }
 
 function sortTable(n, tableId) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
