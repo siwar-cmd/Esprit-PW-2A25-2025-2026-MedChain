@@ -31,7 +31,7 @@ if (!$rdv || $rdv['idClient'] != $currentUser->getId()) {
 }
 
 $pdo = config::getConnexion();
-$req = $pdo->query("SELECT id_utilisateur, nom, prenom FROM utilisateur WHERE role IN ('admin', 'medecin') AND statut = 'actif'");
+$req = $pdo->query("SELECT id_utilisateur, nom, prenom FROM utilisateur WHERE role = 'medecin' AND statut = 'actif'");
 $medecins = $req->fetchAll(PDO::FETCH_ASSOC);
 
 $errorMsg = null;
@@ -44,14 +44,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'idMedecin' => $_POST['idMedecin']
     ];
     
-    $result = $rdvController->updateRendezVous($rdv['idRDV'], $data);
-    if ($result['success']) {
-        $_SESSION['success_message'] = "Rendez-vous mis à jour avec succès.";
-        header('Location: index.php');
-        exit;
+    $selectedDate = strtotime($_POST['dateHeureDebut']);
+    if ($selectedDate < time()) {
+        $errorMsg = "La date du rendez-vous ne peut pas être dans le passé.";
+        $errorField = 'dateHeureDebut';
     } else {
-        $errorMsg = $result['message'];
-        $errorField = $result['field'] ?? 'global';
+        $result = $rdvController->updateRendezVous($rdv['idRDV'], $data);
+        if ($result['success']) {
+            $_SESSION['success_message'] = "Rendez-vous mis à jour avec succès.";
+            header('Location: index.php');
+            exit;
+        } else {
+            $errorMsg = $result['message'];
+            $errorField = $result['field'] ?? 'global';
+        }
     }
 }
 ?>
@@ -196,7 +202,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php 
                         $valDate = isset($_POST['dateHeureDebut']) ? htmlspecialchars($_POST['dateHeureDebut']) : date('Y-m-d\TH:i', strtotime($rdv['dateHeureDebut']));
                     ?>
-                    <input type="datetime-local" name="dateHeureDebut" id="dateHeureDebut" class="form-control <?= ($errorField === 'dateHeureDebut') ? 'is-invalid' : '' ?>" value="<?= $valDate ?>">
+                    <input type="datetime-local" name="dateHeureDebut" id="dateHeureDebut" class="form-control <?= ($errorField === 'dateHeureDebut') ? 'is-invalid' : '' ?>" 
+                           min="<?= date('Y-m-d\TH:i') ?>"
+                           value="<?= $valDate ?>">
                     <div class="text-danger mt-1 error-msg" id="err-dateHeureDebut" style="display:none; font-size:0.875em;">Veuillez choisir une date de début.</div>
                     <?php if($errorField === 'dateHeureDebut'): ?>
                         <div class="text-danger mt-1" style="font-size:0.875em;"><?= htmlspecialchars($errorMsg) ?></div>

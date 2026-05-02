@@ -146,7 +146,7 @@ if (!$fiche || $rdv['idClient'] != $currentUser->getId()) {
             <div class="view-header">
                 <div class="view-header-title">
                     <h2>Résumé de Consultation</h2>
-                    <p><i class="bi bi-calendar3"></i> Consultation du <?= date('d/m/Y à H:i', strtotime($fiche['dateHeureDebut'])) ?></p>
+                    <p><i class="bi bi-activity"></i> Type : <?= htmlspecialchars($fiche['typeConsultation']) ?></p>
                 </div>
                 <div style="background:rgba(255,255,255,0.2); padding:8px 15px; border-radius:10px; font-weight:700;">Dr. <?= htmlspecialchars($fiche['medecin_nom']) ?></div>
             </div>

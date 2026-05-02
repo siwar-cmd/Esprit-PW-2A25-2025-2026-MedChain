@@ -20,8 +20,8 @@ if ($currentUser->getRole() !== 'patient') {
 $rdvController = new RendezVousController();
 $pdo = config::getConnexion();
 
-// Récupérer les médecins (pour l'exemple, tous les admin ou un rôle medecin spécifique si ajouté plus tard)
-$req = $pdo->query("SELECT id_utilisateur, nom, prenom FROM utilisateur WHERE role IN ('admin', 'medecin') AND statut = 'actif'");
+// Récupérer les médecins uniquement (exclure les admins)
+$req = $pdo->query("SELECT id_utilisateur, nom, prenom FROM utilisateur WHERE role = 'medecin' AND statut = 'actif'");
 $medecins = $req->fetchAll(PDO::FETCH_ASSOC);
 
 $errorMsg = null;
@@ -36,14 +36,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'idMedecin' => $_POST['idMedecin']
     ];
     
-    $result = $rdvController->createRendezVous($data);
-    if ($result['success']) {
-        $_SESSION['success_message'] = "Rendez-vous réservé avec succès.";
-        header('Location: index.php');
-        exit;
+    $selectedDate = strtotime($_POST['dateHeureDebut']);
+    if ($selectedDate < time()) {
+        $errorMsg = "La date du rendez-vous ne peut pas être dans le passé.";
+        $errorField = 'dateHeureDebut';
     } else {
-        $errorMsg = $result['message'];
-        $errorField = $result['field'] ?? 'global';
+        $result = $rdvController->createRendezVous($data);
+        if ($result['success']) {
+            $_SESSION['success_message'] = "Rendez-vous réservé avec succès.";
+            header('Location: index.php');
+            exit;
+        } else {
+            $errorMsg = $result['message'];
+            $errorField = $result['field'] ?? 'global';
+        }
     }
 }
 ?>
@@ -215,7 +221,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="row">
                 <div class="col-md-12 mb-3">
                     <label class="form-label"><i class="bi bi-calendar-event text-success me-2"></i>Date & Heure Début</label>
-                    <input type="datetime-local" name="dateHeureDebut" id="dateHeureDebut" class="form-control <?= ($errorField === 'dateHeureDebut') ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['dateHeureDebut'] ?? '') ?>">
+                    <input type="datetime-local" name="dateHeureDebut" id="dateHeureDebut" class="form-control <?= ($errorField === 'dateHeureDebut') ? 'is-invalid' : '' ?>" 
+                           min="<?= date('Y-m-d\TH:i') ?>"
+                           value="<?= htmlspecialchars($_POST['dateHeureDebut'] ?? '') ?>">
                     <div class="text-danger mt-1 error-msg" id="err-dateHeureDebut" style="display:none; font-size:0.875em;">Veuillez choisir une date de début.</div>
                     <?php if($errorField === 'dateHeureDebut'): ?>
                         <div class="text-danger mt-1" style="font-size:0.875em;"><?= htmlspecialchars($errorMsg) ?></div>

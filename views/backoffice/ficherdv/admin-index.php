@@ -212,7 +212,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                     <thead>
                         <tr>
                             <th style="cursor:pointer" onclick="sortTable(0, 'ficheTable')">ID Fiche <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(1, 'ficheTable')">Date Création <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
+                            <th style="cursor:pointer" onclick="sortTable(1, 'ficheTable')">Type RDV <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
                             <th style="cursor:pointer" onclick="sortTable(2, 'ficheTable')">Médecin <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
                             <th style="cursor:pointer" onclick="sortTable(3, 'ficheTable')">Patient <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
                             <th style="cursor:pointer" onclick="sortTable(4, 'ficheTable')">Date RDV <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
@@ -223,7 +223,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                         <?php foreach($paginated_fiches as $fiche): ?>
                         <tr>
                             <td>#<?= $fiche['idFiche'] ?></td>
-                            <td><?= date('d/m/Y', strtotime($fiche['dateGeneration'])) ?></td>
+                            <td><span class="badge bg-light text-dark" style="border: 1px solid var(--gray-200); font-weight: 500;"><?= htmlspecialchars($fiche['typeConsultation']) ?></span></td>
                             <td>Dr. <?= htmlspecialchars($fiche['medecin_nom'] . ' ' . $fiche['medecin_prenom']) ?></td>
                             <td><?= htmlspecialchars($fiche['patient_nom'] . ' ' . $fiche['patient_prenom']) ?></td>
                             <td><?= date('d/m/Y H:i', strtotime($fiche['dateHeureDebut'])) ?></td>

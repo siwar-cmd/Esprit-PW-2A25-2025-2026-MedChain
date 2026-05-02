@@ -195,7 +195,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                 <div style="display:flex; gap:10px; align-items:center;">
                     <select class="sort-select" onchange="handleSortChange(this, 'ficheTable')">
                         <option value="">Tri par...</option>
-                        <option value="1">Date Création</option>
+                        <option value="1">Type RDV</option>
                         <option value="3">Patient</option>
                         <option value="4">Tarif</option>
                     </select>
@@ -211,7 +211,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                     <thead>
                         <tr>
                             <th style="cursor:pointer" onclick="sortTable(0, 'ficheTable')">ID Fiche <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(1, 'ficheTable')">Date Création <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
+                            <th style="cursor:pointer" onclick="sortTable(1, 'ficheTable')">Type RDV <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
                             <th style="cursor:pointer" onclick="sortTable(2, 'ficheTable')">Date RDV <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
                             <th style="cursor:pointer" onclick="sortTable(3, 'ficheTable')">Patient <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
                             <th style="cursor:pointer" onclick="sortTable(4, 'ficheTable')">Tarif <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
@@ -222,7 +222,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                         <?php foreach($paginated_fiches as $fiche): ?>
                         <tr>
                             <td>#<?= $fiche['idFiche'] ?></td>
-                            <td><?= date('d/m/Y', strtotime($fiche['dateGeneration'])) ?></td>
+                            <td><span class="badge bg-info text-dark" style="font-size: 13px; font-weight: 500; padding: 6px 12px;"><?= htmlspecialchars($fiche['typeConsultation']) ?></span></td>
                             <td><?= date('d/m/Y H:i', strtotime($fiche['dateHeureDebut'])) ?></td>
                             <td><?= htmlspecialchars($fiche['patient_nom'] . ' ' . $fiche['patient_prenom']) ?></td>
                             <td><?= $fiche['tarifConsultation'] ? $fiche['tarifConsultation'] . ' TND' : '-' ?></td>

@@ -164,7 +164,7 @@ $stats = $rdvController->getStats('medecin', $userId);
             <div class="view-header">
                 <div class="view-header-title">
                     <h2>Fiche Médicale #<?= $fiche['idFiche'] ?></h2>
-                    <p><i class="bi bi-calendar3"></i> Générée le <?= date('d/m/Y', strtotime($fiche['dateGeneration'])) ?></p>
+                    <p><i class="bi bi-activity"></i> Type de consultation : <?= htmlspecialchars($fiche['typeConsultation']) ?></p>
                 </div>
                 <div class="badge badge-green"><?= htmlspecialchars($fiche['modeConsultation']) ?></div>
             </div>
