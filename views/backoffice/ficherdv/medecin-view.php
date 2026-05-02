@@ -242,20 +242,6 @@ $stats = $rdvController->getStats('medecin', $userId);
                     </div>
                 </div>
 
-                <!-- Section Examen Clinique -->
-                <div class="view-section full-width">
-                    <h3 class="view-section-title"><i class="bi bi-stethoscope"></i> Examen Clinique</h3>
-                    <div class="text-block"><?= nl2br(htmlspecialchars($fiche['examenClinique'] ?: 'Non renseigné')) ?></div>
-                </div>
-
-                <!-- Section Diagnostic -->
-                <div class="view-section full-width">
-                    <h3 class="view-section-title"><i class="bi bi-clipboard2-pulse"></i> Diagnostic / Conclusion</h3>
-                    <div class="text-block" style="border-left: 5px solid var(--green); font-weight: 500;">
-                        <?= nl2br(htmlspecialchars($fiche['diagnostic'] ?: 'Non renseigné')) ?>
-                    </div>
-                </div>
-
                 <!-- Section Prescription -->
                 <div class="view-section full-width">
                     <h3 class="view-section-title"><i class="bi bi-capsule"></i> Prescription / Traitement</h3>

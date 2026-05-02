@@ -67,8 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'poids' => $_POST['poids'] !== '' ? (float)$_POST['poids'] : null,
             'taille' => $_POST['taille'] !== '' ? (int)$_POST['taille'] : null,
             'temperature' => $_POST['temperature'] !== '' ? (float)$_POST['temperature'] : null,
-            'examenClinique' => $_POST['examenClinique'] ?? '',
-            'diagnostic' => $_POST['diagnostic'] ?? '',
             'prescription' => $_POST['prescription'] ?? '',
             'examensComplementaires' => $_POST['examensComplementaires'] ?? '',
             'observations' => $_POST['observations'] ?? '',
@@ -247,16 +245,6 @@ $stats = $rdvController->getStats('medecin', $userId);
                         <div class="form-group" style="margin-bottom:0;"><label>Taille (cm)</label><input type="number" name="taille" class="form-control" value="<?= htmlspecialchars($fiche['taille'] ?? '') ?>"></div>
                         <div class="form-group" style="margin-bottom:0;"><label>Température (°C)</label><input type="number" step="0.1" name="temperature" class="form-control" value="<?= htmlspecialchars($fiche['temperature'] ?? '') ?>"></div>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Examen Clinique</label>
-                    <textarea name="examenClinique" class="form-control" rows="3"><?= htmlspecialchars($fiche['examenClinique'] ?? '') ?></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Diagnostic / Hypothèse</label>
-                    <textarea name="diagnostic" class="form-control" rows="2"><?= htmlspecialchars($fiche['diagnostic'] ?? '') ?></textarea>
                 </div>
 
                 <div class="form-group">

@@ -175,14 +175,6 @@ if (!$fiche || $rdv['idClient'] != $currentUser->getId()) {
                     </div>
                 </div>
 
-                <!-- Section Diagnostic -->
-                <div class="view-section full-width">
-                    <h3 class="view-section-title"><i class="bi bi-clipboard2-pulse"></i> Conclusion du Docteur</h3>
-                    <div class="text-block" style="border-left: 5px solid var(--green); font-weight: 500;">
-                        <?= nl2br(htmlspecialchars($fiche['diagnostic'] ?: 'Aucune conclusion spécifiée')) ?>
-                    </div>
-                </div>
-
                 <!-- Section Prescription -->
                 <div class="view-section full-width">
                     <h3 class="view-section-title"><i class="bi bi-capsule"></i> Mon Traitement</h3>

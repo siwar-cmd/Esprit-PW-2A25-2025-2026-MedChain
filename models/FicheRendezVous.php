@@ -20,8 +20,6 @@ class FicheRendezVous
     private $poids;
     private $taille;
     private $temperature;
-    private $examenClinique;
-    private $diagnostic;
     private $prescription;
     private $examensComplementaires;
     private $observations;
@@ -46,8 +44,6 @@ class FicheRendezVous
         $poids = null,
         $taille = null,
         $temperature = null,
-        $examenClinique = null,
-        $diagnostic = null,
         $prescription = null,
         $examensComplementaires = null,
         $observations = null,
@@ -71,8 +67,6 @@ class FicheRendezVous
         $this->poids = $poids;
         $this->taille = $taille;
         $this->temperature = $temperature;
-        $this->examenClinique = $examenClinique;
-        $this->diagnostic = $diagnostic;
         $this->prescription = $prescription;
         $this->examensComplementaires = $examensComplementaires;
         $this->observations = $observations;
@@ -98,8 +92,6 @@ class FicheRendezVous
     public function getPoids() { return $this->poids; }
     public function getTaille() { return $this->taille; }
     public function getTemperature() { return $this->temperature; }
-    public function getExamenClinique() { return $this->examenClinique; }
-    public function getDiagnostic() { return $this->diagnostic; }
     public function getPrescription() { return $this->prescription; }
     public function getExamensComplementaires() { return $this->examensComplementaires; }
     public function getObservations() { return $this->observations; }
@@ -124,8 +116,6 @@ class FicheRendezVous
     public function setPoids($poids) { $this->poids = $poids; return $this; }
     public function setTaille($taille) { $this->taille = $taille; return $this; }
     public function setTemperature($temperature) { $this->temperature = $temperature; return $this; }
-    public function setExamenClinique($examenClinique) { $this->examenClinique = $examenClinique; return $this; }
-    public function setDiagnostic($diagnostic) { $this->diagnostic = $diagnostic; return $this; }
     public function setPrescription($prescription) { $this->prescription = $prescription; return $this; }
     public function setExamensComplementaires($examensComplementaires) { $this->examensComplementaires = $examensComplementaires; return $this; }
     public function setObservations($observations) { $this->observations = $observations; return $this; }
@@ -151,8 +141,6 @@ class FicheRendezVous
             'poids' => $this->poids,
             'taille' => $this->taille,
             'temperature' => $this->temperature,
-            'examenClinique' => $this->examenClinique,
-            'diagnostic' => $this->diagnostic,
             'prescription' => $this->prescription,
             'examensComplementaires' => $this->examensComplementaires,
             'observations' => $this->observations,
