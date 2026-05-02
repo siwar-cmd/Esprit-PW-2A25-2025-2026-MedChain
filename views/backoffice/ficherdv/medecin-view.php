@@ -264,14 +264,10 @@ $stats = $rdvController->getStats('medecin', $userId);
                     </div>
                 </div>
 
-                <!-- Section Consignes -->
+                <!-- Section Pièces à apporter -->
                 <div class="view-section full-width">
-                    <h3 class="view-section-title"><i class="bi bi-info-circle"></i> Consignes & Préparations</h3>
+                    <h3 class="view-section-title"><i class="bi bi-info-circle"></i> Préparations</h3>
                     <div class="info-item">
-                        <div class="info-label">Consignes avant consultation</div>
-                        <div class="info-value"><?= htmlspecialchars($fiche['consignesAvantConsultation'] ?: '-') ?></div>
-                    </div>
-                    <div class="info-item" style="margin-top:15px;">
                         <div class="info-label">Pièces à apporter</div>
                         <div class="info-value"><?= htmlspecialchars($fiche['piecesAApporter'] ?: '-') ?></div>
                     </div>

@@ -245,7 +245,6 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                     <tr>
                         <th style="cursor:pointer" onclick="sortTable(0, 'ficheTable')">Date Consultation <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
                         <th style="cursor:pointer" onclick="sortTable(1, 'ficheTable')">Médecin <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                        <th>Consignes</th>
                         <th>Pièces à apporter</th>
                         <th style="cursor:pointer" onclick="sortTable(4, 'ficheTable')">Tarif & Remboursement <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
                         <th>Actions</th>
@@ -270,7 +269,6 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                                     <span style="color: var(--gray-500); font-size: 13px;"><?= date('H:i', strtotime($fiche['dateHeureDebut'])) ?></span>
                                 </td>
                                 <td>Dr. <?= htmlspecialchars($fiche['medecin_nom'] . ' ' . $fiche['medecin_prenom']) ?></td>
-                                <td><?= nl2br(htmlspecialchars($fiche['consignesAvantConsultation'] ?: '-')) ?></td>
                                 <td><?= nl2br(htmlspecialchars($fiche['piecesAApporter'] ?: '-')) ?></td>
                                 <td>
                                     <?php if ($fiche['tarifConsultation']): ?>

@@ -37,17 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $consignes = $_POST['consignes'] ?? [];
-        if (!empty($_POST['autre_consigne'])) {
-            $consignes[] = "Autre : " . $_POST['autre_consigne'];
-        }
-        $consignes_str = implode(', ', $consignes);
-
         $data = [
             'idRDV' => $idRDV,
             'dateGeneration' => date('Y-m-d'),
             'piecesAApporter' => $_POST['piecesAApporter'] ?? '',
-            'consignesAvantConsultation' => $consignes_str,
             'tarifConsultation' => $_POST['tarifConsultation'] ?? 0,
             'modeRemboursement' => '', 
             'emailEnvoye' => 0,
@@ -282,18 +275,6 @@ $stats = $rdvController->getStats('medecin', $userId);
                     <?php if(isset($errors['prochainRDV'])): ?><span class="field-error"><?= $errors['prochainRDV'] ?></span><?php endif; ?>
                 </div>
 
-                <div class="form-group">
-                    <label>Consignes avant consultation</label>
-                    <div class="checkbox-container">
-                        <label class="checkbox-item"><input type="checkbox" name="consignes[]" value="A jeun"> A jeun</label>
-                        <label class="checkbox-item"><input type="checkbox" name="consignes[]" value="Boire eau"> Boire eau</label>
-                        <label class="checkbox-item"><input type="checkbox" name="consignes[]" value="Arrêter aspirine"> Arrêter aspirine</label>
-                        <div style="display:flex; align-items:center; gap:8px; flex:1;">
-                          <label class="checkbox-item"><input type="checkbox" id="check_autre"> Autre :</label>
-                          <input type="text" name="autre_consigne" id="autre_consigne" class="form-control" placeholder="Précisez..." style="padding: 6px 12px;">
-                        </div>
-                    </div>
-                </div>
 
                 <div class="form-group">
                     <label>Pièces à apporter</label>

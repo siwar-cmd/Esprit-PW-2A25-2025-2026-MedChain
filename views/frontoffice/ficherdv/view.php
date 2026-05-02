@@ -197,14 +197,6 @@ if (!$fiche || $rdv['idClient'] != $currentUser->getId()) {
                     <div class="info-value"><?= htmlspecialchars($fiche['examensComplementaires'] ?: 'Aucun examen demandé') ?></div>
                 </div>
 
-                <!-- Section Consignes -->
-                <div class="view-section full-width">
-                    <h3 class="view-section-title"><i class="bi bi-info-circle"></i> Consignes & Préparations</h3>
-                    <div class="info-item">
-                        <div class="info-label">Consignes du médecin</div>
-                        <div class="info-value"><?= htmlspecialchars($fiche['consignesAvantConsultation'] ?: '-') ?></div>
-                    </div>
-                </div>
             </div>
             
             <div style="padding: 20px 30px; background: #f8fafc; border-top: 1px solid var(--gray-200); text-align: right;">

@@ -53,15 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $consignes = $_POST['consignes'] ?? [];
-        if (!empty($_POST['autre_consigne'])) {
-            $consignes[] = "Autre : " . $_POST['autre_consigne'];
-        }
-        $consignes_str = implode(', ', $consignes);
-
         $data = [
             'piecesAApporter' => $_POST['piecesAApporter'] ?? '',
-            'consignesAvantConsultation' => $consignes_str,
             'tarifConsultation' => $_POST['tarifConsultation'] ?? 0,
             'modeRemboursement' => '', 
             'emailEnvoye' => 0,
@@ -92,18 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-
-// Parse existing consignes
-$consignes_array = explode(', ', $fiche['consignesAvantConsultation'] ?? '');
-$consignes_autre_val = '';
-foreach ($consignes_array as $c) {
-    if (strpos($c, 'Autre : ') === 0) {
-        $consignes_autre_val = substr($c, 8);
-    }
-}
-$is_a_jeun = in_array('A jeun', $consignes_array);
-$is_boire = in_array('Boire eau', $consignes_array);
-$is_aspirine = in_array('Arrêter aspirine', $consignes_array);
 
 $stats = $rdvController->getStats('medecin', $userId);
 ?>
@@ -278,18 +259,6 @@ $stats = $rdvController->getStats('medecin', $userId);
                     <?php if(isset($errors['prochainRDV'])): ?><span class="field-error"><?= $errors['prochainRDV'] ?></span><?php endif; ?>
                 </div>
 
-                <div class="form-group">
-                    <label>Consignes avant consultation</label>
-                    <div class="checkbox-container">
-                        <label class="checkbox-item"><input type="checkbox" name="consignes[]" value="A jeun" <?= $is_a_jeun ? 'checked' : '' ?>> A jeun</label>
-                        <label class="checkbox-item"><input type="checkbox" name="consignes[]" value="Boire eau" <?= $is_boire ? 'checked' : '' ?>> Boire eau</label>
-                        <label class="checkbox-item"><input type="checkbox" name="consignes[]" value="Arrêter aspirine" <?= $is_aspirine ? 'checked' : '' ?>> Arrêter aspirine</label>
-                        <div style="display:flex; align-items:center; gap:8px; flex:1;">
-                          <label class="checkbox-item"><input type="checkbox" id="check_autre" <?= !empty($consignes_autre_val) ? 'checked' : '' ?>> Autre :</label>
-                          <input type="text" name="autre_consigne" id="autre_consigne" class="form-control" placeholder="Précisez..." value="<?= htmlspecialchars($consignes_autre_val) ?>" style="padding: 6px 12px;">
-                        </div>
-                    </div>
-                </div>
 
                 <div class="form-group">
                     <label>Pièces à apporter</label>
