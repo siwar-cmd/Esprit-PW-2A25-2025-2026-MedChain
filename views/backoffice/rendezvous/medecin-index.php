@@ -187,6 +187,10 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
             <div class="alert-success"><?= $_SESSION['success_message']; unset($_SESSION['success_message']); ?></div>
         <?php endif; ?>
 
+        <?php if(isset($_SESSION['error_message'])): ?>
+            <div class="alert-error" style="background: #FEF2F2; color: #EF4444; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #EF4444;"><?= $_SESSION['error_message']; unset($_SESSION['error_message']); ?></div>
+        <?php endif; ?>
+
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon"><i class="bi bi-calendar"></i></div>
@@ -237,7 +241,11 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
                             <td><?= htmlspecialchars(substr($rdv['motif'], 0, 30)) ?></td>
                             <td><span class="status-badge status-<?= $rdv['statut'] ?>"><?= ucfirst($rdv['statut']) ?></span></td>
                             <td class="actions-col">
-                                <a href="medecin-edit.php?id=<?= $rdv['idRDV'] ?>" class="btn btn-outline"><i class="bi bi-pencil"></i> Gérer</a>
+                                <?php if($rdv['idFiche']): ?>
+                                    <a href="../ficherdv/medecin-edit.php?id=<?= $rdv['idFiche'] ?>" class="btn btn-primary" style="background-color: var(--navy);"><i class="bi bi-eye"></i> Voir la fiche</a>
+                                <?php else: ?>
+                                    <a href="../ficherdv/medecin-create.php?idRDV=<?= $rdv['idRDV'] ?>" class="btn btn-primary"><i class="bi bi-file-earmark-plus"></i> Créer une fiche</a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -245,7 +253,7 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
                 </table>
             </div>
             
-            <?php if ($total_pages > 1): ?>
+            <?php if ($total_pages >= 1): ?>
             <div class="pagination">
                 <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>" 
                    class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">

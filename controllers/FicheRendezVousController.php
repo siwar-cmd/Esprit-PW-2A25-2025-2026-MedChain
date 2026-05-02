@@ -28,6 +28,26 @@ class FicheRendezVousController {
         }
     }
 
+    public function getFicheById($idFiche): ?array {
+        try {
+            $sql = 'SELECT f.*, r.dateHeureDebut, r.statut, r.typeConsultation, r.motif, 
+                           u1.nom as patient_nom, u1.prenom as patient_prenom, u1.email as patient_email,
+                           u2.nom as medecin_nom, u2.prenom as medecin_prenom 
+                    FROM ficherendezvous f 
+                    JOIN rendezvous r ON f.idRDV = r.idRDV 
+                    LEFT JOIN utilisateur u1 ON r.idClient = u1.id_utilisateur 
+                    LEFT JOIN utilisateur u2 ON r.idMedecin = u2.id_utilisateur 
+                    WHERE f.idFiche = ?';
+            $req = $this->pdo->prepare($sql);
+            $req->execute([$idFiche]);
+            $fiche = $req->fetch(PDO::FETCH_ASSOC);
+            return $fiche ?: null;
+        } catch (Exception $e) {
+            error_log("Erreur getFicheById: " . $e->getMessage());
+            return null;
+        }
+    }
+
     public function createFiche($data): array {
         try {
             if (empty($data['idRDV'])) {
@@ -39,8 +59,8 @@ class FicheRendezVousController {
                 return ["success" => false, "message" => "Une fiche existe déjà pour ce rendez-vous"];
             }
 
-            $sql = 'INSERT INTO ficherendezvous (idRDV, dateGeneration, piecesAApporter, consignesAvantConsultation, tarifConsultation, modeRemboursement, emailEnvoye, calendrierAjoute, antecedents, allergies, motifPrincipal, modeConsultation, statutPaiement) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            $sql = 'INSERT INTO ficherendezvous (idRDV, dateGeneration, piecesAApporter, consignesAvantConsultation, tarifConsultation, modeRemboursement, emailEnvoye, calendrierAjoute, antecedents, allergies, motifPrincipal, modeConsultation, statutPaiement, tensionArterielle, poids, taille, temperature, examenClinique, diagnostic, prescription, examensComplementaires, observations, prochainRDV) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
             $req = $this->pdo->prepare($sql);
             $success = $req->execute([
                 $data['idRDV'],
@@ -55,7 +75,17 @@ class FicheRendezVousController {
                 htmlspecialchars($data['allergies'] ?? ''),
                 htmlspecialchars($data['motifPrincipal'] ?? ''),
                 htmlspecialchars($data['modeConsultation'] ?? 'Présentiel'),
-                htmlspecialchars($data['statutPaiement'] ?? 'En attente')
+                htmlspecialchars($data['statutPaiement'] ?? 'En attente'),
+                htmlspecialchars($data['tensionArterielle'] ?? ''),
+                $data['poids'] ?? null,
+                $data['taille'] ?? null,
+                $data['temperature'] ?? null,
+                htmlspecialchars($data['examenClinique'] ?? ''),
+                htmlspecialchars($data['diagnostic'] ?? ''),
+                htmlspecialchars($data['prescription'] ?? ''),
+                htmlspecialchars($data['examensComplementaires'] ?? ''),
+                htmlspecialchars($data['observations'] ?? ''),
+                $data['prochainRDV'] ?? null
             ]);
 
             if ($success) {
@@ -73,7 +103,7 @@ class FicheRendezVousController {
             $updates = [];
             $params = [];
             
-            $allowedFields = ['piecesAApporter', 'consignesAvantConsultation', 'tarifConsultation', 'modeRemboursement', 'emailEnvoye', 'calendrierAjoute', 'antecedents', 'allergies', 'motifPrincipal', 'modeConsultation', 'statutPaiement'];
+            $allowedFields = ['piecesAApporter', 'consignesAvantConsultation', 'tarifConsultation', 'modeRemboursement', 'emailEnvoye', 'calendrierAjoute', 'antecedents', 'allergies', 'motifPrincipal', 'modeConsultation', 'statutPaiement', 'tensionArterielle', 'poids', 'taille', 'temperature', 'examenClinique', 'diagnostic', 'prescription', 'examensComplementaires', 'observations', 'prochainRDV'];
             foreach ($allowedFields as $field) {
                 if (isset($data[$field])) {
                     $updates[] = "$field = ?";

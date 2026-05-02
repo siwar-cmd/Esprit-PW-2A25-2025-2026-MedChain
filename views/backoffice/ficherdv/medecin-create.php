@@ -48,7 +48,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'allergies' => $_POST['allergies'] ?? '',
             'motifPrincipal' => $motifPrincipal,
             'modeConsultation' => $_POST['modeConsultation'] ?? 'Présentiel',
-            'statutPaiement' => $_POST['statutPaiement'] ?? 'En attente'
+            'statutPaiement' => $_POST['statutPaiement'] ?? 'En attente',
+            'tensionArterielle' => $_POST['tensionArterielle'] ?? '',
+            'poids' => $_POST['poids'] !== '' ? (float)$_POST['poids'] : null,
+            'taille' => $_POST['taille'] !== '' ? (int)$_POST['taille'] : null,
+            'temperature' => $_POST['temperature'] !== '' ? (float)$_POST['temperature'] : null,
+            'examenClinique' => $_POST['examenClinique'] ?? '',
+            'diagnostic' => $_POST['diagnostic'] ?? '',
+            'prescription' => $_POST['prescription'] ?? '',
+            'examensComplementaires' => $_POST['examensComplementaires'] ?? '',
+            'observations' => $_POST['observations'] ?? '',
+            'prochainRDV' => $_POST['prochainRDV'] !== '' ? $_POST['prochainRDV'] : null
         ];
 
         $result = $ficheController->createFiche($data);
@@ -63,17 +73,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Récupérer les RDVs du médecin qui n'ont pas encore de fiche
+// Récupérer l'ID du rendez-vous depuis l'URL
+$idRDV_get = $_GET['idRDV'] ?? null;
+
+if (!$idRDV_get) {
+    header('Location: ../rendezvous/medecin-index.php');
+    exit;
+}
+
+// Vérifier que le RDV appartient au médecin et n'a pas encore de fiche
 $stmt = $pdo->prepare("
     SELECT r.idRDV, r.dateHeureDebut, u.nom, u.prenom 
     FROM rendezvous r 
     JOIN utilisateur u ON r.idClient = u.id_utilisateur 
     LEFT JOIN ficherendezvous f ON r.idRDV = f.idRDV 
-    WHERE r.idMedecin = ? AND f.idFiche IS NULL 
-    ORDER BY r.dateHeureDebut DESC
+    WHERE r.idRDV = ? AND r.idMedecin = ? AND f.idFiche IS NULL
 ");
-$stmt->execute([$userId]);
-$rdvs_disponibles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt->execute([$idRDV_get, $userId]);
+$rdv_info = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$rdv_info) {
+    // Soit le RDV n'existe pas, soit il n'appartient pas au médecin, soit il a déjà une fiche
+    $_SESSION['error_message'] = "Rendez-vous invalide ou fiche déjà existante.";
+    header('Location: ../rendezvous/medecin-index.php');
+    exit;
+}
 
 $stats = $rdvController->getStats('medecin', $userId);
 ?>
@@ -200,16 +224,12 @@ $stats = $rdvController->getStats('medecin', $userId);
         <div class="card">
             <form method="POST" action="">
                 <div class="form-group">
-                    <label>Rendez-vous concerné <span style="color:red">*</span></label>
-                    <select name="idRDV" class="form-control <?= isset($errors['idRDV']) ? 'is-invalid' : '' ?>">
-                        <option value="">-- Sélectionner un rendez-vous --</option>
-                        <?php foreach($rdvs_disponibles as $rdv): ?>
-                            <option value="<?= $rdv['idRDV'] ?>" <?= (isset($_POST['idRDV']) && $_POST['idRDV'] == $rdv['idRDV']) ? 'selected' : '' ?>>
-                                <?= date('d/m/Y H:i', strtotime($rdv['dateHeureDebut'])) ?> - <?= htmlspecialchars($rdv['nom'] . ' ' . $rdv['prenom']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <?php if(isset($errors['idRDV'])): ?><span class="field-error"><?= $errors['idRDV'] ?></span><?php endif; ?>
+                    <label>Rendez-vous concerné</label>
+                    <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--gray-200); color: var(--navy); font-weight: 600;">
+                        <i class="bi bi-calendar-event" style="margin-right: 8px; color: var(--green);"></i>
+                        <?= date('d/m/Y H:i', strtotime($rdv_info['dateHeureDebut'])) ?> - <?= htmlspecialchars($rdv_info['nom'] . ' ' . $rdv_info['prenom']) ?>
+                    </div>
+                    <input type="hidden" name="idRDV" value="<?= $rdv_info['idRDV'] ?>">
                 </div>
 
                 <div class="form-group">
@@ -221,6 +241,46 @@ $stats = $rdvController->getStats('medecin', $userId);
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                   <div class="form-group"><label>Antécédents</label><input type="text" name="antecedents" class="form-control" placeholder="ex: Diabète type 2"></div>
                   <div class="form-group"><label>Allergies</label><input type="text" name="allergies" class="form-control" placeholder="ex: Pénicilline"></div>
+                </div>
+
+                <div style="background: var(--green-pale); padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(29,158,117,0.1);">
+                    <h3 style="font-size: 16px; color: var(--green-dark); margin-bottom: 15px; font-family: 'Syne', sans-serif;"><i class="bi bi-activity"></i> Constantes Vitales</h3>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
+                        <div class="form-group" style="margin-bottom:0;"><label>Tension Artérielle</label><input type="text" name="tensionArterielle" class="form-control" placeholder="ex: 12/8"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Poids (kg)</label><input type="number" step="0.1" name="poids" class="form-control" placeholder="ex: 75.5"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Taille (cm)</label><input type="number" name="taille" class="form-control" placeholder="ex: 175"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Température (°C)</label><input type="number" step="0.1" name="temperature" class="form-control" placeholder="ex: 37.2"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Examen Clinique</label>
+                    <textarea name="examenClinique" class="form-control" rows="3" placeholder="Notes sur l'examen physique..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Diagnostic / Hypothèse</label>
+                    <textarea name="diagnostic" class="form-control" rows="2" placeholder="Conclusion médicale..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Prescription / Traitement</label>
+                    <textarea name="prescription" class="form-control" rows="3" placeholder="Médicaments, doses, durée..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Examens complémentaires demandés</label>
+                    <input type="text" name="examensComplementaires" class="form-control" placeholder="ex: Radio thorax, Bilan sanguin complet">
+                </div>
+
+                <div class="form-group">
+                    <label>Observations & Notes</label>
+                    <textarea name="observations" class="form-control" rows="2" placeholder="Remarques additionnelles..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Prochain rendez-vous recommandé</label>
+                    <input type="date" name="prochainRDV" class="form-control">
                 </div>
 
                 <div class="form-group">
@@ -263,7 +323,7 @@ $stats = $rdvController->getStats('medecin', $userId);
 
                 <div style="display: flex; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--gray-200);">
                     <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Créer la fiche</button>
-                    <a href="medecin-index.php" class="btn btn-secondary">Annuler</a>
+                    <a href="../rendezvous/medecin-index.php" class="btn btn-secondary">Annuler</a>
                 </div>
             </form>
         </div>

@@ -62,7 +62,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'allergies' => $_POST['allergies'] ?? '',
             'motifPrincipal' => $motifPrincipal,
             'modeConsultation' => $_POST['modeConsultation'] ?? 'Présentiel',
-            'statutPaiement' => $_POST['statutPaiement'] ?? 'En attente'
+            'statutPaiement' => $_POST['statutPaiement'] ?? 'En attente',
+            'tensionArterielle' => $_POST['tensionArterielle'] ?? '',
+            'poids' => $_POST['poids'] !== '' ? (float)$_POST['poids'] : null,
+            'taille' => $_POST['taille'] !== '' ? (int)$_POST['taille'] : null,
+            'temperature' => $_POST['temperature'] !== '' ? (float)$_POST['temperature'] : null,
+            'examenClinique' => $_POST['examenClinique'] ?? '',
+            'diagnostic' => $_POST['diagnostic'] ?? '',
+            'prescription' => $_POST['prescription'] ?? '',
+            'examensComplementaires' => $_POST['examensComplementaires'] ?? '',
+            'observations' => $_POST['observations'] ?? '',
+            'prochainRDV' => $_POST['prochainRDV'] !== '' ? $_POST['prochainRDV'] : null
         ];
 
         $result = $ficheController->updateFiche($idFiche, $data);
@@ -227,6 +237,46 @@ $stats = $rdvController->getStats('medecin', $userId);
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                   <div class="form-group"><label>Antécédents</label><input type="text" name="antecedents" class="form-control" value="<?= htmlspecialchars($fiche['antecedents'] ?? '') ?>"></div>
                   <div class="form-group"><label>Allergies</label><input type="text" name="allergies" class="form-control" value="<?= htmlspecialchars($fiche['allergies'] ?? '') ?>"></div>
+                </div>
+
+                <div style="background: var(--green-pale); padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(29,158,117,0.1);">
+                    <h3 style="font-size: 16px; color: var(--green-dark); margin-bottom: 15px; font-family: 'Syne', sans-serif;"><i class="bi bi-activity"></i> Constantes Vitales</h3>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
+                        <div class="form-group" style="margin-bottom:0;"><label>Tension Artérielle</label><input type="text" name="tensionArterielle" class="form-control" value="<?= htmlspecialchars($fiche['tensionArterielle'] ?? '') ?>"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Poids (kg)</label><input type="number" step="0.1" name="poids" class="form-control" value="<?= htmlspecialchars($fiche['poids'] ?? '') ?>"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Taille (cm)</label><input type="number" name="taille" class="form-control" value="<?= htmlspecialchars($fiche['taille'] ?? '') ?>"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Température (°C)</label><input type="number" step="0.1" name="temperature" class="form-control" value="<?= htmlspecialchars($fiche['temperature'] ?? '') ?>"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Examen Clinique</label>
+                    <textarea name="examenClinique" class="form-control" rows="3"><?= htmlspecialchars($fiche['examenClinique'] ?? '') ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Diagnostic / Hypothèse</label>
+                    <textarea name="diagnostic" class="form-control" rows="2"><?= htmlspecialchars($fiche['diagnostic'] ?? '') ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Prescription / Traitement</label>
+                    <textarea name="prescription" class="form-control" rows="3"><?= htmlspecialchars($fiche['prescription'] ?? '') ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Examens complémentaires demandés</label>
+                    <input type="text" name="examensComplementaires" class="form-control" value="<?= htmlspecialchars($fiche['examensComplementaires'] ?? '') ?>">
+                </div>
+
+                <div class="form-group">
+                    <label>Observations & Notes</label>
+                    <textarea name="observations" class="form-control" rows="2"><?= htmlspecialchars($fiche['observations'] ?? '') ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Prochain rendez-vous recommandé</label>
+                    <input type="date" name="prochainRDV" class="form-control" value="<?= $fiche['prochainRDV'] ?? '' ?>">
                 </div>
 
                 <div class="form-group">

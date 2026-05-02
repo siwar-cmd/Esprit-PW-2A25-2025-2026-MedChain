@@ -298,7 +298,7 @@ function escape_data($data) { return htmlspecialchars($data ?? '', ENT_QUOTES, '
                 </table>
             </div>
 
-            <?php if ($total_pages > 1): ?>
+            <?php if ($total_pages >= 1): ?>
             <div class="pagination">
                 <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>&role=<?= urlencode($role_filter) ?>&statut=<?= urlencode($statut_filter) ?>" 
                    class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">

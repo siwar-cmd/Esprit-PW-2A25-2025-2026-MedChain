@@ -474,7 +474,7 @@ $editUserUrl = 'admin-edit-user.php';
                         </table>
                     </div>
 
-                    <?php if ($total_pages > 1): ?>
+                    <?php if ($total_pages >= 1): ?>
                     <div class="pagination mb-4">
                         <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>&role=<?= urlencode($role_filter) ?>&statut=<?= urlencode($statut_filter) ?>" 
                            class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">

@@ -16,6 +16,16 @@ class FicheRendezVous
     private $motifPrincipal;
     private $modeConsultation;
     private $statutPaiement;
+    private $tensionArterielle;
+    private $poids;
+    private $taille;
+    private $temperature;
+    private $examenClinique;
+    private $diagnostic;
+    private $prescription;
+    private $examensComplementaires;
+    private $observations;
+    private $prochainRDV;
 
     public function __construct(
         $idRDV = null,
@@ -31,7 +41,17 @@ class FicheRendezVous
         $allergies = null,
         $motifPrincipal = null,
         $modeConsultation = 'Présentiel',
-        $statutPaiement = 'En attente'
+        $statutPaiement = 'En attente',
+        $tensionArterielle = null,
+        $poids = null,
+        $taille = null,
+        $temperature = null,
+        $examenClinique = null,
+        $diagnostic = null,
+        $prescription = null,
+        $examensComplementaires = null,
+        $observations = null,
+        $prochainRDV = null
     ) {
         $this->idFiche = $idFiche;
         $this->idRDV = $idRDV;
@@ -47,6 +67,16 @@ class FicheRendezVous
         $this->motifPrincipal = $motifPrincipal;
         $this->modeConsultation = $modeConsultation;
         $this->statutPaiement = $statutPaiement;
+        $this->tensionArterielle = $tensionArterielle;
+        $this->poids = $poids;
+        $this->taille = $taille;
+        $this->temperature = $temperature;
+        $this->examenClinique = $examenClinique;
+        $this->diagnostic = $diagnostic;
+        $this->prescription = $prescription;
+        $this->examensComplementaires = $examensComplementaires;
+        $this->observations = $observations;
+        $this->prochainRDV = $prochainRDV;
     }
 
     // Getters
@@ -64,6 +94,16 @@ class FicheRendezVous
     public function getMotifPrincipal() { return $this->motifPrincipal; }
     public function getModeConsultation() { return $this->modeConsultation; }
     public function getStatutPaiement() { return $this->statutPaiement; }
+    public function getTensionArterielle() { return $this->tensionArterielle; }
+    public function getPoids() { return $this->poids; }
+    public function getTaille() { return $this->taille; }
+    public function getTemperature() { return $this->temperature; }
+    public function getExamenClinique() { return $this->examenClinique; }
+    public function getDiagnostic() { return $this->diagnostic; }
+    public function getPrescription() { return $this->prescription; }
+    public function getExamensComplementaires() { return $this->examensComplementaires; }
+    public function getObservations() { return $this->observations; }
+    public function getProchainRDV() { return $this->prochainRDV; }
 
     // Setters
     public function setIdFiche($idFiche) { $this->idFiche = $idFiche; return $this; }
@@ -80,6 +120,16 @@ class FicheRendezVous
     public function setMotifPrincipal($motifPrincipal) { $this->motifPrincipal = $motifPrincipal; return $this; }
     public function setModeConsultation($modeConsultation) { $this->modeConsultation = $modeConsultation; return $this; }
     public function setStatutPaiement($statutPaiement) { $this->statutPaiement = $statutPaiement; return $this; }
+    public function setTensionArterielle($tensionArterielle) { $this->tensionArterielle = $tensionArterielle; return $this; }
+    public function setPoids($poids) { $this->poids = $poids; return $this; }
+    public function setTaille($taille) { $this->taille = $taille; return $this; }
+    public function setTemperature($temperature) { $this->temperature = $temperature; return $this; }
+    public function setExamenClinique($examenClinique) { $this->examenClinique = $examenClinique; return $this; }
+    public function setDiagnostic($diagnostic) { $this->diagnostic = $diagnostic; return $this; }
+    public function setPrescription($prescription) { $this->prescription = $prescription; return $this; }
+    public function setExamensComplementaires($examensComplementaires) { $this->examensComplementaires = $examensComplementaires; return $this; }
+    public function setObservations($observations) { $this->observations = $observations; return $this; }
+    public function setProchainRDV($prochainRDV) { $this->prochainRDV = $prochainRDV; return $this; }
 
     public function toArray() {
         return [
@@ -96,7 +146,17 @@ class FicheRendezVous
             'allergies' => $this->allergies,
             'motifPrincipal' => $this->motifPrincipal,
             'modeConsultation' => $this->modeConsultation,
-            'statutPaiement' => $this->statutPaiement
+            'statutPaiement' => $this->statutPaiement,
+            'tensionArterielle' => $this->tensionArterielle,
+            'poids' => $this->poids,
+            'taille' => $this->taille,
+            'temperature' => $this->temperature,
+            'examenClinique' => $this->examenClinique,
+            'diagnostic' => $this->diagnostic,
+            'prescription' => $this->prescription,
+            'examensComplementaires' => $this->examensComplementaires,
+            'observations' => $this->observations,
+            'prochainRDV' => $this->prochainRDV
         ];
     }
 }

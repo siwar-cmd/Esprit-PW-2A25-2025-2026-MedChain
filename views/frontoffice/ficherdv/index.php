@@ -248,6 +248,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                         <th>Consignes</th>
                         <th>Pièces à apporter</th>
                         <th style="cursor:pointer" onclick="sortTable(4, 'ficheTable')">Tarif & Remboursement <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -279,6 +280,11 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                                         -
                                     <?php endif; ?>
                                 </td>
+                                <td>
+                                    <a href="view.php?id=<?= $fiche['idFiche'] ?>" class="btn btn-secondary" style="padding: 5px 12px; font-size: 13px;">
+                                        <i class="bi bi-eye"></i> Voir
+                                    </a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -286,7 +292,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
             </table>
         </div>
 
-        <?php if ($total_pages > 1): ?>
+        <?php if ($total_pages >= 1): ?>
         <div class="pagination">
             <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>" 
                class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">

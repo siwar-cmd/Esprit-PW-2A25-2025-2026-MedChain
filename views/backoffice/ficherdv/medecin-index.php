@@ -166,7 +166,6 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                 <p>Vue Médecin</p>
             </div>
             <div>
-                <a href="medecin-create.php" class="btn btn-primary me-2"><i class="bi bi-plus-lg"></i> Nouvelle Fiche</a>
                 <button onclick="window.print()" class="btn btn-secondary"><i class="bi bi-file-pdf"></i> Exporter PDF</button>
             </div>
         </div>
@@ -228,6 +227,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                             <td><?= htmlspecialchars($fiche['patient_nom'] . ' ' . $fiche['patient_prenom']) ?></td>
                             <td><?= $fiche['tarifConsultation'] ? $fiche['tarifConsultation'] . ' TND' : '-' ?></td>
                             <td class="actions-col" style="display: flex; gap: 5px;">
+                                <a href="medecin-view.php?id=<?= $fiche['idFiche'] ?>" class="btn btn-outline" style="border-color: var(--navy); color: var(--navy);"><i class="bi bi-eye"></i></a>
                                 <a href="medecin-edit.php?id=<?= $fiche['idFiche'] ?>" class="btn btn-outline"><i class="bi bi-pencil"></i></a>
                                 <form method="POST" style="display:inline;" onsubmit="confirmSwal(event, this, '')">
                                     <input type="hidden" name="delete_id" value="<?= $fiche['idFiche'] ?>">
@@ -245,7 +245,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                 </table>
             </div>
             
-            <?php if ($total_pages > 1): ?>
+            <?php if ($total_pages >= 1): ?>
             <div class="pagination">
                 <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>" 
                    class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">

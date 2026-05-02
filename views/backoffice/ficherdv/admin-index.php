@@ -239,7 +239,7 @@ $paginated_fiches = array_slice($fiches, $offset, $items_per_page);
                 </table>
             </div>
             
-            <?php if ($total_pages > 1): ?>
+            <?php if ($total_pages >= 1): ?>
             <div class="pagination">
                 <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>" 
                    class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">

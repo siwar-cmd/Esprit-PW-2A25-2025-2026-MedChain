@@ -18,10 +18,11 @@ class RendezVousController {
 
     public function getAllRendezVous($filters = [], $role = 'admin', $userId = null): array {
         try {
-            $sql = 'SELECT r.*, u1.nom as client_nom, u1.prenom as client_prenom, u2.nom as medecin_nom, u2.prenom as medecin_prenom 
+            $sql = 'SELECT r.*, u1.nom as client_nom, u1.prenom as client_prenom, u2.nom as medecin_nom, u2.prenom as medecin_prenom, f.idFiche 
                     FROM rendezvous r 
                     LEFT JOIN utilisateur u1 ON r.idClient = u1.id_utilisateur 
                     LEFT JOIN utilisateur u2 ON r.idMedecin = u2.id_utilisateur 
+                    LEFT JOIN ficherendezvous f ON r.idRDV = f.idRDV
                     WHERE 1=1';
             $params = [];
             
