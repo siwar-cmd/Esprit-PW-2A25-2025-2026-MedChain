@@ -28,6 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['motifPrincipal'] = "Le motif principal est obligatoire.";
     }
 
+    $prochainRDV = $_POST['prochainRDV'] ?? '';
+    if (!empty($prochainRDV)) {
+        $currentRDVDate = date('Y-m-d', strtotime($rdv_info['dateHeureDebut']));
+        if ($prochainRDV <= $currentRDVDate) {
+            $errors['prochainRDV'] = "La date du prochain rendez-vous doit être ultérieure à celle d'aujourd'hui.";
+        }
+    }
+
     if (empty($errors)) {
         $consignes = $_POST['consignes'] ?? [];
         if (!empty($_POST['autre_consigne'])) {
@@ -268,7 +276,10 @@ $stats = $rdvController->getStats('medecin', $userId);
 
                 <div class="form-group">
                     <label>Prochain rendez-vous recommandé</label>
-                    <input type="date" name="prochainRDV" class="form-control">
+                    <input type="date" name="prochainRDV" class="form-control <?= isset($errors['prochainRDV']) ? 'is-invalid' : '' ?>" 
+                           min="<?= date('Y-m-d', strtotime($rdv_info['dateHeureDebut'] . ' +1 day')) ?>"
+                           value="<?= htmlspecialchars($_POST['prochainRDV'] ?? '') ?>">
+                    <?php if(isset($errors['prochainRDV'])): ?><span class="field-error"><?= $errors['prochainRDV'] ?></span><?php endif; ?>
                 </div>
 
                 <div class="form-group">
