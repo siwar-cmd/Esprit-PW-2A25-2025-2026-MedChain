@@ -174,6 +174,25 @@ $stats = $rdvController->getStats('medecin', $userId);
         .alert-error { background: #FEF2F2; color: #EF4444; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #EF4444; display: flex; align-items: center; gap: 10px; }
         .field-error { color: #EF4444; font-size: 12px; margin-top: 6px; font-weight: 500; }
         .is-invalid { border-color: #EF4444 !important; }
+
+        /* BMI & Alert Styles */
+        .bmi-container { margin-top: 15px; padding: 12px; border-radius: 10px; display: none; align-items: center; gap: 12px; transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.05); }
+        .bmi-badge { padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; text-transform: uppercase; color: white; }
+        .bmi-value { font-weight: 800; font-size: 18px; color: var(--navy); }
+        .bmi-label { font-size: 13px; font-weight: 500; }
+        
+        .bmi-maigreur { background: #eff6ff; border-color: #bfdbfe; }
+        .bmi-maigreur .bmi-badge { background: #3b82f6; }
+        .bmi-normal { background: #f0fdf4; border-color: #bbf7d0; }
+        .bmi-normal .bmi-badge { background: #22c55e; }
+        .bmi-surpoids { background: #fffbeb; border-color: #fef3c7; }
+        .bmi-surpoids .bmi-badge { background: #f59e0b; }
+        .bmi-obesite { background: #fef2f2; border-color: #fecaca; }
+        .bmi-obesite .bmi-badge { background: #ef4444; }
+
+        .critical-alert { margin-top: 8px; color: #ef4444; font-size: 11px; font-weight: 700; display: none; align-items: center; gap: 4px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .input-critical { border-color: #ef4444 !important; background-color: #fff1f2 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important; }
     </style>
 </head>
 <body>
@@ -245,10 +264,30 @@ $stats = $rdvController->getStats('medecin', $userId);
                 <div style="background: var(--green-pale); padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(29,158,117,0.1);">
                     <h3 style="font-size: 16px; color: var(--green-dark); margin-bottom: 15px; font-family: 'Syne', sans-serif;"><i class="bi bi-activity"></i> Constantes Vitales</h3>
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
-                        <div class="form-group" style="margin-bottom:0;"><label>Tension Artérielle</label><input type="text" name="tensionArterielle" class="form-control" placeholder="ex: 12/8"></div>
-                        <div class="form-group" style="margin-bottom:0;"><label>Poids (kg)</label><input type="number" step="0.1" name="poids" class="form-control" placeholder="ex: 75.5"></div>
-                        <div class="form-group" style="margin-bottom:0;"><label>Taille (cm)</label><input type="number" name="taille" class="form-control" placeholder="ex: 175"></div>
-                        <div class="form-group" style="margin-bottom:0;"><label>Température (°C)</label><input type="number" step="0.1" name="temperature" class="form-control" placeholder="ex: 37.2"></div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Tension Artérielle</label>
+                            <input type="text" id="tensionArterielle" name="tensionArterielle" class="form-control" placeholder="ex: 12/8">
+                            <div id="tension-alert" class="critical-alert"><i class="bi bi-exclamation-octagon-fill"></i> Tension trop élevée !</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Poids (kg)</label>
+                            <input type="number" step="0.1" id="poids" name="poids" class="form-control" placeholder="ex: 75.5">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Taille (cm)</label>
+                            <input type="number" id="taille" name="taille" class="form-control" placeholder="ex: 175">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Température (°C)</label>
+                            <input type="number" step="0.1" id="temperature" name="temperature" class="form-control" placeholder="ex: 37.2">
+                            <div id="temp-alert" class="critical-alert"><i class="bi bi-thermometer-high"></i> Fièvre détectée !</div>
+                        </div>
+                    </div>
+                    
+                    <div id="bmi-display" class="bmi-container">
+                        <span class="bmi-badge" id="bmi-status">Normal</span>
+                        <span class="bmi-value" id="bmi-val">--.-</span>
+                        <span class="bmi-label" id="bmi-text">Complétez le poids et la taille pour calculer l'IMC.</span>
                     </div>
                 </div>
 
@@ -310,9 +349,106 @@ $stats = $rdvController->getStats('medecin', $userId);
     </main>
 </div>
 <script>
-    document.getElementById('autre_consigne').addEventListener('input', function() {
-        document.getElementById('check_autre').checked = (this.value.trim() !== '');
-    });
+    const autreConsigne = document.getElementById('autre_consigne');
+    if (autreConsigne) {
+        autreConsigne.addEventListener('input', function() {
+            const checkAutre = document.getElementById('check_autre');
+            if (checkAutre) checkAutre.checked = (this.value.trim() !== '');
+        });
+    }
+
+    // --- Analyse Intelligente des Constantes ---
+    const inputPoids = document.getElementById('poids');
+    const inputTaille = document.getElementById('taille');
+    const inputTemp = document.getElementById('temperature');
+    const inputTension = document.getElementById('tensionArterielle');
+
+    const bmiDisplay = document.getElementById('bmi-display');
+    const bmiVal = document.getElementById('bmi-val');
+    const bmiStatus = document.getElementById('bmi-status');
+    const bmiText = document.getElementById('bmi-text');
+
+    const tempAlert = document.getElementById('temp-alert');
+    const tensionAlert = document.getElementById('tension-alert');
+
+    function calculateBMI() {
+        if (!inputPoids || !inputTaille || !bmiDisplay) return;
+        
+        const poids = parseFloat(inputPoids.value);
+        const taille = parseFloat(inputTaille.value) / 100; // cm to m
+
+        if (poids > 0 && taille > 0) {
+            const imc = (poids / (taille * taille)).toFixed(1);
+            bmiVal.innerText = imc;
+            bmiDisplay.style.display = 'flex';
+            
+            bmiDisplay.classList.remove('bmi-maigreur', 'bmi-normal', 'bmi-surpoids', 'bmi-obesite');
+            
+            if (imc < 18.5) {
+                bmiStatus.innerText = "Maigreur";
+                bmiText.innerText = "Le patient est en insuffisance pondérale.";
+                bmiDisplay.classList.add('bmi-maigreur');
+            } else if (imc < 25) {
+                bmiStatus.innerText = "Normal";
+                bmiText.innerText = "L'indice de masse corporelle est normal.";
+                bmiDisplay.classList.add('bmi-normal');
+            } else if (imc < 30) {
+                bmiStatus.innerText = "Surpoids";
+                bmiText.innerText = "Le patient est en surpoids.";
+                bmiDisplay.classList.add('bmi-surpoids');
+            } else {
+                bmiStatus.innerText = "Obésité";
+                bmiText.innerText = "Le patient est en état d'obésité.";
+                bmiDisplay.classList.add('bmi-obesite');
+            }
+        } else {
+            bmiDisplay.style.display = 'none';
+        }
+    }
+
+    function checkThresholds() {
+        if (!inputTemp || !inputTension) return;
+
+        // Température
+        const temp = parseFloat(inputTemp.value);
+        if (temp >= 39) {
+            inputTemp.classList.add('input-critical');
+            if (tempAlert) tempAlert.style.display = 'flex';
+        } else {
+            inputTemp.classList.remove('input-critical');
+            if (tempAlert) tempAlert.style.display = 'none';
+        }
+
+        // Tension
+        const tensionValue = inputTension.value.trim();
+        const tensionMatch = tensionValue.match(/^(\d+)[/](\d+)$/);
+        if (tensionMatch) {
+            let systolique = parseInt(tensionMatch[1]);
+            let diastolique = parseInt(tensionMatch[2]);
+            if (systolique < 30) systolique *= 10;
+            if (diastolique < 20) diastolique *= 10;
+
+            if (systolique >= 140 || diastolique >= 90) {
+                inputTension.classList.add('input-critical');
+                if (tensionAlert) tensionAlert.style.display = 'flex';
+            } else {
+                inputTension.classList.remove('input-critical');
+                if (tensionAlert) tensionAlert.style.display = 'none';
+            }
+        } else {
+            inputTension.classList.remove('input-critical');
+            if (tensionAlert) tensionAlert.style.display = 'none';
+        }
+    }
+
+    if (inputPoids) inputPoids.addEventListener('input', calculateBMI);
+    if (inputTaille) inputTaille.addEventListener('input', calculateBMI);
+    if (inputTemp) inputTemp.addEventListener('input', checkThresholds);
+    if (inputTension) inputTension.addEventListener('input', checkThresholds);
+
+    // Initialisation
+    calculateBMI();
+    checkThresholds();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/projet/views/assets/js/swal-utils.js"></script>
