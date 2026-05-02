@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS `rendezvous` (
   `motif` text DEFAULT NULL,
   `idClient` int(11) NOT NULL,
   `idMedecin` int(11) NOT NULL,
+  `rappel_envoye` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`idRDV`),
   KEY `fk_client` (`idClient`),
   KEY `fk_medecin` (`idMedecin`),
@@ -37,6 +38,7 @@ CREATE TABLE IF NOT EXISTS `ficherendezvous` (
   `examensComplementaires` text DEFAULT NULL,
   `observations` text DEFAULT NULL,
   `prochainRDV` date DEFAULT NULL,
+  `rappel_prochain_rdv_envoye` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`idFiche`),
   UNIQUE KEY `fk_rdv` (`idRDV`),
   CONSTRAINT `fk_rdv` FOREIGN KEY (`idRDV`) REFERENCES `rendezvous` (`idRDV`) ON DELETE CASCADE

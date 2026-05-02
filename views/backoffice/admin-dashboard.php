@@ -13,6 +13,20 @@ $success_message = $_SESSION['success_message'] ?? null;
 $error_message = $_SESSION['error_message'] ?? null;
 unset($_SESSION['success_message'], $_SESSION['error_message']);
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['trigger_notifications'])) {
+    require_once __DIR__ . '/../../controllers/NotificationController.php';
+    $notifController = new NotificationController();
+    $res1 = $notifController->sendAppointmentReminders();
+    $res2 = $notifController->sendFollowUpNotifications();
+    
+    if ($res1['success'] && $res2['success']) {
+        $totalSent = $res1['sent'] + $res2['sent'];
+        $success_message = "Traitement terminé : $totalSent notifications envoyées.";
+    } else {
+        $error_message = "Une erreur est survenue lors du traitement.";
+    }
+}
+
 $stats = $dashboardData['stats'] ?? [];
 $recentUsers = $dashboardData['recentUsers'] ?? [];
 
@@ -354,6 +368,11 @@ function formatDate($dateString) {
             <a href="admin-users.php" class="quick-action"><div class="quick-action-icon"><i class="bi bi-people-fill"></i></div><span>Gérer utilisateurs</span></a>
             <a href="admin-reports-statistics.php" class="quick-action"><div class="quick-action-icon"><i class="bi bi-graph-up"></i></div><span>Statistiques</span></a>
             <a href="../frontoffice/auth/profile.php" class="quick-action"><div class="quick-action-icon"><i class="bi bi-person-circle"></i></div><span>Mon profil</span></a>
+            <form method="POST" class="quick-action" style="cursor:pointer; border-style: solid; background: #fffbeb;" onclick="this.submit()">
+                <input type="hidden" name="trigger_notifications" value="1">
+                <div class="quick-action-icon" style="background: #f59e0b;"><i class="bi bi-bell-fill"></i></div>
+                <span>Lancer les rappels</span>
+            </form>
         </div>
         
         <div class="dashboard-actions">
