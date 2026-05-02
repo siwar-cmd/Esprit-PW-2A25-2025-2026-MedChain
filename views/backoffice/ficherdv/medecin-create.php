@@ -99,6 +99,7 @@ if (!$rdv_info) {
 }
 
 $stats = $rdvController->getStats('medecin', $userId);
+$documents = $rdvController->getDocumentsByRDV($idRDV_get);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -175,6 +176,17 @@ $stats = $rdvController->getStats('medecin', $userId);
         .field-error { color: #EF4444; font-size: 12px; margin-top: 6px; font-weight: 500; }
         .is-invalid { border-color: #EF4444 !important; }
 
+        /* Documents Styles */
+        .doc-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 15px; }
+        .doc-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: white; border: 1px solid var(--gray-200); border-radius: 10px; text-decoration: none; color: var(--navy); transition: all 0.2s; }
+        .doc-item:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .doc-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .doc-icon-pdf { background: #fee2e2; color: #ef4444; }
+        .doc-icon-img { background: #e0f2fe; color: #0ea5e9; }
+        .doc-info { overflow: hidden; }
+        .doc-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .doc-date { font-size: 11px; color: var(--gray-500); }
+
         /* BMI & Alert Styles */
         .bmi-container { margin-top: 15px; padding: 12px; border-radius: 10px; display: none; align-items: center; gap: 12px; transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.05); }
         .bmi-badge { padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; text-transform: uppercase; color: white; }
@@ -249,6 +261,28 @@ $stats = $rdvController->getStats('medecin', $userId);
                     </div>
                     <input type="hidden" name="idRDV" value="<?= $rdv_info['idRDV'] ?>">
                 </div>
+
+                <?php if (!empty($documents)): ?>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--gray-200);">
+                    <h3 style="font-size: 15px; color: var(--navy); margin-bottom: 12px; font-family: 'Syne', sans-serif;"><i class="bi bi-folder2-open" style="color: var(--green);"></i> Documents partagés par le patient</h3>
+                    <div class="doc-list">
+                        <?php foreach ($documents as $doc): ?>
+                            <?php 
+                                $isPdf = str_contains($doc['typeFichier'], 'pdf');
+                                $iconClass = $isPdf ? 'doc-icon-pdf' : 'doc-icon-img';
+                                $icon = $isPdf ? 'bi-file-earmark-pdf-fill' : 'bi-file-earmark-image-fill';
+                            ?>
+                            <a href="/projet/<?= $doc['cheminFichier'] ?>" target="_blank" class="doc-item">
+                                <div class="doc-icon <?= $iconClass ?>"><i class="bi <?= $icon ?>"></i></div>
+                                <div class="doc-info">
+                                    <span class="doc-name"><?= htmlspecialchars($doc['nomFichier']) ?></span>
+                                    <span class="doc-date"><?= date('d/m/Y', strtotime($doc['dateUpload'])) ?></span>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <div class="form-group">
                     <label>Motif principal <span style="color:red">*</span></label>

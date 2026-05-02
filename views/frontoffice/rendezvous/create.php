@@ -125,6 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .page-title { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--navy); margin-bottom: 20px; }
     .btn-mc { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; box-shadow: 0 3px 12px rgba(29,158,117,.30); transition: all .25s; }
     .btn-mc:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(29,158,117,.40); color: white; }
+    
+    .border-dashed { border: 2px dashed var(--gray-200) !important; }
+    .upload-zone { transition: all 0.2s; }
+    .upload-zone:hover { border-color: var(--green) !important; background-color: var(--green-pale) !important; }
   </style>
 </head>
 <body>
@@ -203,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="alert alert-danger"><?= htmlspecialchars($errorMsg) ?></div>
         <?php endif; ?>
 
-        <form method="POST" id="rdvForm" novalidate>
+        <form method="POST" id="rdvForm" enctype="multipart/form-data" novalidate>
             <div class="mb-3">
                 <label class="form-label"><i class="bi bi-person-badge text-success me-2"></i>Médecin</label>
                 <select name="idMedecin" id="idMedecin" class="form-select <?= ($errorField === 'idMedecin') ? 'is-invalid' : '' ?>">
@@ -253,6 +257,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php if($errorField === 'motif'): ?>
                     <div class="text-danger mt-1" style="font-size:0.875em;"><?= htmlspecialchars($errorMsg) ?></div>
                 <?php endif; ?>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label"><i class="bi bi-file-earmark-arrow-up text-success me-2"></i>Documents médicaux (Analyses, Radios...)</label>
+                <div class="upload-zone p-4 text-center border-dashed rounded-3 bg-light">
+                    <input type="file" name="documents[]" id="documents" class="form-control" multiple accept=".pdf,.jpg,.jpeg,.png">
+                    <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i> Vous pouvez sélectionner plusieurs fichiers (PDF, Images).</div>
+                </div>
             </div>
 
             <div class="text-end mt-4">

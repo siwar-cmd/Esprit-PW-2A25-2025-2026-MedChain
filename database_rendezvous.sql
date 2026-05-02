@@ -42,3 +42,15 @@ CREATE TABLE IF NOT EXISTS `ficherendezvous` (
   CONSTRAINT `fk_rdv` FOREIGN KEY (`idRDV`) REFERENCES `rendezvous` (`idRDV`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Table documents_rendezvous
+CREATE TABLE IF NOT EXISTS `documents_rendezvous` (
+  `idDocument` int(11) NOT NULL AUTO_INCREMENT,
+  `idRDV` int(11) NOT NULL,
+  `nomFichier` varchar(255) NOT NULL,
+  `cheminFichier` varchar(255) NOT NULL,
+  `typeFichier` varchar(100) DEFAULT NULL,
+  `dateUpload` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`idDocument`),
+  CONSTRAINT `fk_doc_rdv` FOREIGN KEY (`idRDV`) REFERENCES `rendezvous` (`idRDV`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
