@@ -16,6 +16,11 @@ $rendezvous = $rdvData['success'] ? $rdvData['rdvs'] : [];
 
 $stats = $rdvController->getStats('admin');
 
+// Detection AJAX pour recherche dynamique
+if (isset($_GET['ajax'])) {
+    ob_start();
+}
+
 // Pagination Logic
 $items_per_page = 5;
 $total_items = count($rendezvous);
@@ -138,6 +143,7 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
         .page-link.active { background: var(--green); color: white; border-color: var(--green); }
         .page-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div class="dashboard-container">
@@ -211,6 +217,7 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
                     <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
                 </form>
             </div>
+            <div id="dynamic-content">
             <div class="card-body">
                 <table class="table" id="rdvTable">
                     <thead>
@@ -256,32 +263,84 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
                 </a>
             </div>
             <?php endif; ?>
+            </div>
         </div>
     </main>
 </div>
 
 <script>
+let searchTimeout;
 function filterTable() {
-    var input, filter, table, tr, td, i, txtValue;
-    input = document.getElementById("searchInput");
-    filter = input.value.toUpperCase();
-    table = document.getElementById("rdvTable");
-    tr = table.getElementsByTagName("tr");
-
-        for (i = 1; i < tr.length; i++) {
-            tr[i].style.display = "none";
-            td = tr[i].getElementsByTagName("td");
-            for (var j = 0; j < td.length; j++) {
-                if (td[j]) {
-                    txtValue = td[j].textContent || td[j].innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                        break;
-                    }
+    clearTimeout(searchTimeout);
+    const searchInput = document.getElementById('searchInput');
+    const searchValue = searchInput.value;
+    
+    var filter = searchValue.toUpperCase();
+    var table = document.getElementById("rdvTable");
+    var tr = table.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
+        tr[i].style.display = "none";
+        var td = tr[i].getElementsByTagName("td");
+        for (var j = 0; j < td.length; j++) {
+            if (td[j]) {
+                if ((td[j].textContent || td[j].innerText).toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                    break;
                 }
             }
         }
     }
+
+    searchTimeout = setTimeout(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('search', searchValue);
+        url.searchParams.set('ajax', '1');
+        url.searchParams.set('page', '1');
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.getElementById('dynamic-content');
+                if (newContent) {
+                    document.getElementById('dynamic-content').innerHTML = newContent.innerHTML;
+                    const pushUrl = new URL(window.location.href);
+                    pushUrl.searchParams.set('search', searchValue);
+                    pushUrl.searchParams.set('page', '1');
+                    window.history.pushState({}, '', pushUrl);
+                }
+            });
+    }, 500);
+}
+
+function confirmDelete(form) {
+    Swal.fire({
+        title: 'Êtes-vous sûr ?',
+        text: "Cette action est irréversible !",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#1D9E75',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Oui, supprimer !',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+    return false;
+}
+
+<?php if (isset($_SESSION['success_message'])): ?>
+    Swal.fire('Succès', '<?= addslashes($_SESSION['success_message']) ?>', 'success');
+    <?php unset($_SESSION['success_message']); ?>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['error_message'])): ?>
+    Swal.fire('Erreur', '<?= addslashes($_SESSION['error_message']) ?>', 'error');
+    <?php unset($_SESSION['error_message']); ?>
+<?php endif; ?>
 
 function sortTable(n, tableId) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
@@ -322,5 +381,11 @@ function sortTable(n, tableId) {
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/projet/views/assets/js/swal-utils.js"></script>
+<?php
+if (isset($_GET['ajax'])) {
+    echo ob_get_clean();
+    exit;
+}
+?>
 </body>
 </html>

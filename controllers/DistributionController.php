@@ -21,7 +21,7 @@ class DistributionController {
 
     public function getAllDistributions($filters = []): array {
         try {
-            $sql = 'SELECT d.*, lm.nom_medicament 
+            $sql = 'SELECT d.*, lm.nom_medicament, d.statut 
                     FROM distribution d 
                     JOIN lot_medicament lm ON d.id_lot = lm.id_lot 
                     WHERE 1=1';
@@ -35,7 +35,25 @@ class DistributionController {
                 $params[] = $searchTerm;
             }
             
-            $sql .= ' ORDER BY d.date_distribution DESC';
+            $allowedSorts = [
+                'date' => 'd.date_distribution',
+                'medicament' => 'lm.nom_medicament',
+                'quantite' => 'd.quantite_distribuee',
+                'patient' => 'd.patient',
+                'responsable' => 'd.responsable',
+                'statut' => 'd.statut'
+            ];
+            
+            $sortField = $filters['sort'] ?? 'date';
+            $sortDir = strtoupper($filters['dir'] ?? 'DESC');
+            if (!in_array($sortDir, ['ASC', 'DESC'])) $sortDir = 'DESC';
+            
+            $orderBy = $allowedSorts['date'] . ' DESC';
+            if (isset($allowedSorts[$sortField])) {
+                $orderBy = $allowedSorts[$sortField] . ' ' . $sortDir;
+            }
+            
+            $sql .= ' ORDER BY ' . $orderBy;
             
             $req = $this->pdo->prepare($sql);
             $req->execute($params);
@@ -91,8 +109,8 @@ class DistributionController {
                 return ["success" => false, "message" => "Quantité insuffisante dans le lot. Restant: " . $lot['quantite_restante'], "field" => "quantite_distribuee"];
             }
             
-            $sql = 'INSERT INTO distribution (id_lot, date_distribution, quantite_distribuee, patient, responsable) 
-                    VALUES (?, ?, ?, ?, ?)';
+            $sql = "INSERT INTO distribution (id_lot, date_distribution, quantite_distribuee, patient, responsable, statut) 
+                    VALUES (?, ?, ?, ?, ?, 'En attente')";
             $req = $this->pdo->prepare($sql);
             $success = $req->execute([
                 $data['id_lot'],
@@ -117,6 +135,10 @@ class DistributionController {
             $distribution = $this->getDistributionById($id);
             if (!$distribution) {
                 return ["success" => false, "message" => "Distribution non trouvée"];
+            }
+
+            if ($distribution['statut'] !== 'En attente') {
+                return ["success" => false, "message" => "Impossible de modifier une distribution déjà traitée (" . $distribution['statut'] . ")."];
             }
             
             if (isset($data['quantite_distribuee'])) {
@@ -175,6 +197,10 @@ class DistributionController {
             if (!$distribution) {
                 return ["success" => false, "message" => "Distribution non trouvée"];
             }
+
+            if ($distribution['statut'] === 'Accepte') {
+                return ["success" => false, "message" => "Impossible de supprimer une distribution déjà acceptée."];
+            }
             
             $req = $this->pdo->prepare("DELETE FROM distribution WHERE id_distribution = ?");
             $success = $req->execute([$id]);
@@ -184,6 +210,35 @@ class DistributionController {
             }
             
             return ["success" => false, "message" => "Erreur lors de la suppression"];
+        } catch (Exception $e) {
+            return ["success" => false, "message" => "Erreur: " . $e->getMessage()];
+        }
+    }
+
+    public function updateStatus($id, $status): array {
+        try {
+            $allowedStatus = ['Accepte', 'Rejete', 'En attente'];
+            if (!in_array($status, $allowedStatus)) {
+                return ["success" => false, "message" => "Statut invalide"];
+            }
+
+            // Si on accepte, vérifier que le stock est toujours suffisant
+            if ($status === 'Accepte') {
+                $dist = $this->getDistributionById($id);
+                $lot = $this->lotController->getLotMedicamentById($dist['id_lot']);
+                if ($dist['quantite_distribuee'] > $lot['quantite_restante']) {
+                    return ["success" => false, "message" => "Impossible d'accepter : stock insuffisant (" . $lot['quantite_restante'] . " restants)."];
+                }
+            }
+
+            $sql = "UPDATE distribution SET statut = ? WHERE id_distribution = ?";
+            $req = $this->pdo->prepare($sql);
+            $success = $req->execute([$status, $id]);
+
+            if ($success) {
+                return ["success" => true, "message" => "Statut mis à jour avec succès : " . $status];
+            }
+            return ["success" => false, "message" => "Erreur lors de la mise à jour du statut"];
         } catch (Exception $e) {
             return ["success" => false, "message" => "Erreur: " . $e->getMessage()];
         }

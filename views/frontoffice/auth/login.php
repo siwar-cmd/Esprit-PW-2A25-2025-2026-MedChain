@@ -10,7 +10,7 @@ if ($authController->isLoggedIn()) {
     if ($currentUser && $currentUser->estAdmin()) {
         header('Location: ../../backoffice/admin-dashboard.php');
     } elseif ($currentUser && $currentUser->getRole() === 'medecin') {
-        header('Location: ../../backoffice/rendezvous/medecin-index.php');
+        header('Location: profile.php');
     } else {
         header('Location: profile.php');
     }
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($user->estAdmin()) {
                     header('Location: ../../backoffice/admin-dashboard.php');
                 } elseif ($user->getRole() === 'medecin') {
-                    header('Location: ../../backoffice/rendezvous/medecin-index.php');
+                    header('Location: profile.php');
                 } else {
                     header('Location: profile.php');
                 }

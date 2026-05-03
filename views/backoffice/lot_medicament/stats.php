@@ -31,17 +31,9 @@ foreach ($lotsData as $lot) {
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../components/admin.css">
     <style>
-        :root {
-            --green: #1D9E75;
-            --navy: #1E3A52;
-            --gray-200: #E5E7EB;
-            --white: #ffffff;
-            --radius-md: 12px;
-            --radius-lg: 20px;
-        }
-        body { font-family: 'DM Sans', sans-serif; background: #f0faf6; padding: 40px; }
-        .container { max-width: 900px; margin: 0 auto; background: var(--white); padding: 30px; border-radius: var(--radius-lg); box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+        .stats-container { max-width: 900px; margin: 0 auto; background: var(--white); padding: 30px; border-radius: var(--radius-lg); box-shadow: 0 4px 16px rgba(0,0,0,.08); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         h1 { color: var(--navy); font-family: 'Syne', sans-serif; }
         .btn { padding: 10px 20px; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
@@ -56,7 +48,10 @@ foreach ($lotsData as $lot) {
     </style>
 </head>
 <body>
-    <div class="container">
+<div class="dashboard-container">
+    <?php include '../components/sidebar-admin.php'; ?>
+    <main class="dashboard-main">
+        <div class="stats-container">
         <div class="header">
             <h1>Statistiques des Lots de Médicaments</h1>
             <div>
@@ -121,5 +116,8 @@ foreach ($lotsData as $lot) {
             }
         });
     </script>
+        </div>
+    </main>
+</div>
 </body>
 </html>

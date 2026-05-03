@@ -34,17 +34,9 @@ $quantites = array_values($aggregatedData);
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../components/medecin.css">
     <style>
-        :root {
-            --green: #1D9E75;
-            --navy: #1E3A52;
-            --gray-200: #E5E7EB;
-            --white: #ffffff;
-            --radius-md: 12px;
-            --radius-lg: 20px;
-        }
-        body { font-family: 'DM Sans', sans-serif; background: #f0faf6; padding: 40px; }
-        .container { max-width: 900px; margin: 0 auto; background: var(--white); padding: 30px; border-radius: var(--radius-lg); box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+        .stats-container { max-width: 900px; margin: 0 auto; background: var(--white); padding: 30px; border-radius: var(--radius-lg); box-shadow: 0 4px 16px rgba(0,0,0,.08); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         h1 { color: var(--navy); font-family: 'Syne', sans-serif; }
         .btn { padding: 10px 20px; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
@@ -56,10 +48,41 @@ $quantites = array_values($aggregatedData);
         .card h3 { font-size: 24px; color: var(--navy); margin-bottom: 5px; }
         .card p { color: #64748B; font-size: 14px; }
         .chart-container { position: relative; height: 400px; width: 100%; margin-top: 20px; }
+        
+        .pdf-header { display: none; }
+
+        @media print {
+            .dashboard-sidebar, .btn, .header div { display: none !important; }
+            .dashboard-container { display: block; }
+            .dashboard-main { padding: 0; background: white; }
+            .stats-container { box-shadow: none; border: none; padding: 0; }
+            .pdf-header { 
+                display: flex; justify-content: space-between; align-items: center; 
+                margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid #1D9E75;
+            }
+            .pdf-logo { display: flex; align-items: center; gap: 15px; }
+            .pdf-logo-icon { width: 50px; height: 50px; background: #1D9E75; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
+            .pdf-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: #1E3A52; }
+            .pdf-meta { text-align: right; font-size: 12px; color: #6B7280; line-height: 1.6; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+<div class="dashboard-container">
+    <?php include '../components/sidebar-medecin.php'; ?>
+    <main class="dashboard-main">
+        <div class="pdf-header">
+            <div class="pdf-logo">
+                <div class="pdf-logo-icon"><i class="fas fa-hospital-alt"></i></div>
+                <div class="pdf-title">MedChain</div>
+            </div>
+            <div class="pdf-meta">
+                Date: <?= date('d/m/Y') ?><br>
+                Généré par MedChain System<br>
+                Rapport Statistique des Distributions
+            </div>
+        </div>
+        <div class="stats-container">
         <div class="header">
             <h1>Statistiques des Distributions</h1>
             <div>
@@ -123,5 +146,8 @@ $quantites = array_values($aggregatedData);
             }
         });
     </script>
+        </div>
+    </main>
+</div>
 </body>
 </html>

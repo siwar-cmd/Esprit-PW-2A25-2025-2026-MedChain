@@ -18,12 +18,10 @@ class LotMedicamentController {
 
     public function getAllLotMedicaments($filters = []): array {
         try {
-            // Requête pour récupérer les lots et calculer dynamiquement la quantité restante
-            $sql = 'SELECT lm.*, 
-                           (lm.quantite_initial - COALESCE(SUM(d.quantite_distribuee), 0)) as quantite_restante 
+            $sql = "SELECT lm.*, 
+                           (lm.quantite_initial - COALESCE((SELECT SUM(quantite_distribuee) FROM distribution d WHERE d.id_lot = lm.id_lot AND d.statut = 'Accepte'), 0)) as quantite_restante 
                     FROM lot_medicament lm 
-                    LEFT JOIN distribution d ON lm.id_lot = d.id_lot 
-                    WHERE 1=1';
+                    WHERE 1=1";
             $params = [];
             
             if (!empty($filters['search'])) {
@@ -33,7 +31,23 @@ class LotMedicamentController {
                 $params[] = $searchTerm;
             }
             
-            $sql .= ' GROUP BY lm.id_lot ORDER BY lm.date_expiration ASC';
+            $allowedSorts = [
+                'nom' => 'lm.nom_medicament',
+                'type' => 'lm.type_medicament',
+                'expiration' => 'lm.date_expiration',
+                'initial' => 'lm.quantite_initial',
+                'restante' => 'quantite_restante'
+            ];
+            
+            $sortField = $filters['sort'] ?? 'expiration';
+            $sortDir = strtoupper($filters['dir'] ?? 'ASC');
+            if (!in_array($sortDir, ['ASC', 'DESC'])) $sortDir = 'ASC';
+
+            $orderBy = $allowedSorts['expiration'] . ' ASC';
+            if (isset($allowedSorts[$sortField])) {
+                $orderBy = $allowedSorts[$sortField] . ' ' . $sortDir;
+            }
+            $sql .= ' ORDER BY ' . $orderBy;
             
             $req = $this->pdo->prepare($sql);
             $req->execute($params);
@@ -52,12 +66,10 @@ class LotMedicamentController {
 
     public function getLotMedicamentById($id): ?array {
         try {
-            $sql = 'SELECT lm.*, 
-                           (lm.quantite_initial - COALESCE(SUM(d.quantite_distribuee), 0)) as quantite_restante 
+            $sql = "SELECT lm.*, 
+                           (lm.quantite_initial - COALESCE((SELECT SUM(quantite_distribuee) FROM distribution d WHERE d.id_lot = lm.id_lot AND d.statut = 'Accepte'), 0)) as quantite_restante 
                     FROM lot_medicament lm 
-                    LEFT JOIN distribution d ON lm.id_lot = d.id_lot 
-                    WHERE lm.id_lot = ?
-                    GROUP BY lm.id_lot';
+                    WHERE lm.id_lot = ?";
             $req = $this->pdo->prepare($sql);
             $req->execute([$id]);
             $lot = $req->fetch(PDO::FETCH_ASSOC);
@@ -77,12 +89,12 @@ class LotMedicamentController {
                 }
             }
 
-            if ($data['date_fabrication'] > $data['date_expiration']) {
-                return ["success" => false, "message" => "La date de fabrication ne peut pas être postérieure à la date d'expiration.", "field" => "date_fabrication"];
+            if (strtotime($data['date_expiration']) <= strtotime($data['date_fabrication'])) {
+                return ["success" => false, "message" => "La date de fabrication ne peut pas etre posterieure a la date d expiration.", "field" => "date_fabrication"];
             }
 
             if ($data['quantite_initial'] <= 0) {
-                return ["success" => false, "message" => "La quantité initiale doit être supérieure à zéro.", "field" => "quantite_initial"];
+                return ["success" => false, "message" => "La quantite initiale doit etre superieure a zero.", "field" => "quantite_initial"];
             }
             
             $sql = 'INSERT INTO lot_medicament (nom_medicament, type_medicament, date_fabrication, date_expiration, quantite_initial, description) 
@@ -98,10 +110,10 @@ class LotMedicamentController {
             ]);
             
             if ($success) {
-                return ["success" => true, "message" => "Lot de médicament créé avec succès"];
+                return ["success" => true, "message" => "Lot de medicament cree avec succes"];
             }
             
-            return ["success" => false, "message" => "Erreur lors de la création du lot de médicament"];
+            return ["success" => false, "message" => "Erreur lors de la creation du lot de medicament"];
         } catch (Exception $e) {
             return ["success" => false, "message" => "Erreur: " . $e->getMessage()];
         }
@@ -109,9 +121,13 @@ class LotMedicamentController {
 
     public function updateLotMedicament($id, $data): array {
         try {
+            if (isset($data['date_expiration'], $data['date_fabrication']) && strtotime($data['date_expiration']) <= strtotime($data['date_fabrication'])) {
+                return ["success" => false, "message" => "La date de fabrication ne peut pas etre posterieure a la date d expiration.", "field" => "date_fabrication"];
+            }
+
             $lot = $this->getLotMedicamentById($id);
             if (!$lot) {
-                return ["success" => false, "message" => "Lot non trouvé"];
+                return ["success" => false, "message" => "Lot non trouve"];
             }
             
             $updates = [];
@@ -121,12 +137,10 @@ class LotMedicamentController {
             foreach ($allowedFields as $field) {
                 if (isset($data[$field])) {
                     $updates[] = "$field = ?";
-                    // Ensure dates and ints are properly formatted
                     if ($field === 'quantite_initial') {
-                        // verify that new initial quantity is not less than already distributed quantity
                         $distribuee = $lot['quantite_initial'] - $lot['quantite_restante'];
                         if ((int)$data[$field] < $distribuee) {
-                            return ["success" => false, "message" => "La quantité initiale ne peut pas être inférieure à la quantité déjà distribuée ($distribuee).", "field" => "quantite_initial"];
+                            return ["success" => false, "message" => "La quantite initiale ne peut pas etre inferieure a la quantite deja distribuee ($distribuee).", "field" => "quantite_initial"];
                         }
                         $params[] = (int)$data[$field];
                     } else {
@@ -136,7 +150,7 @@ class LotMedicamentController {
             }
             
             if (empty($updates)) {
-                return ["success" => false, "message" => "Aucune donnée à mettre à jour"];
+                return ["success" => false, "message" => "Aucune donnee a mettre a jour"];
             }
             
             $params[] = $id;
@@ -146,10 +160,10 @@ class LotMedicamentController {
             $success = $req->execute($params);
             
             if ($success) {
-                return ["success" => true, "message" => "Lot mis à jour avec succès"];
+                return ["success" => true, "message" => "Lot mis a jour avec succes"];
             }
             
-            return ["success" => false, "message" => "Erreur lors de la mise à jour"];
+            return ["success" => false, "message" => "Erreur lors de la mise a jour"];
         } catch (Exception $e) {
             return ["success" => false, "message" => "Erreur: " . $e->getMessage()];
         }
@@ -159,14 +173,14 @@ class LotMedicamentController {
         try {
             $lot = $this->getLotMedicamentById($id);
             if (!$lot) {
-                return ["success" => false, "message" => "Lot non trouvé"];
+                return ["success" => false, "message" => "Lot non trouve"];
             }
             
             $req = $this->pdo->prepare("DELETE FROM lot_medicament WHERE id_lot = ?");
             $success = $req->execute([$id]);
             
             if ($success) {
-                return ["success" => true, "message" => "Lot supprimé avec succès"];
+                return ["success" => true, "message" => "Lot supprime avec succes"];
             }
             
             return ["success" => false, "message" => "Erreur lors de la suppression"];
@@ -177,20 +191,16 @@ class LotMedicamentController {
 
     public function getStats(): array {
         try {
-            // Total Lots
             $req = $this->pdo->query("SELECT COUNT(*) as total FROM lot_medicament");
             $total = $req->fetch(PDO::FETCH_ASSOC)['total'];
 
-            // Total Quantité Initiale
             $req = $this->pdo->query("SELECT SUM(quantite_initial) as sum_initial FROM lot_medicament");
             $sum_initial = $req->fetch(PDO::FETCH_ASSOC)['sum_initial'] ?? 0;
 
-            // Total Quantité Restante
-            $sql = "SELECT SUM(lm.quantite_initial - COALESCE((SELECT SUM(quantite_distribuee) FROM distribution d WHERE d.id_lot = lm.id_lot), 0)) as sum_restante FROM lot_medicament lm";
+            $sql = "SELECT SUM(lm.quantite_initial - COALESCE((SELECT SUM(quantite_distribuee) FROM distribution d WHERE d.id_lot = lm.id_lot AND d.statut = 'Accepte'), 0)) as sum_restante FROM lot_medicament lm";
             $req = $this->pdo->query($sql);
             $sum_restante = $req->fetch(PDO::FETCH_ASSOC)['sum_restante'] ?? 0;
 
-            // Lots expirés
             $req = $this->pdo->query("SELECT COUNT(*) as expires FROM lot_medicament WHERE date_expiration < CURRENT_DATE()");
             $expires = $req->fetch(PDO::FETCH_ASSOC)['expires'];
 

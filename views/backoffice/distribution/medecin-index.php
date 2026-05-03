@@ -22,9 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 $search = $_GET['search'] ?? '';
-$filters = ['search' => $search];
+$sort = $_GET['sort'] ?? 'date';
+$dir = $_GET['dir'] ?? 'DESC';
+$filters = ['search' => $search, 'sort' => $sort, 'dir' => $dir];
 $distData = $distController->getAllDistributions($filters);
 $distributions = $distData['success'] ? $distData['distributions'] : [];
+
+// Detection AJAX pour recherche dynamique
+if (isset($_GET['ajax'])) {
+    ob_start();
+}
 
 $stats = $distController->getStats();
 
@@ -111,13 +118,35 @@ $paginated_dist = array_slice($distributions, $offset, $items_per_page);
         .btn-stats { background: linear-gradient(135deg, var(--green), var(--navy)); color: white; border: none; }
         .alert-success { background: #DCFCE7; color: #16A34A; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .alert-error { background: #FEF2F2; color: #EF4444; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        @media print { .dashboard-sidebar, .search-form, .btn, .actions-col { display: none !important; } .dashboard-container { display: block; } .dashboard-main { padding: 0; } }
+        .pdf-header { display: none; }
+
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge-waiting { background: #FEF3C7; color: #92400E; }
+        .badge-success { background: #DCFCE7; color: #16A34A; }
+        .badge-danger { background: #FEF2F2; color: #EF4444; }
+
+        @media print { 
+            .dashboard-sidebar, .search-form, .btn, .actions-col { display: none !important; } 
+            .dashboard-container { display: block; } 
+            .dashboard-main { padding: 0; background: white; } 
+            .card { border: none; box-shadow: none; }
+            .pdf-header { 
+                display: flex; justify-content: space-between; align-items: center; 
+                margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--green);
+            }
+            .pdf-logo { display: flex; align-items: center; gap: 15px; }
+            .pdf-logo-icon { width: 50px; height: 50px; background: var(--green); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
+            .pdf-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--navy); }
+            .pdf-meta { text-align: right; font-size: 12px; color: var(--gray-500); line-height: 1.6; }
+            .table th { background: var(--green) !important; color: white !important; -webkit-print-color-adjust: exact; }
+        }
         .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 24px; padding: 0 20px 20px; }
         .page-link { padding: 8px 16px; border-radius: 8px; background: white; border: 1px solid var(--gray-200); color: var(--navy); text-decoration: none; transition: 0.3s; font-weight: 500; font-size: 13px; }
         .page-link:hover { border-color: var(--green); color: var(--green); }
         .page-link.active { background: var(--green); color: white; border-color: var(--green); }
         .page-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div class="dashboard-container">
@@ -181,44 +210,79 @@ $paginated_dist = array_slice($distributions, $offset, $items_per_page);
             <div class="alert-error"><?= $_SESSION['error_message']; unset($_SESSION['error_message']); ?></div>
         <?php endif; ?>
 
+        <div class="pdf-header">
+            <div class="pdf-logo">
+                <div class="pdf-logo-icon"><i class="fas fa-hospital-alt"></i></div>
+                <div class="pdf-title">MedChain</div>
+            </div>
+            <div class="pdf-meta">
+                Date: <?= date('d/m/Y') ?><br>
+                Généré par MedChain System<br>
+                Rapport des Distributions
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-header">
                 <h2>Liste des distributions</h2>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <form class="search-form" method="GET">
+                    <form class="search-form" method="GET" style="display:flex; gap:10px;">
+                        <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
+                        <input type="hidden" name="dir" value="<?= htmlspecialchars($dir) ?>">
                         <input type="text" name="search" id="searchInput" class="search-input" placeholder="Rechercher patient, lot..." value="<?= htmlspecialchars($search) ?>" onkeyup="filterTable()">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
                     </form>
                 </div>
             </div>
+            <div id="dynamic-content">
             <div class="card-body">
                 <table class="table" id="dataTable">
                     <thead>
+                        <?php
+                        function sortLink($field, $label, $currentSort, $currentDir, $search) {
+                            $nextDir = ($currentSort === $field && $currentDir === 'ASC') ? 'DESC' : 'ASC';
+                            $icon = '';
+                            if ($currentSort === $field) {
+                                $icon = $currentDir === 'ASC' ? ' <i class="bi bi-sort-up"></i>' : ' <i class="bi bi-sort-down"></i>';
+                            }
+                            return "<a href='?sort=$field&dir=$nextDir&search=" . urlencode($search) . "' style='text-decoration:none; color:inherit;'>$label$icon</a>";
+                        }
+                        ?>
                         <tr>
-                            <th style="cursor:pointer" onclick="sortTable(0, 'dataTable')">Date <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(1, 'dataTable')">Lot (Médicament) <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(2, 'dataTable')">Quantité <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(3, 'dataTable')">Patient <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(4, 'dataTable')">Responsable <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
+                            <th><?= sortLink('date', 'Date', $sort, $dir, $search) ?></th>
+                            <th><?= sortLink('medicament', 'Lot de Médicament', $sort, $dir, $search) ?></th>
+                            <th><?= sortLink('quantite', 'Qté', $sort, $dir, $search) ?></th>
+                            <th><?= sortLink('patient', 'Patient', $sort, $dir, $search) ?></th>
+                            <th><?= sortLink('responsable', 'Responsable', $sort, $dir, $search) ?></th>
+                            <th><?= sortLink('statut', 'Statut', $sort, $dir, $search) ?></th>
                             <th class="actions-col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach($paginated_dist as $dist): ?>
+                        <?php foreach($paginated_dist as $dist): 
+                            $badgeClass = 'badge-waiting';
+                            if ($dist['statut'] === 'Accepte') $badgeClass = 'badge-success';
+                            if ($dist['statut'] === 'Rejete') $badgeClass = 'badge-danger';
+                        ?>
                         <tr>
                             <td><?= date('d/m/Y', strtotime($dist['date_distribution'])) ?></td>
                             <td><?= htmlspecialchars($dist['nom_medicament']) ?></td>
                             <td><strong><?= htmlspecialchars($dist['quantite_distribuee']) ?></strong></td>
                             <td><?= htmlspecialchars($dist['patient']) ?></td>
                             <td><?= htmlspecialchars($dist['responsable']) ?></td>
+                            <td><span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($dist['statut']) ?></span></td>
                             <td class="actions-col">
                                 <div style="display:flex; gap: 8px;">
-                                    <a href="edit.php?id=<?= $dist['id_distribution'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
-                                    <form method="POST" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer cette distribution ?');">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="id_distribution" value="<?= $dist['id_distribution'] ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
-                                    </form>
+                                    <?php if ($dist['statut'] === 'En attente'): ?>
+                                        <a href="edit.php?id=<?= $dist['id_distribution'] ?>" class="btn btn-warning btn-sm" title="Modifier"><i class="bi bi-pencil"></i></a>
+                                        <form method="POST" style="display:inline;" onsubmit="return confirmDelete(this);">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="id_distribution" value="<?= $dist['id_distribution'] ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Annuler"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    <?php else: ?>
+                                        <span style="font-size:11px; color:var(--gray-500); font-style:italic;">Verrouillé</span>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -239,59 +303,90 @@ $paginated_dist = array_slice($distributions, $offset, $items_per_page);
                 <a href="?page=<?= $current_page + 1 ?>&search=<?= urlencode($search) ?>" class="page-link <?= $current_page >= $total_pages ? 'disabled' : '' ?>"><i class="bi bi-chevron-right"></i></a>
             </div>
             <?php endif; ?>
+            </div>
         </div>
     </main>
 </div>
 
 <script>
+let searchTimeout;
 function filterTable() {
-    var input, filter, table, tr, td, i, txtValue;
-    input = document.getElementById("searchInput");
-    filter = input.value.toUpperCase();
-    table = document.getElementById("dataTable");
-    tr = table.getElementsByTagName("tr");
-
-    for (i = 1; i < tr.length; i++) {
+    clearTimeout(searchTimeout);
+    const searchInput = document.getElementById('searchInput');
+    const searchValue = searchInput.value;
+    
+    var filter = searchValue.toUpperCase();
+    var table = document.getElementById("dataTable");
+    var tr = table.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
         tr[i].style.display = "none";
-        td = tr[i].getElementsByTagName("td");
+        var td = tr[i].getElementsByTagName("td");
         for (var j = 0; j < td.length - 1; j++) {
             if (td[j]) {
-                txtValue = td[j].textContent || td[j].innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                if ((td[j].textContent || td[j].innerText).toUpperCase().indexOf(filter) > -1) {
                     tr[i].style.display = "";
                     break;
                 }
             }
         }
     }
+
+    searchTimeout = setTimeout(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('search', searchValue);
+        url.searchParams.set('ajax', '1');
+        url.searchParams.set('page', '1');
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.getElementById('dynamic-content');
+                if (newContent) {
+                    document.getElementById('dynamic-content').innerHTML = newContent.innerHTML;
+                    const pushUrl = new URL(window.location.href);
+                    pushUrl.searchParams.set('search', searchValue);
+                    pushUrl.searchParams.set('page', '1');
+                    window.history.pushState({}, '', pushUrl);
+                }
+            });
+    }, 500);
 }
 
-function sortTable(n, tableId) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-    table = document.getElementById(tableId);
-    switching = true;
-    dir = "asc"; 
-    while (switching) {
-        switching = false;
-        rows = table.rows;
-        for (i = 1; i < (rows.length - 1); i++) {
-            shouldSwitch = false;
-            x = rows[i].getElementsByTagName("TD")[n];
-            y = rows[i + 1].getElementsByTagName("TD")[n];
-            if (dir == "asc") {
-                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) { shouldSwitch = true; break; }
-            } else if (dir == "desc") {
-                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) { shouldSwitch = true; break; }
-            }
+function confirmDelete(form) {
+    Swal.fire({
+        title: 'Êtes-vous sûr ?',
+        text: "Cette action est irréversible !",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#1D9E75',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Oui, supprimer !',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
         }
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true; switchcount ++;
-        } else {
-            if (switchcount == 0 && dir == "asc") { dir = "desc"; switching = true; }
-        }
-    }
+    });
+    return false;
 }
+
+<?php if (isset($_SESSION['success_message'])): ?>
+    Swal.fire('Succès', '<?= addslashes($_SESSION['success_message']) ?>', 'success');
+    <?php unset($_SESSION['success_message']); ?>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['error_message'])): ?>
+    Swal.fire('Erreur', '<?= addslashes($_SESSION['error_message']) ?>', 'error');
+    <?php unset($_SESSION['error_message']); ?>
+<?php endif; ?>
 </script>
+<?php
+if (isset($_GET['ajax'])) {
+    echo ob_get_clean();
+    exit;
+}
+?>
 </body>
 </html>

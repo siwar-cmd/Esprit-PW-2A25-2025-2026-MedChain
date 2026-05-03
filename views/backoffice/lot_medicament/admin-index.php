@@ -22,9 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 $search = $_GET['search'] ?? '';
-$filters = ['search' => $search];
+$sort = $_GET['sort'] ?? 'expiration';
+$dir = $_GET['dir'] ?? 'ASC';
+$filters = ['search' => $search, 'sort' => $sort, 'dir' => $dir];
 $lotData = $lotController->getAllLotMedicaments($filters);
 $lots = $lotData['success'] ? $lotData['lots'] : [];
+
+// Detection AJAX pour recherche dynamique
+if (isset($_GET['ajax'])) {
+    ob_start();
+}
 
 $stats = $lotController->getStats();
 
@@ -132,6 +139,8 @@ $paginated_lots = array_slice($lots, $offset, $items_per_page);
         .btn-warning { background: #F59E0B; color: white; }
         .btn-sm { padding: 6px 12px; font-size: 12px; }
 
+        .pdf-header { display: none; }
+
         @media print {
             .dashboard-sidebar, .search-form, .btn, .actions-col { display: none !important; }
             .dashboard-container { display: block; }
@@ -143,6 +152,7 @@ $paginated_lots = array_slice($lots, $offset, $items_per_page);
         .page-link.active { background: var(--green); color: white; border-color: var(--green); }
         .page-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div class="dashboard-container">
@@ -198,17 +208,9 @@ $paginated_lots = array_slice($lots, $offset, $items_per_page);
             </div>
         </div>
 
-        <?php if (isset($_SESSION['success_message'])): ?>
-            <script>Swal.fire('Succès', '<?= $_SESSION['success_message'] ?>', 'success');</script>
-            <?php unset($_SESSION['success_message']); ?>
-        <?php endif; ?>
-
-        <?php if (isset($_SESSION['error_message'])): ?>
-            <script>Swal.fire('Erreur', '<?= $_SESSION['error_message'] ?>', 'error');</script>
-            <?php unset($_SESSION['error_message']); ?>
-        <?php endif; ?>
-
-        <div class="stats-grid">
+        </div>
+    </main>
+</div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
                 <div class="stat-content"><h3><?= $stats['total_lots'] ?></h3><p>Total Lots</p></div>
@@ -223,23 +225,50 @@ $paginated_lots = array_slice($lots, $offset, $items_per_page);
             </div>
         </div>
 
+        <div class="pdf-header">
+            <div class="pdf-logo">
+                <div class="pdf-logo-icon"><i class="fas fa-hospital-alt"></i></div>
+                <div class="pdf-title">MedChain</div>
+            </div>
+            <div class="pdf-meta">
+                Date: <?= date('d/m/Y') ?><br>
+                Généré par MedChain System<br>
+                Inventaire des Lots
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-header">
                 <h2>Liste des Lots</h2>
-                <form class="search-form" method="GET">
-                    <input type="text" name="search" id="searchInput" class="search-input" placeholder="Rechercher..." value="<?= htmlspecialchars($search) ?>" onkeyup="filterTable()">
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
-                </form>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <form class="search-form" method="GET" style="display:flex; gap:10px;">
+                        <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
+                        <input type="hidden" name="dir" value="<?= htmlspecialchars($dir) ?>">
+                        <input type="text" name="search" id="searchInput" class="search-input" placeholder="Rechercher..." value="<?= htmlspecialchars($search) ?>" onkeyup="filterTable()">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                    </form>
+                </div>
             </div>
+            <div id="dynamic-content">
             <div class="card-body">
                 <table class="table" id="dataTable">
                     <thead>
+                        <?php
+                        function sortLink($field, $label, $currentSort, $currentDir, $search) {
+                            $nextDir = ($currentSort === $field && $currentDir === 'ASC') ? 'DESC' : 'ASC';
+                            $icon = '';
+                            if ($currentSort === $field) {
+                                $icon = $currentDir === 'ASC' ? ' <i class="bi bi-sort-up"></i>' : ' <i class="bi bi-sort-down"></i>';
+                            }
+                            return "<a href='?sort=$field&dir=$nextDir&search=" . urlencode($search) . "' style='text-decoration:none; color:inherit;'>$label$icon</a>";
+                        }
+                        ?>
                         <tr>
-                            <th style="cursor:pointer" onclick="sortTable(0, 'dataTable')">Médicament <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(1, 'dataTable')">Type <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(2, 'dataTable')">Expiration <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(3, 'dataTable')">Qte Initiale <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                            <th style="cursor:pointer" onclick="sortTable(4, 'dataTable')">Qte Restante <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
+                            <th><?= sortLink('nom', 'Médicament', $sort, $dir, $search) ?></th>
+                            <th><?= sortLink('type', 'Type', $sort, $dir, $search) ?></th>
+                            <th><?= sortLink('expiration', 'Expiration', $sort, $dir, $search) ?></th>
+                            <th><?= sortLink('initial', 'Qte Initiale', $sort, $dir, $search) ?></th>
+                            <th><?= sortLink('restante', 'Qte Restante', $sort, $dir, $search) ?></th>
                             <th class="actions-col">Actions</th>
                         </tr>
                     </thead>
@@ -256,10 +285,10 @@ $paginated_lots = array_slice($lots, $offset, $items_per_page);
                             <td class="actions-col">
                                 <div style="display:flex; gap: 8px;">
                                     <a href="edit.php?id=<?= $lot['id_lot'] ?>" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
-                                    <form method="POST" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce lot ?');">
+                                    <form method="POST" style="display:inline;" onsubmit="return confirmDelete(this);">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id_lot" value="<?= $lot['id_lot'] ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Supprimer"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -281,58 +310,90 @@ $paginated_lots = array_slice($lots, $offset, $items_per_page);
                 <a href="?page=<?= $current_page + 1 ?>&search=<?= urlencode($search) ?>" class="page-link <?= $current_page >= $total_pages ? 'disabled' : '' ?>"><i class="bi bi-chevron-right"></i></a>
             </div>
             <?php endif; ?>
+            </div>
         </div>
     </main>
 </div>
 
 <script>
+let searchTimeout;
 function filterTable() {
-    var input, filter, table, tr, td, i, txtValue;
-    input = document.getElementById("searchInput");
-    filter = input.value.toUpperCase();
-    table = document.getElementById("dataTable");
-    tr = table.getElementsByTagName("tr");
-    for (i = 1; i < tr.length; i++) {
+    clearTimeout(searchTimeout);
+    const searchInput = document.getElementById('searchInput');
+    const searchValue = searchInput.value;
+    
+    var filter = searchValue.toUpperCase();
+    var table = document.getElementById("dataTable");
+    var tr = table.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
         tr[i].style.display = "none";
-        td = tr[i].getElementsByTagName("td");
-        for (var j = 0; j < td.length - 1; j++) {
+        var td = tr[i].getElementsByTagName("td");
+        for (var j = 0; j < td.length; j++) {
             if (td[j]) {
-                txtValue = td[j].textContent || td[j].innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                if ((td[j].textContent || td[j].innerText).toUpperCase().indexOf(filter) > -1) {
                     tr[i].style.display = "";
                     break;
                 }
             }
         }
     }
+
+    searchTimeout = setTimeout(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('search', searchValue);
+        url.searchParams.set('ajax', '1');
+        url.searchParams.set('page', '1');
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.getElementById('dynamic-content');
+                if (newContent) {
+                    document.getElementById('dynamic-content').innerHTML = newContent.innerHTML;
+                    const pushUrl = new URL(window.location.href);
+                    pushUrl.searchParams.set('search', searchValue);
+                    pushUrl.searchParams.set('page', '1');
+                    window.history.pushState({}, '', pushUrl);
+                }
+            });
+    }, 500);
 }
 
-function sortTable(n, tableId) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-    table = document.getElementById(tableId);
-    switching = true;
-    dir = "asc"; 
-    while (switching) {
-        switching = false;
-        rows = table.rows;
-        for (i = 1; i < (rows.length - 1); i++) {
-            shouldSwitch = false;
-            x = rows[i].getElementsByTagName("TD")[n];
-            y = rows[i + 1].getElementsByTagName("TD")[n];
-            if (dir == "asc") {
-                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) { shouldSwitch = true; break; }
-            } else if (dir == "desc") {
-                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) { shouldSwitch = true; break; }
-            }
+function confirmDelete(form) {
+    Swal.fire({
+        title: 'Êtes-vous sûr ?',
+        text: "Cette action est irréversible !",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#1D9E75',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Oui, supprimer !',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
         }
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true; switchcount ++;
-        } else {
-            if (switchcount == 0 && dir == "asc") { dir = "desc"; switching = true; }
-        }
-    }
+    });
+    return false;
 }
+
+<?php if (isset($_SESSION['success_message'])): ?>
+    Swal.fire('Succès', '<?= addslashes($_SESSION['success_message']) ?>', 'success');
+    <?php unset($_SESSION['success_message']); ?>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['error_message'])): ?>
+    Swal.fire('Erreur', '<?= addslashes($_SESSION['error_message']) ?>', 'error');
+    <?php unset($_SESSION['error_message']); ?>
+<?php endif; ?>
 </script>
+<?php
+if (isset($_GET['ajax'])) {
+    echo ob_get_clean();
+    exit;
+}
+?>
 </body>
 </html>

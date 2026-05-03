@@ -8,6 +8,7 @@ class Distribution
     private $quantite_distribuee;
     private $patient;
     private $responsable;
+    private $statut;
 
     public function __construct(
         $id_lot = null,
@@ -15,6 +16,7 @@ class Distribution
         $quantite_distribuee = null,
         $patient = null,
         $responsable = null,
+        $statut = 'En attente',
         $id_distribution = null
     ) {
         $this->id_distribution = $id_distribution;
@@ -23,6 +25,7 @@ class Distribution
         $this->quantite_distribuee = $quantite_distribuee;
         $this->patient = $patient;
         $this->responsable = $responsable;
+        $this->statut = $statut;
     }
 
     // Getters
@@ -32,6 +35,7 @@ class Distribution
     public function getQuantiteDistribuee() { return $this->quantite_distribuee; }
     public function getPatient() { return $this->patient; }
     public function getResponsable() { return $this->responsable; }
+    public function getStatut() { return $this->statut; }
 
     // Setters
     public function setIdDistribution($id_distribution) { $this->id_distribution = $id_distribution; return $this; }
@@ -40,6 +44,7 @@ class Distribution
     public function setQuantiteDistribuee($quantite_distribuee) { $this->quantite_distribuee = $quantite_distribuee; return $this; }
     public function setPatient($patient) { $this->patient = $patient; return $this; }
     public function setResponsable($responsable) { $this->responsable = $responsable; return $this; }
+    public function setStatut($statut) { $this->statut = $statut; return $this; }
 
     public function toArray() {
         return [
@@ -48,7 +53,8 @@ class Distribution
             'date_distribution' => $this->date_distribution,
             'quantite_distribuee' => $this->quantite_distribuee,
             'patient' => $this->patient,
-            'responsable' => $this->responsable
+            'responsable' => $this->responsable,
+            'statut' => $this->statut
         ];
     }
 }
