@@ -805,6 +805,13 @@ $photo_url = getProfilePhotoUrl($user);
         <a href="../../backoffice/ficherdv/medecin-index.php" class="sidebar-nav-item">
           <span class="nav-icon"><i class="bi bi-file-earmark-medical"></i></span> Fiches Médicales
         </a>
+        <div class="sidebar-nav-section-label">Gestion Stock</div>
+        <a href="../../backoffice/lot_medicament/medecin-index.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="bi bi-box-seam"></i></span> Lots Médicaments
+        </a>
+        <a href="../../backoffice/distribution/medecin-index.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="bi bi-truck"></i></span> Distributions
+        </a>
         <?php endif; ?>
         <?php if ($isAdmin): ?>
         <div class="sidebar-nav-section-label">Administration</div>
@@ -822,6 +829,12 @@ $photo_url = getProfilePhotoUrl($user);
         </a>
         <a href="../../backoffice/ficherdv/admin-index.php" class="sidebar-nav-item">
           <span class="nav-icon"><i class="fas fa-file-medical-alt"></i></span> Fiches Médicales
+        </a>
+        <a href="../../backoffice/lot_medicament/admin-index.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="fas fa-pills"></i></span> Lots Médicaments
+        </a>
+        <a href="../../backoffice/distribution/admin-index.php" class="sidebar-nav-item">
+          <span class="nav-icon"><i class="fas fa-truck"></i></span> Distributions
         </a>
         <a href="../../backoffice/admin-reports-statistics.php" class="sidebar-nav-item">
           <span class="nav-icon"><i class="fas fa-chart-pie"></i></span> Statistiques
