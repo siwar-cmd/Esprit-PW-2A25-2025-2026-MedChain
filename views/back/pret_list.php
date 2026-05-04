@@ -27,6 +27,7 @@
                     <th>Patient</th>
                     <th>Object</th>
                     <th>Type</th>
+                    <th>Reason</th>
                     <th>Loan date</th>
                     <th>Return date</th>
                     <th>Status</th>
@@ -37,9 +38,10 @@
                 <?php foreach ($prets as $pret): ?>
                     <tr>
                         <td><?php echo (int) $pret['id_pret']; ?></td>
-                        <td><?php echo htmlspecialchars($pret['nom_patient'], ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?php echo htmlspecialchars($pret['patient_nom'] ?? '—', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($pret['objet_nom'], ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($pret['objet_type'], ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?php echo htmlspecialchars($pret['motif_emprunt'] ?? '—', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars(date('d/m/Y', strtotime($pret['date_pret'])), ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($pret['date_retour_effective'] ? date('d/m/Y', strtotime($pret['date_retour_effective'])) : '-', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td>

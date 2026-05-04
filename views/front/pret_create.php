@@ -21,9 +21,19 @@
         <input type="hidden" name="id_objet" value="<?php echo (int) $objet['id_objet']; ?>">
         <input type="hidden" name="date_pret" value="<?php echo htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8'); ?>">
 
+        <!-- Patient ID is now pulled from the session automatically -->
         <div class="form-group">
-            <label for="nom_patient">Patient name *</label>
-            <input type="text" id="nom_patient" name="nom_patient" value="<?php echo htmlspecialchars($_POST['nom_patient'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+            <label>Patient</label>
+            <input type="text"
+                   value="<?php echo htmlspecialchars(($_SESSION['user_prenom'] ?? '') . ' ' . ($_SESSION['user_nom'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                   disabled
+                   style="background: #e2e8f0; cursor: not-allowed;">
+            <small style="color: #64748b;">Your identity is linked automatically.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="motif_emprunt">Reason for loan (optional)</label>
+            <textarea id="motif_emprunt" name="motif_emprunt" rows="3" placeholder="E.g. Relaxation during hospital stay..."><?php echo htmlspecialchars($_POST['motif_emprunt'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
         </div>
 
         <div class="actions">

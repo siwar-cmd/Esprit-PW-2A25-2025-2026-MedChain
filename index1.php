@@ -13,9 +13,9 @@ function routeUrl(string $controller = 'objet', string $action = 'list', array $
 {
     $query = array_merge(
         [
-            'office' => $params['office'] ?? 'front',
+            'office'     => $params['office'] ?? 'front',
             'controller' => $controller,
-            'action' => $action,
+            'action'     => $action,
         ],
         $params
     );
@@ -29,24 +29,26 @@ function redirectToRoute(string $controller, string $action, array $params = [])
     exit;
 }
 
-require_once BASE_PATH . '/models/config.php';
-require_once BASE_PATH . '/models/Database.php';
+// ─── Use Project B's database connection ────────────────────
+require_once __DIR__ . '/user/projet/config.php';
+
+// ─── Models ─────────────────────────────────────────────────
 require_once BASE_PATH . '/models/ObjetLoisir.php';
 require_once BASE_PATH . '/models/Pret.php';
+
+// ─── Controllers ────────────────────────────────────────────
 require_once BASE_PATH . '/controllers/AdminController.php';
 require_once BASE_PATH . '/controllers/ObjetController.php';
 require_once BASE_PATH . '/controllers/PretController.php';
-require_once BASE_PATH . '/controllers/JokeController.php';
 
-$office = isset($_GET['office']) && $_GET['office'] === 'back' ? 'back' : 'front';
+$office     = isset($_GET['office']) && $_GET['office'] === 'back' ? 'back' : 'front';
 $controller = trim($_GET['controller'] ?? ($office === 'back' ? 'admin' : 'objet'));
-$action = trim($_GET['action'] ?? ($office === 'back' ? 'dashboard' : 'list'));
-$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$action     = trim($_GET['action'] ?? ($office === 'back' ? 'dashboard' : 'list'));
+$id         = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 $adminController = new AdminController();
 $objetController = new ObjetController();
-$pretController = new PretController();
-$jokeController = new JokeController();
+$pretController  = new PretController();
 
 try {
     switch ($controller) {
@@ -179,23 +181,13 @@ try {
                     redirectToRoute('objet', 'list', ['office' => $office]);
             }
             break;
-        
-        case 'joke':
-            if ($office !== 'front') {
-                redirectToRoute('objet', 'list', ['office' => 'front']);
-            }
-
-            $jokeController->index();
-            break;
 
         default:
             redirectToRoute($office === 'back' ? 'admin' : 'objet', $office === 'back' ? 'dashboard' : 'list', ['office' => $office]);
     }
 } catch (Throwable $exception) {
     http_response_code(500);
-    $errorMessage = APP_ENV === 'development'
-        ? $exception->getMessage()
-        : 'An unexpected error occurred.';
+    $errorMessage = $exception->getMessage();
     ?>
     <!DOCTYPE html>
     <html lang="en">
