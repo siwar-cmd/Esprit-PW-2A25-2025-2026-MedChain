@@ -1,7 +1,12 @@
 <?php
+<<<<<<< Updated upstream
 declare(strict_types=1);
 
 require_once __DIR__ . '/../core/Database.php';
+=======
+require_once __DIR__ . '/../models/config.php';
+require_once __DIR__ . '/../models/Database.php';
+>>>>>>> Stashed changes
 require_once __DIR__ . '/../models/Utilisateur.php';
 require_once __DIR__ . '/../core/BaseController.php';
 
@@ -15,9 +20,14 @@ class AuthController extends BaseController
 {
     private PDO $db;
 
+<<<<<<< Updated upstream
     public function __construct()
     {
         $this->db = Database::getInstance();
+=======
+    public function __construct() {
+        $this->pdo = Database::getInstance()->getConnection();
+>>>>>>> Stashed changes
     }
 
     // ──────────────────────────────────────────────────────────────

@@ -1,8 +1,13 @@
 <?php
+<<<<<<< Updated upstream
 declare(strict_types=1);
 
 require_once __DIR__ . '/../core/Database.php';
 require_once __DIR__ . '/../core/BaseController.php';
+=======
+require_once __DIR__ . '/../models/config.php';
+require_once __DIR__ . '/../models/Database.php';
+>>>>>>> Stashed changes
 require_once __DIR__ . '/../models/Utilisateur.php';
 
 /**
@@ -24,12 +29,40 @@ class ProfileController extends BaseController
     private string $uploadDir;
     private string $webUploadPath;
 
+<<<<<<< Updated upstream
     public function __construct()
     {
         $this->db            = Database::getInstance();
         $this->uploadDir     = BASE_PATH . '/user/uploads/profiles/';
         $this->webUploadPath = '/midchaine/user/uploads/profiles/';
         $this->ensureUploadDir();
+=======
+    public function __construct() {
+        $this->pdo = Database::getInstance()->getConnection();
+        $this->uploadDir = __DIR__ . '/../uploads/profils/';
+        $this->webUploadPath = '/midchaine/uploads/profils/';
+        $this->ensureUploadDirExists();
+    }
+    
+    private function ensureUploadDirExists() {
+        if (!is_dir($this->uploadDir)) {
+            if (!mkdir($this->uploadDir, 0755, true)) {
+                error_log("Erreur: Impossible de créer le dossier " . $this->uploadDir);
+                throw new Exception("Impossible de créer le dossier de stockage des photos");
+            }
+        }
+        
+        $indexFile = $this->uploadDir . 'index.html';
+        if (!file_exists($indexFile)) {
+            file_put_contents($indexFile, '<!DOCTYPE html><html><head><title>403 Forbidden</title></head><body><h1>Forbidden</h1><p>You don\'t have permission to access this resource.</p></body></html>');
+        }
+        
+        $htaccessPath = $this->uploadDir . '.htaccess';
+        if (!file_exists($htaccessPath)) {
+            $htaccessContent = "Order deny,allow\nDeny from all\n<Files ~ \"\\.(jpeg|jpg|png|gif|webp)$\">\nAllow from all\n</Files>";
+            file_put_contents($htaccessPath, $htaccessContent);
+        }
+>>>>>>> Stashed changes
     }
 
     // ── Profile views ─────────────────────────────────────────────
