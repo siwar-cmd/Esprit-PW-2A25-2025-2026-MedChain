@@ -1,12 +1,13 @@
 <?php
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../models/config.php';
+require_once __DIR__ . '/../models/Database.php';
 require_once __DIR__ . '/../models/Utilisateur.php';
 
 class AuthController {
     private $pdo;
 
     public function __construct() {
-        $this->pdo = config::getConnexion();
+        $this->pdo = Database::getInstance()->getConnection();
     }
 
     public function register($userData): array {

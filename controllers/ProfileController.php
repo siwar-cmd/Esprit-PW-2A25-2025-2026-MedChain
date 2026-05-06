@@ -1,6 +1,7 @@
 <?php
+require_once __DIR__ . '/../models/config.php';
+require_once __DIR__ . '/../models/Database.php';
 require_once __DIR__ . '/../models/Utilisateur.php';
-require_once __DIR__ . '/../config.php';
 
 class ProfileController {
     private $pdo;
@@ -8,9 +9,9 @@ class ProfileController {
     private $webUploadPath;
 
     public function __construct() {
-        $this->pdo = config::getConnexion();
-        $this->uploadDir = __DIR__ . '/../../uploads/profiles/';
-        $this->webUploadPath = '/uploads/profiles/';
+        $this->pdo = Database::getInstance()->getConnection();
+        $this->uploadDir = __DIR__ . '/../uploads/profils/';
+        $this->webUploadPath = '/midchaine/uploads/profils/';
         $this->ensureUploadDirExists();
     }
     

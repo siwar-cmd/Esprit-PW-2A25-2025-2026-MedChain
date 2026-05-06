@@ -6,18 +6,21 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
 }
 
 require_once __DIR__ . '/../../controllers/AdminController.php';
+
+if (!defined('BASE_PATH')) define('BASE_PATH', dirname(__DIR__, 2));
+if (!defined('APP_ENTRY_URL')) define('APP_ENTRY_URL', '/midchaine/index1.php');
+require_once BASE_PATH . '/models/config.php';
+require_once BASE_PATH . '/models/Database.php';
+
+$pdo = Database::getInstance()->getConnection();
 $adminController = new AdminController();
 $startDate = $_GET['start_date'] ?? date('Y-m-01');
 $endDate = $_GET['end_date'] ?? date('Y-m-d');
 $reportType = $_GET['report_type'] ?? 'overview';
-$dashboardData = $adminController->dashboard();
-$stats = $dashboardData['stats'] ?? [];
-$recentUsers = $dashboardData['recentUsers'] ?? [];
-$pendingDoctors = $dashboardData['pendingDoctors'] ?? [];
 $usersResult = $adminController->getAllUsers();
 $allUsers = $usersResult['success'] ? $usersResult['users'] : [];
-$totalUsers = $stats['total'] ?? 0;
-$newThisMonth = $stats['new_this_month'] ?? 0;
+$totalUsers = count($allUsers);
+$newThisMonth = (int) $pdo->query("SELECT COUNT(*) FROM utilisateur WHERE MONTH(date_inscription)=MONTH(CURRENT_DATE()) AND YEAR(date_inscription)=YEAR(CURRENT_DATE())")->fetchColumn();
 $roleStats = $stats['by_role'] ?? [];
 $totalDoctors = 0;
 $activeUsers = 0;
@@ -861,152 +864,9 @@ function getStatusColor($status) {
     </style>
 </head>
 <body class="dashboard-page">
-
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <button class="dashboard-menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div class="d-flex align-items-center gap-3">
-                <h1 class="dashboard-title mb-0">Rapports Statistiques</h1>
-                <div class="dashboard-subtitle">Analyse des données du système</div>
-            </div>
-            <div class="dashboard-user-info">
-                <div class="dropdown">
-                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
-                        <div class="dashboard-avatar">
-                            <i class="fas fa-user-md"></i>
-                        </div>
-                        <div class="dashboard-user-details ms-2">
-                            <div class="dashboard-user-name">Admin</div>
-                            <div class="dashboard-user-role">Administrateur</div>
-                        </div>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="../frontoffice/auth/profile.php"><i class="fas fa-user me-2"></i> Mon profil</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Paramètres</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item" href="../../../controllers/logout.php" 
-                               onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
-                                <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </header>
-        <aside class="dashboard-sidebar" id="sidebar">
-            <div class="dashboard-logo">
-                <a href="../home/index.php" class="text-white text-decoration-none">
-                    <span class="dashboard-logo-text">Medsense Medical</span>
-                </a>
-            </div>
-            
-            <nav class="dashboard-nav">
-                <div class="dashboard-nav-section">
-                    <div class="dashboard-nav-title">Tableau de Bord</div>
-                    <a class="dashboard-nav-item" href="admin-dashboard.php">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </div>
-                
-                <div class="dashboard-nav-section">
-                    <div class="dashboard-nav-title">Gestion Médicale</div>
-                    
-                    <div class="dashboard-nav-item with-submenu">
-                        <div class="d-flex align-items-center justify-content-between w-100">
-                            <div>
-                                <i class="fas fa-calendar-check"></i>
-                                <span>Rendez-vous</span>
-                            </div>
-                            <i class="fas fa-chevron-down submenu-toggle"></i>
-                        </div>
-                        <div class="dashboard-submenu">
-                            <a class="dashboard-submenu-item" href="admin-appointments.php">
-                                <i class="fas fa-list"></i>
-                                <span>Tous les rendez-vous</span>
-                            </a>
-                            <a class="dashboard-submenu-item" href="admin-patient-appointments.php">
-                                <i class="fas fa-user-injured"></i>
-                                <span>Rendez-vous patients</span>
-                            </a>
-                            <a class="dashboard-submenu-item" href="admin-new-appointment.php">
-                                <i class="fas fa-plus-circle"></i>
-                                <span>Nouveau rendez-vous</span>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <a class="dashboard-nav-item" href="admin-patients.php">
-                        <i class="fas fa-user-injured"></i>
-                        <span>Patients</span>
-                    </a>
-                    
-                    <div class="dashboard-nav-item with-submenu">
-                        <div class="d-flex align-items-center justify-content-between w-100">
-                            <div>
-                                <i class="fas fa-user-md"></i>
-                                <span>Médecins</span>
-                                <?php if ($pendingDoctorsCount > 0): ?>
-                                    <span class="dashboard-badge"><?= $pendingDoctorsCount ?></span>
-                                <?php endif; ?>
-                            </div>
-                            <i class="fas fa-chevron-down submenu-toggle"></i>
-                        </div>
-                        <div class="dashboard-submenu">
-                            <a class="dashboard-submenu-item" href="admin-doctors.php">
-                                <i class="fas fa-list"></i>
-                                <span>Tous les médecins</span>
-                            </a>
-                            <a class="dashboard-submenu-item" href="admin-doctor-availability.php">
-                                <i class="fas fa-clock"></i>
-                                <span>Disponibilité</span>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <a class="dashboard-nav-item" href="admin-users.php">
-                        <i class="fas fa-users"></i>
-                        <span>Utilisateurs</span>
-                    </a>
-                    
-                    <a class="dashboard-nav-item" href="admin-complaints.php">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>Réclamations</span>
-                    </a>
-                </div>
-                
-                <div class="dashboard-nav-section">
-                    <div class="dashboard-nav-title">Rapports</div>
-                    
-                    <a class="dashboard-nav-item active" href="admin-reports-statistics.php">
-                        <i class="fas fa-chart-pie"></i>
-                        <span>Statistiques</span>
-                    </a>
-                    
-                    <a class="dashboard-nav-item" href="admin-reports-financial.php">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <span>Financiers</span>
-                    </a>
-                    
-                    <a class="dashboard-nav-item" href="admin-audit.php">
-                        <i class="fas fa-clipboard-list"></i>
-                        <span>Audit médical</span>
-                    </a>
-                </div>
-                
-                <div class="dashboard-nav-section mt-auto">
-                    <a class="dashboard-nav-item logout" href="../../../controllers/logout.php" 
-                       onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Déconnexion</span>
-                    </a>
-                </div>
-            </nav>
-        </aside>
-        <main class="dashboard-main">
+<div class="dashboard-container">
+<?php require __DIR__ . '/_sidebar.php'; ?>
+<main class="dashboard-main">
             <?php if ($success_message): ?>
                 <div class="dashboard-alert alert-success">
                     <i class="fas fa-check-circle"></i>
@@ -1233,7 +1093,7 @@ function getStatusColor($status) {
                 </a>
             </div>
         </main>
-    </div>
+    </div><!-- /.dashboard-container -->
 
  
     <script src="../assets/js/jquery-2.2.4.min.js"></script>

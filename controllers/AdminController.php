@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Utilisateur.php';
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../models/Database.php';
+require_once __DIR__ . '/../models/config.php';
 
 class AdminController {
     private $pdo;
@@ -15,24 +16,44 @@ class AdminController {
         }
         
         if (!$this->isAdmin()) {
-            header('Location: ../../frontoffice/auth/sign-in.php');
+            header('Location: /midchaine/views/frontoffice/auth/login.php');
             exit;
         }
         
-        $this->pdo = config::getConnexion();
+        $this->pdo = Database::getInstance()->getConnection();
     }
 
-    public function dashboard(): array {
-        $stats = $this->getStats();
-        $recentUsers = $this->getRecentUsers(5);
-        $pendingUsers = $this->getPendingUsers();
-        
-        return [
-            "success" => true,
-            "stats" => $stats,
-            "recentUsers" => $recentUsers,
-            "pendingUsers" => $pendingUsers
-        ];
+    public function dashboard(): void {
+        // Cron simulation: check overdue loans and send reminders
+        (new PretController())->checkOverdueAndReminders();
+
+        $db = Database::getInstance()->getConnection();
+
+        $totalObjets    = (int) $db->query('SELECT COUNT(*) FROM objet_loisir')->fetchColumn();
+        $pendingCount   = (int) $db->query("SELECT COUNT(*) FROM pret WHERE statut = 'en_attente'")->fetchColumn();
+        $confirmedCount = (int) $db->query("SELECT COUNT(*) FROM pret WHERE statut = 'en_cours'")->fetchColumn();
+        $returnedCount  = (int) $db->query("SELECT COUNT(*) FROM pret WHERE statut = 'termine'")->fetchColumn();
+
+        $stmt = $db->prepare(
+            "SELECT p.*, o.nom_objet,
+                    CONCAT(u.prenom, ' ', u.nom) AS nom_patient
+             FROM pret p
+             LEFT JOIN objet_loisir o ON p.id_objet = o.id_objet
+             LEFT JOIN utilisateur u ON p.id_patient = u.id_utilisateur
+             WHERE p.statut = :statut
+             ORDER BY p.date_pret DESC
+             LIMIT 5"
+        );
+        $stmt->execute([':statut' => 'en_attente']);
+        $recentPrets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Chart data
+        $stats       = new Statistiques();
+        $topObjects  = $stats->getTopObjects(5);
+        $loansByMonth = $stats->getLoansByMonth();
+        $returnRate  = $stats->getReturnRate();
+
+        require BASE_PATH . '/views/back/admin_dashboard.php';
     }
 
     private function getStats(): array {

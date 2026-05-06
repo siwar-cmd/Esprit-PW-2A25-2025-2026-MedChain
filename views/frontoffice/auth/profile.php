@@ -811,6 +811,19 @@ $photo_url = getProfilePhotoUrl($user);
             </a>
             <?php endif; ?>
             
+            <div class="dashboard-nav-title">Objets Loisir</div>
+            <a href="/midchaine/index1.php?office=front&controller=objet&action=list" class="dashboard-nav-item">
+                <i class="bi bi-box-seam-fill"></i> Catalogue
+            </a>
+            <a href="/midchaine/index1.php?office=front&controller=pret&action=myLoans" class="dashboard-nav-item">
+                <i class="bi bi-bookmark-check-fill"></i> Mes prêts
+            </a>
+            <?php if ($user->getRole() === 'patient' || $user->getRole() === 'medecin'): ?>
+            <a href="/midchaine/index1.php?office=front&controller=pret&action=create" class="dashboard-nav-item">
+                <i class="bi bi-hand-index-thumb-fill"></i> Faire un prêt
+            </a>
+            <?php endif; ?>
+
             <?php if ($isAdmin): ?>
                 <div class="dashboard-nav-title">Administration</div>
                 <a href="../../backoffice/admin-dashboard.php" class="dashboard-nav-item">
@@ -818,6 +831,12 @@ $photo_url = getProfilePhotoUrl($user);
                 </a>
                 <a href="../../backoffice/admin-users.php" class="dashboard-nav-item">
                     <i class="bi bi-people-fill"></i> Utilisateurs
+                </a>
+                <a href="/midchaine/index1.php?office=back&controller=objet&action=list" class="dashboard-nav-item">
+                    <i class="bi bi-gear-fill"></i> Gérer les objets
+                </a>
+                <a href="/midchaine/index1.php?office=back&controller=pret&action=pending" class="dashboard-nav-item">
+                    <i class="bi bi-hourglass-split"></i> Gérer les prêts
                 </a>
             <?php endif; ?>
             
@@ -1118,13 +1137,15 @@ $photo_url = getProfilePhotoUrl($user);
                     <a href="../home/index.php" class="btn btn-outline">
                         <i class="bi bi-house-door-fill"></i> Accueil
                     </a>
+                    <a href="/midchaine/index1.php?office=front&controller=objet&action=list" class="btn btn-primary">
+                        <i class="bi bi-box-seam-fill"></i> Catalogue Loisir
+                    </a>
+                    <a href="/midchaine/index1.php?office=front&controller=pret&action=myLoans" class="btn btn-outline">
+                        <i class="bi bi-bookmark-check-fill"></i> Mes prêts
+                    </a>
                     <?php if ($isAdmin): ?>
-                        <a href="../../backoffice/admin-dashboard.php" class="btn btn-primary">
+                        <a href="../../backoffice/admin-dashboard.php" class="btn btn-outline">
                             <i class="bi bi-speedometer2"></i> Admin Dashboard
-                        </a>
-                    <?php else: ?>
-                        <a href="../appointments/" class="btn btn-primary">
-                            <i class="bi bi-calendar-check-fill"></i> Mes rendez-vous
                         </a>
                     <?php endif; ?>
                     <a href="../../../controllers/logout.php" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">

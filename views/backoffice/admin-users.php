@@ -78,7 +78,6 @@ function escape_data($data) { return htmlspecialchars($data ?? '', ENT_QUOTES, '
             font-family: 'DM Sans', sans-serif;
             background: linear-gradient(145deg, #f0faf6 0%, #e8f7f1 50%, #ddf3ea 100%);
             min-height: 100vh;
-            padding: 40px 20px;
             position: relative;
         }
 
@@ -200,11 +199,14 @@ function escape_data($data) { return htmlspecialchars($data ?? '', ENT_QUOTES, '
             .btn { width: 100%; justify-content: center; }
         }
         @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
-    </style>
+    <?php require __DIR__ . '/_sidebar_css.php'; ?>
 </head>
 <body>
 
-<div class="container">
+<div class="dashboard-container">
+<?php require __DIR__ . '/_sidebar.php'; ?>
+<main class="dashboard-main">
+<div class="container" style="max-width:100%;">
     <div class="card">
         <a href="admin-dashboard.php" class="logo">
             <div class="logo-icon"><i class="bi bi-plus-square-fill"></i></div>
@@ -279,6 +281,8 @@ function escape_data($data) { return htmlspecialchars($data ?? '', ENT_QUOTES, '
         </div>
     </div>
 </div>
+</main>
+</div><!-- /.dashboard-container -->
 
 <script>
     document.querySelectorAll('.alert-close').forEach(btn => {

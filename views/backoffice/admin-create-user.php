@@ -76,7 +76,6 @@ function escape_data($data) {
             font-family: 'DM Sans', sans-serif;
             background: linear-gradient(145deg, #f0faf6 0%, #e8f7f1 50%, #ddf3ea 100%);
             min-height: 100vh;
-            padding: 40px 20px;
             position: relative;
             overflow-x: hidden;
         }
@@ -268,11 +267,14 @@ function escape_data($data) {
             body { padding: 20px 16px; }
             .card { padding: 20px; }
         }
-    </style>
+    <?php require __DIR__ . '/_sidebar_css.php'; ?>
 </head>
 <body>
 
-<div class="container">
+<div class="dashboard-container">
+<?php require __DIR__ . '/_sidebar.php'; ?>
+<main class="dashboard-main">
+<div class="container" style="max-width:860px;">
     <div class="card" data-aos="fade-up" data-aos-duration="600">
         <a href="admin-dashboard.php" class="logo">
             <div class="logo-icon"><i class="bi bi-plus-square-fill"></i></div>
@@ -378,6 +380,8 @@ function escape_data($data) {
         </form>
     </div>
 </div>
+</main>
+</div><!-- /.dashboard-container -->
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>

@@ -5,43 +5,65 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
     exit;
 }
 
-require_once __DIR__ . '/../../controllers/AdminController.php';
-$adminController = new AdminController();
-$dashboardData = $adminController->dashboard();
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', dirname(__DIR__, 2));
+}
+if (!defined('APP_ENTRY_URL')) {
+    define('APP_ENTRY_URL', '/midchaine/index1.php');
+}
+
+require_once BASE_PATH . '/models/config.php';
+require_once BASE_PATH . '/models/Database.php';
+require_once BASE_PATH . '/models/Utilisateur.php';
+require_once BASE_PATH . '/controllers/AdminController.php';
+
+$pdo = Database::getInstance()->getConnection();
+
+// User stats
+$totalUsers   = (int) $pdo->query('SELECT COUNT(*) FROM utilisateur')->fetchColumn();
+$newThisMonth = (int) $pdo->query("SELECT COUNT(*) FROM utilisateur WHERE MONTH(date_inscription)=MONTH(CURRENT_DATE()) AND YEAR(date_inscription)=YEAR(CURRENT_DATE())")->fetchColumn();
+$roleStats    = $pdo->query('SELECT role, COUNT(*) as count FROM utilisateur GROUP BY role')->fetchAll(PDO::FETCH_ASSOC);
+$statusStats  = $pdo->query('SELECT statut, COUNT(*) as count FROM utilisateur GROUP BY statut')->fetchAll(PDO::FETCH_ASSOC);
+$recentUsers  = $pdo->query('SELECT id_utilisateur,nom,prenom,email,date_inscription,role,statut FROM utilisateur ORDER BY date_inscription DESC LIMIT 5')->fetchAll(PDO::FETCH_ASSOC);
+
+$activeUsers = 0; $inactiveUsers = 0;
+foreach ($statusStats as $s) {
+    if ($s['statut'] === 'actif')   $activeUsers   = $s['count'];
+    if ($s['statut'] === 'inactif') $inactiveUsers = $s['count'];
+}
+
+// Objet loisir stats
+$totalObjets    = (int) $pdo->query('SELECT COUNT(*) FROM objet_loisir')->fetchColumn();
+$pendingCount   = (int) $pdo->query("SELECT COUNT(*) FROM pret WHERE statut='en_attente'")->fetchColumn();
+$confirmedCount = (int) $pdo->query("SELECT COUNT(*) FROM pret WHERE statut='en_cours'")->fetchColumn();
+$returnedCount  = (int) $pdo->query("SELECT COUNT(*) FROM pret WHERE statut='termine'")->fetchColumn();
+$recentPrets    = $pdo->query(
+    "SELECT p.*, o.nom_objet, CONCAT(u.prenom,' ',u.nom) AS nom_patient
+     FROM pret p
+     LEFT JOIN objet_loisir o ON p.id_objet = o.id_objet
+     LEFT JOIN utilisateur u ON p.id_patient = u.id_utilisateur
+     WHERE p.statut='en_attente'
+     ORDER BY p.date_pret DESC LIMIT 5"
+)->fetchAll(PDO::FETCH_ASSOC);
 
 $success_message = $_SESSION['success_message'] ?? null;
-$error_message = $_SESSION['error_message'] ?? null;
+$error_message   = $_SESSION['error_message'] ?? null;
 unset($_SESSION['success_message'], $_SESSION['error_message']);
-
-$stats = $dashboardData['stats'] ?? [];
-$recentUsers = $dashboardData['recentUsers'] ?? [];
-
-$totalUsers = $stats['total'] ?? 0;
-$newThisMonth = $stats['new_this_month'] ?? 0;
-$roleStats = $stats['by_role'] ?? [];
-$statusStats = $stats['by_status'] ?? [];
-
-$activeUsers = 0;
-$inactiveUsers = 0;
-
-foreach ($statusStats as $status) {
-    if ($status['statut'] === 'actif') $activeUsers = $status['count'];
-    if ($status['statut'] === 'inactif') $inactiveUsers = $status['count'];
-}
 
 function formatDate($dateString) {
     $date = new DateTime($dateString);
-    $now = new DateTime();
-    $interval = $now->diff($date);
-    
-    if ($interval->days == 0) {
-        return "Aujourd'hui à " . $date->format('H:i');
-    } elseif ($interval->days == 1) {
-        return "Hier à " . $date->format('H:i');
-    } elseif ($interval->days < 7) {
-        return "Il y a " . $interval->days . " jours";
-    } else {
-        return $date->format('d/m/Y');
+    $now  = new DateTime();
+    $diff = $now->diff($date);
+    if ($diff->days == 0) return "Aujourd'hui à " . $date->format('H:i');
+    if ($diff->days == 1) return "Hier à " . $date->format('H:i');
+    if ($diff->days < 7)  return "Il y a " . $diff->days . " jours";
+    return $date->format('d/m/Y');
+}
+
+if (!function_exists('routeUrl')) {
+    function routeUrl(string $controller = 'objet', string $action = 'list', array $params = []): string {
+        $query = array_merge(['office' => $params['office'] ?? 'front', 'controller' => $controller, 'action' => $action], $params);
+        return APP_ENTRY_URL . '?' . http_build_query($query);
     }
 }
 ?>
@@ -231,40 +253,7 @@ function formatDate($dateString) {
 <body>
 
 <div class="dashboard-container">
-    <aside class="dashboard-sidebar" id="sidebar">
-        <div class="dashboard-logo">
-            <a href="admin-dashboard.php">
-                <div class="dashboard-logo-icon"><i class="bi bi-plus-square-fill"></i></div>
-                <div class="dashboard-logo-text">Med<span>Chain</span></div>
-            </a>
-        </div>
-        
-        <nav class="dashboard-nav">
-            <div class="dashboard-nav-title">Navigation</div>
-            <a href="admin-dashboard.php" class="dashboard-nav-item active">
-                <i class="bi bi-speedometer2"></i> Dashboard
-            </a>
-            <a href="admin-users.php" class="dashboard-nav-item">
-                <i class="bi bi-people-fill"></i> Utilisateurs
-            </a>
-            <a href="admin-create-user.php" class="dashboard-nav-item">
-                <i class="bi bi-person-plus-fill"></i> Nouvel utilisateur
-            </a>
-            <a href="admin-reports-statistics.php" class="dashboard-nav-item">
-                <i class="bi bi-graph-up"></i> Statistiques
-            </a>
-            <a href="rendezvous/admin-index.php" class="dashboard-nav-item"><i class="bi bi-calendar-check"></i> Rendez-vous</a>
-            <a href="ficherdv/admin-index.php" class="dashboard-nav-item"><i class="bi bi-file-earmark-medical"></i> Fiches Médicales</a>
-            
-            <div class="dashboard-nav-title mt-4">Gestion</div>
-            <a href="../frontoffice/auth/profile.php" class="dashboard-nav-item">
-                <i class="bi bi-person-circle"></i> Mon profil
-            </a>
-            <a href="../../../controllers/logout.php" class="dashboard-nav-item logout" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
-                <i class="bi bi-box-arrow-right"></i> Déconnexion
-            </a>
-        </nav>
-    </aside>
+    <?php require __DIR__ . '/_sidebar.php'; ?>
     
     <main class="dashboard-main">
         <div class="dashboard-header">
@@ -305,6 +294,22 @@ function formatDate($dateString) {
                 <div class="stat-icon warning"><i class="bi bi-person-x-fill"></i></div>
                 <div class="stat-content"><h3><?= $inactiveUsers ?></h3><p>Comptes inactifs</p></div>
             </div>
+            <div class="stat-card">
+                <div class="stat-icon primary"><i class="bi bi-box-seam-fill"></i></div>
+                <div class="stat-content"><h3><?= $totalObjets ?></h3><p>Objets loisir</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon warning"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-content"><h3><?= $pendingCount ?></h3><p>Prêts en attente</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success"><i class="bi bi-arrow-repeat"></i></div>
+                <div class="stat-content"><h3><?= $confirmedCount ?></h3><p>Prêts en cours</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-content"><h3><?= $returnedCount ?></h3><p>Prêts terminés</p></div>
+            </div>
             <?php foreach ($roleStats as $role): ?>
             <div class="stat-card">
                 <div class="stat-icon <?= $role['role'] === 'admin' ? 'danger' : 'primary' ?>">
@@ -344,10 +349,45 @@ function formatDate($dateString) {
             </div>
         </div>
         
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="bi bi-hourglass-split"></i> Dernières demandes de prêt en attente</h2>
+                <a href="<?= routeUrl('pret','pending',['office'=>'back']) ?>" class="btn btn-primary"><i class="bi bi-arrow-right"></i> Gérer</a>
+            </div>
+            <div class="card-body">
+                <?php if (empty($recentPrets)): ?>
+                    <p style="color:#6B7280;">Aucune demande en attente.</p>
+                <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>Patient</th><th>Objet</th><th>Motif</th><th>Date</th><th>Action</th></tr></thead>
+                        <tbody>
+                            <?php foreach ($recentPrets as $pret): ?>
+                            <tr>
+                                <td><strong><?= htmlspecialchars($pret['nom_patient'] ?? '—') ?></strong></td>
+                                <td><?= htmlspecialchars($pret['nom_objet'] ?? '—') ?></td>
+                                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= htmlspecialchars($pret['motif_emprunt'] ?? '—') ?></td>
+                                <td><?= htmlspecialchars(date('d/m/Y', strtotime($pret['date_pret']))) ?></td>
+                                <td>
+                                    <a href="<?= routeUrl('pret','confirm',['office'=>'back','id'=>(int)$pret['id_pret']]) ?>"
+                                       class="btn btn-primary" style="padding:6px 12px;font-size:12px;"
+                                       onclick="return confirm('Confirmer ce prêt ?');">
+                                        <i class="bi bi-check-lg"></i> Confirmer
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
         <div class="quick-actions">
             <a href="admin-create-user.php" class="quick-action"><div class="quick-action-icon"><i class="bi bi-person-plus-fill"></i></div><span>Nouvel utilisateur</span></a>
             <a href="admin-users.php" class="quick-action"><div class="quick-action-icon"><i class="bi bi-people-fill"></i></div><span>Gérer utilisateurs</span></a>
-            <a href="admin-reports-statistics.php" class="quick-action"><div class="quick-action-icon"><i class="bi bi-graph-up"></i></div><span>Statistiques</span></a>
+            <a href="<?= routeUrl('objet','list',['office'=>'back']) ?>" class="quick-action"><div class="quick-action-icon"><i class="bi bi-box-seam-fill"></i></div><span>Objets loisir</span></a>
             <a href="../frontoffice/auth/profile.php" class="quick-action"><div class="quick-action-icon"><i class="bi bi-person-circle"></i></div><span>Mon profil</span></a>
         </div>
         
