@@ -29,28 +29,34 @@ class Mailer {
      */
 
     /** Configuration SMTP Gmail */
-    private PHPMailer $mailer;
-    private string $fromAddress;
+    private ?PHPMailer $mailer = null;
+    private ?string $fromAddress;
     private string $fromName;
-    private string $password;
+    private ?string $password;
     private string $smtpHost;
     private int $smtpPort;
 
     public function __construct() {
-        $this->fromAddress = Env::required('MAIL_FROM_ADDRESS');
+        $this->fromAddress = Env::get('MAIL_FROM_ADDRESS');
         $this->fromName = Env::get('MAIL_FROM_NAME', 'MedChain');
-        $this->password = Env::required('MAIL_PASSWORD');
+        $this->password = Env::get('MAIL_PASSWORD');
         $this->smtpHost = Env::get('SMTP_HOST', 'smtp.gmail.com');
         $this->smtpPort = (int) Env::get('SMTP_PORT', '587');
-
-        $this->mailer = new PHPMailer(true);
-        $this->configure();
     }
 
     /**
      * Configure PHPMailer avec les paramètres SMTP Gmail
      */
     private function configure(): void {
+        if ($this->mailer !== null) {
+            return;
+        }
+
+        if (!$this->fromAddress || !$this->password) {
+            throw new RuntimeException('SMTP is not configured. Set MAIL_FROM_ADDRESS and MAIL_PASSWORD in .env.');
+        }
+
+        $this->mailer = new PHPMailer(true);
         $this->mailer->isSMTP();
         $this->mailer->Host       = $this->smtpHost;
         $this->mailer->SMTPAuth   = true;
@@ -76,6 +82,7 @@ class Mailer {
      */
     public function sendPasswordReset(string $toEmail, string $toName, string $resetLink): bool {
         try {
+            $this->configure();
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($toEmail, $toName);
             $this->mailer->isHTML(true);
@@ -87,8 +94,9 @@ class Mailer {
             error_log("[Mailer] Email reset envoyé à : $toEmail");
             return true;
 
-        } catch (Exception $e) {
-            error_log("[Mailer] Erreur sendPasswordReset : " . $this->mailer->ErrorInfo);
+        } catch (Throwable $e) {
+            $errorInfo = $this->mailer ? $this->mailer->ErrorInfo : $e->getMessage();
+            error_log("[Mailer] Erreur sendPasswordReset : " . $errorInfo);
             return false;
         }
     }
@@ -102,6 +110,7 @@ class Mailer {
      */
     public function sendWelcome(string $toEmail, string $toName): bool {
         try {
+            $this->configure();
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($toEmail, $toName);
             $this->mailer->isHTML(true);
@@ -113,8 +122,9 @@ class Mailer {
             error_log("[Mailer] Email bienvenue envoyé à : $toEmail");
             return true;
 
-        } catch (Exception $e) {
-            error_log("[Mailer] Erreur sendWelcome : " . $this->mailer->ErrorInfo);
+        } catch (Throwable $e) {
+            $errorInfo = $this->mailer ? $this->mailer->ErrorInfo : $e->getMessage();
+            error_log("[Mailer] Erreur sendWelcome : " . $errorInfo);
             return false;
         }
     }
