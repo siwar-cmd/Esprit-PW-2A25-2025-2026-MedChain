@@ -48,7 +48,7 @@ class AdminController {
         $recentPrets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Chart data
-        $stats       = new Statistiques();
+        $stats       = new StatistiqueController();
         $topObjects  = $stats->getTopObjects(5);
         $loansByMonth = $stats->getLoansByMonth();
         $returnRate  = $stats->getReturnRate();

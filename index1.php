@@ -1,8 +1,29 @@
 <?php
 declare(strict_types=1);
-
-error_reporting(E_ALL);
+// ── Error visibility: must come before declare() and everything else ──────────
 ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
+
+// Catch compile-time fatals (Cannot redeclare, Parse error, etc.) that
+// bypass try/catch and display_errors when output has already started.
+ob_start();
+register_shutdown_function(function () {
+    $e = error_get_last();
+    if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_COMPILE_ERROR, E_CORE_ERROR], true)) {
+        ob_end_clean(); // discard any partial HTML
+        http_response_code(500);
+        echo '<pre style="background:#1e1e1e;color:#f87171;padding:24px;font-size:14px;">';
+        echo '<strong>FATAL ERROR</strong>' . "\n";
+        echo htmlspecialchars($e['message'], ENT_QUOTES, 'UTF-8') . "\n";
+        echo 'in ' . htmlspecialchars($e['file'], ENT_QUOTES, 'UTF-8');
+        echo ' on line ' . $e['line'];
+        echo '</pre>';
+    } else {
+        ob_end_flush();
+    }
+});
+
 
 session_start();
 
@@ -37,11 +58,15 @@ require_once BASE_PATH . '/models/AvisObjet.php';
 require_once BASE_PATH . '/models/Reservation.php';
 require_once BASE_PATH . '/models/Categorie.php';
 require_once BASE_PATH . '/models/PretHistory.php';
-require_once BASE_PATH . '/models/Recommendation.php';
-require_once BASE_PATH . '/models/Statistiques.php';
 require_once BASE_PATH . '/models/Notification.php';
 require_once BASE_PATH . '/utils/Mailer.php';
 require_once BASE_PATH . '/utils/UnsplashService.php';
+require_once BASE_PATH . '/controllers/NotificationController.php';
+require_once BASE_PATH . '/controllers/PretHistoryController.php';
+require_once BASE_PATH . '/controllers/StatistiqueController.php';
+require_once BASE_PATH . '/controllers/RecommendationController.php';
+require_once BASE_PATH . '/models/Statistiques.php';
+require_once BASE_PATH . '/models/Recommendation.php';
 require_once BASE_PATH . '/controllers/AdminController.php';
 require_once BASE_PATH . '/controllers/ObjetController.php';
 require_once BASE_PATH . '/controllers/PretController.php';
@@ -320,7 +345,7 @@ try {
                 redirectToRoute('objet', 'list', ['office' => 'front']);
             }
             if ($action === 'markRead') {
-                (new Notification())->markAllRead((int) $_SESSION['user_id']);
+                (new NotificationController())->markAllRead((int) $_SESSION['user_id']);
             }
             // Redirect back to where the user came from
             if ($office === 'back') {

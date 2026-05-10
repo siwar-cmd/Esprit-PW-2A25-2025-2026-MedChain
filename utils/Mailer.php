@@ -1,26 +1,6 @@
 <?php
 
-/**
- * Mailer — PHPMailer wrapper for MedChain
- *
- * ── HOW TO INSTALL PHPMAILER ──────────────────────────────────────────────────
- * Option 1 (Composer — recommended):
- *   cd C:\xampp\htdocs\midchaine
- *   composer require phpmailer/phpmailer
- *
- * Option 2 (Manual — no Composer):
- *   1. Download from https://github.com/PHPMailer/PHPMailer/releases
- *   2. Extract to: C:\xampp\htdocs\midchaine\vendor\phpmailer\
- *   3. Required files:
- *        vendor/phpmailer/src/PHPMailer.php
- *        vendor/phpmailer/src/SMTP.php
- *        vendor/phpmailer/src/Exception.php
- *
- * ── SMTP TESTING (free) ───────────────────────────────────────────────────────
- *   Use https://mailtrap.io (free sandbox) — replace credentials below.
- *   Or use Gmail with an App Password (2FA required).
- * ─────────────────────────────────────────────────────────────────────────────
- */
+
 
 class Mailer
 {
@@ -30,11 +10,11 @@ class Mailer
     //              Generate one at: https://myaccount.google.com/apppasswords
     //              (Requires 2-Step Verification to be enabled on your account)
     private const SMTP_HOST   = 'smtp.gmail.com';
-    private const SMTP_PORT   = 587;
+    private const SMTP_PORT   = .;
     private const SMTP_SECURE = 'tls';
-    private const SMTP_USER   = 'midchaineloisire@gmail.com'; // ← replace with your Gmail
+    private const SMTP_USER   = '.'; // ← replace with your Gmail
     private const SMTP_PASS   = 'uqey zknh etqe dpcr';          // ← your App Password
-    private const FROM_EMAIL  = 'midchaineloisire@gmail.com'; // ← must match SMTP_USER for Gmail
+    private const FROM_EMAIL  = '.'; // ← must match SMTP_USER for Gmail
     private const FROM_NAME   = 'MedChain — Hôpital';
     // ─────────────────────────────────────────────────────────────────────────
 

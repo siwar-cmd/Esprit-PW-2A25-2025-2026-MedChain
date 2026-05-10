@@ -2,16 +2,78 @@
 
 class CategorieController
 {
-    private Categorie $model;
+    private PDO $db;
 
     public function __construct()
     {
-        $this->model = new Categorie();
+        $this->db = Database::getInstance()->getConnection();
     }
+
+    // ── DB methods (moved from Categorie model) ───────────────────────────
+
+    public function getAll(): array
+    {
+        return $this->db
+            ->query('SELECT * FROM categorie_objet ORDER BY nom_categorie')
+            ->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    private function findById(int $id): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM categorie_objet WHERE id_categorie = :id');
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    private function insert(string $nom, string $description, string $icone): bool
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO categorie_objet (nom_categorie, description, icone)
+             VALUES (:nom, :desc, :icone)'
+        );
+        return $stmt->execute([':nom' => $nom, ':desc' => $description, ':icone' => $icone]);
+    }
+
+    private function update(int $id, string $nom, string $description, string $icone): bool
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE categorie_objet
+             SET nom_categorie = :nom, description = :desc, icone = :icone
+             WHERE id_categorie = :id'
+        );
+        return $stmt->execute([':nom' => $nom, ':desc' => $description, ':icone' => $icone, ':id' => $id]);
+    }
+
+    private function delete(int $id): array
+    {
+        $check = $this->db->prepare('SELECT COUNT(*) FROM objet_loisir WHERE id_categorie = :id');
+        $check->execute([':id' => $id]);
+        if ((int) $check->fetchColumn() > 0) {
+            return ['success' => false, 'error' => 'linked_to_objects'];
+        }
+
+        $stmt = $this->db->prepare('DELETE FROM categorie_objet WHERE id_categorie = :id');
+        $stmt->execute([':id' => $id]);
+        return $stmt->rowCount() === 1
+            ? ['success' => true]
+            : ['success' => false, 'error' => 'not_found'];
+    }
+
+    private function nameExists(string $nom, int $excludeId = 0): bool
+    {
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*) FROM categorie_objet
+             WHERE nom_categorie = :nom AND id_categorie != :exclude'
+        );
+        $stmt->execute([':nom' => $nom, ':exclude' => $excludeId]);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    // ── Action methods ────────────────────────────────────────────────────
 
     public function listBack(): void
     {
-        $categories = $this->model->getAll();
+        $categories = $this->getAll();
         $errors     = $this->flashFromQuery();
         require BASE_PATH . '/views/back/categorie_list.php';
     }
@@ -30,10 +92,10 @@ class CategorieController
         $errors      = $this->validate($nom, $icone);
 
         if (empty($errors)) {
-            if ($this->model->nameExists($nom)) {
+            if ($this->nameExists($nom)) {
                 $errors['nom_categorie'] = 'Ce nom de catégorie existe déjà.';
             } else {
-                $this->model->create($nom, $description, $icone);
+                $this->insert($nom, $description, $icone);
                 redirectToRoute('categorie', 'list', ['office' => 'back', 'success' => 'added']);
             }
         }
@@ -43,7 +105,7 @@ class CategorieController
 
     public function editFormBack(int $id): void
     {
-        $categorie = $this->model->findById($id);
+        $categorie = $this->findById($id);
         if ($categorie === null) {
             redirectToRoute('categorie', 'list', ['office' => 'back', 'error' => 'not_found']);
         }
@@ -53,7 +115,7 @@ class CategorieController
 
     public function editBack(int $id): void
     {
-        $categorie = $this->model->findById($id);
+        $categorie = $this->findById($id);
         if ($categorie === null) {
             redirectToRoute('categorie', 'list', ['office' => 'back', 'error' => 'not_found']);
         }
@@ -64,15 +126,14 @@ class CategorieController
         $errors      = $this->validate($nom, $icone);
 
         if (empty($errors)) {
-            if ($this->model->nameExists($nom, $id)) {
+            if ($this->nameExists($nom, $id)) {
                 $errors['nom_categorie'] = 'Ce nom de catégorie existe déjà.';
             } else {
-                $this->model->update($id, $nom, $description, $icone);
+                $this->update($id, $nom, $description, $icone);
                 redirectToRoute('categorie', 'list', ['office' => 'back', 'success' => 'updated']);
             }
         }
 
-        // Merge posted values back so the form repopulates
         $categorie = array_merge($categorie, [
             'nom_categorie' => $nom,
             'description'   => $description,
@@ -83,13 +144,13 @@ class CategorieController
 
     public function deleteBack(int $id): void
     {
-        $result = $this->model->delete($id);
+        $result = $this->delete($id);
         $params = ['office' => 'back'];
         $params[$result['success'] ? 'success' : 'error'] = $result['success'] ? 'deleted' : $result['error'];
         redirectToRoute('categorie', 'list', $params);
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────────────
 
     private function validate(string $nom, string $icone): array
     {

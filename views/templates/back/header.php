@@ -386,7 +386,7 @@ $currentAction     = $_GET['action']     ?? 'dashboard';
 
         <div class="mc-sidebar-footer">
             <?php
-            $notifModel   = new Notification();
+            $notifModel   = new NotificationController();
             $unreadCount  = $notifModel->countUnread((int) ($_SESSION['user_id'] ?? 0));
             $recentNotifs = $notifModel->getRecent((int) ($_SESSION['user_id'] ?? 0), 5);
             ?>

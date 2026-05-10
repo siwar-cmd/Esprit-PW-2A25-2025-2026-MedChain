@@ -55,7 +55,8 @@ $_current_page = basename($_SERVER['PHP_SELF']);
         <a href="../frontoffice/auth/profile.php" class="dashboard-nav-item">
             <i class="bi bi-person-circle"></i> Mon profil
         </a>
-        <a href="../../../controllers/logout.php" class="dashboard-nav-item logout"
+        <a href="/midchaine/controllers/logout.php"
+           class="dashboard-nav-item logout"
            onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
             <i class="bi bi-box-arrow-right"></i> Déconnexion
         </a>

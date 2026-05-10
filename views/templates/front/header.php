@@ -336,7 +336,7 @@ $currentAct  = $_GET['action']     ?? 'list';
         <div class="mc-actions">
             <?php if ($isLoggedIn): ?>
                 <?php
-                $notifModel    = new Notification();
+                $notifModel    = new NotificationController();
                 $unreadCount   = $notifModel->countUnread((int) $_SESSION['user_id']);
                 $recentNotifs  = $notifModel->getRecent((int) $_SESSION['user_id'], 5);
                 ?>

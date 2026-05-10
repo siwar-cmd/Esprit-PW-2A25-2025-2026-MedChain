@@ -5,7 +5,7 @@ class ObjetController
     public function listBack(): void
     {
         $objets     = $this->getAllObjects();
-        $categories = (new Categorie())->getAll();
+        $categories = (new CategorieController())->getAll();
         require BASE_PATH . '/views/back/objet_list.php';
     }
 
@@ -14,7 +14,7 @@ class ObjetController
         $errors      = [];
         $search      = trim($_GET['search'] ?? '');
         $filterCat   = isset($_GET['categorie']) ? (int) $_GET['categorie'] : 0;
-        $categories  = (new Categorie())->getAll();
+        $categories  = (new CategorieController())->getAll();
 
         if ($search !== '') {
             $errors  = $this->validateObjectSearch($search);
@@ -30,7 +30,7 @@ class ObjetController
         // no search/filter is active (so the section stays relevant).
         $recommendations = [];
         if (isset($_SESSION['user_id']) && $search === '' && $filterCat === 0) {
-            $recommendations = (new Recommendation())->getRecommendations((int) $_SESSION['user_id']);
+            $recommendations = (new RecommendationController())->getRecommendations((int) $_SESSION['user_id']);
         }
         // ─────────────────────────────────────────────────────────────────────
 
@@ -45,19 +45,19 @@ class ObjetController
             redirectToRoute('objet', 'list', ['office' => 'front', 'error' => 'not_found']);
         }
 
-        $avisModel       = new AvisObjet();
-        $avis            = $avisModel->getByObjet($id);
-        $averageNote     = $avisModel->getAverageNote($id);
+        $avisController  = new AvisController();
+        $avis            = $avisController->getByObjet($id);
+        $averageNote     = $avisController->getAverageNote($id);
         $canReview       = false;
         $alreadyReviewed = false;
 
         if (isset($_SESSION['user_id'])) {
             $idPatient       = (int) $_SESSION['user_id'];
-            $canReview       = $avisModel->canReview($idPatient, $id);
-            $alreadyReviewed = $avisModel->hasReviewed($idPatient, $id);
+            $canReview       = $avisController->canReview($idPatient, $id);
+            $alreadyReviewed = $avisController->hasReviewed($idPatient, $id);
         }
 
-        $reservationCount = (new Reservation())->countPending($id);
+        $reservationCount = (new ReservationController())->countPending($id);
 
         require BASE_PATH . '/views/front/objet_detail.php';
     }
@@ -65,13 +65,13 @@ class ObjetController
     public function addFormBack(): void
     {
         $errors     = [];
-        $categories = (new Categorie())->getAll();
+        $categories = (new CategorieController())->getAll();
         require BASE_PATH . '/views/back/objet_add.php';
     }
 
     public function addBack(): void
     {
-        $categories = (new Categorie())->getAll();
+        $categories = (new CategorieController())->getAll();
         $data       = $this->sanitizeObjetInput($_POST);
         $errors     = $this->validateObjetData($data);
 
@@ -92,7 +92,7 @@ class ObjetController
     {
         $objet      = $this->findObjectById($id);
         $errors     = [];
-        $categories = (new Categorie())->getAll();
+        $categories = (new CategorieController())->getAll();
 
         if ($objet === null) {
             redirectToRoute('objet', 'list', ['office' => 'back', 'error' => 'not_found']);
@@ -104,7 +104,7 @@ class ObjetController
     public function editBack(int $id): void
     {
         $objet      = $this->findObjectById($id);
-        $categories = (new Categorie())->getAll();
+        $categories = (new CategorieController())->getAll();
 
         if ($objet === null) {
             redirectToRoute('objet', 'list', ['office' => 'back', 'error' => 'not_found']);
@@ -287,6 +287,7 @@ class ObjetController
     private function updateObjectById(int $id, array $data): bool
     {
         $payload = $this->normalizeObjectData($data);
+        unset($payload['image_url']); // image is managed separately via regenerateImageBack
         $payload['id_objet'] = $id;
 
         $stmt = $this->db()->prepare(

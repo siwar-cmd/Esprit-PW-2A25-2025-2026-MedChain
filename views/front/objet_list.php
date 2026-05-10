@@ -1,4 +1,21 @@
 <?php require BASE_PATH . '/views/templates/front/header.php'; ?>
+<style>
+    /* Collapse the empty <main class="container my-5"> the header opens.
+       Without this, its min-height:70vh + Bootstrap my-5 margins create
+       a large blank white gap above the sidebar layout. */
+    main.container.my-5 {
+        min-height: 0 !important;
+        margin:     0 !important;
+        padding:    0 !important;
+        display:    none !important;
+    }
+</style>
+
+<?php /* Close the <main> opened by the front header, then open the flex layout */ ?>
+</main>
+<div class="dashboard-container">
+<?php require BASE_PATH . '/views/templates/front/_sidebar.php'; ?>
+<div class="dashboard-main">
 
 <?php
 $errorMessages = ['not_found' => "L'objet demandé est introuvable."];
@@ -13,14 +30,13 @@ $typeIcons = [
     'Film'           => 'bi-camera-video-fill',
 ];
 
-/**
- * Resolve the best icon for an object row.
- * Prefers the category icon, falls back to type-based icon.
- */
-function resolveIcon(array $objet, array $typeIcons): string {
-    return !empty($objet['categorie_icone'])
-        ? $objet['categorie_icone']
-        : ($typeIcons[$objet['type_objet']] ?? 'bi-box-seam-fill');
+// Guard against fatal redeclaration if this view is ever included twice
+if (!function_exists('resolveIcon')) {
+    function resolveIcon(array $objet, array $typeIcons): string {
+        return !empty($objet['categorie_icone'])
+            ? $objet['categorie_icone']
+            : ($typeIcons[$objet['type_objet']] ?? 'bi-box-seam-fill');
+    }
 }
 ?>
 
@@ -36,6 +52,7 @@ function resolveIcon(array $objet, array $typeIcons): string {
     ?>
 
     <div style="margin-bottom:28px;">
+        
 
         <!-- Section header -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
@@ -312,4 +329,11 @@ function resolveIcon(array $objet, array $typeIcons): string {
     <?php endif; ?>
 </div>
 
+<?php
+// Close mc-front-content and mc-front-layout, then re-open <main> so the
+// front footer's closing </main> tag stays balanced.
+?>
+</div><!-- /.dashboard-main -->
+</div><!-- /.dashboard-container -->
+<main style="display:none;"><!-- placeholder closed by footer -->
 <?php require BASE_PATH . '/views/templates/front/footer.php'; ?>

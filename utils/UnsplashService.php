@@ -13,7 +13,7 @@
 class UnsplashService
 {
     // ── Replace with your real Unsplash Access Key ────────────────────────────
-    private const UNSPLASH_ACCESS_KEY = 'Dx_aWEf5Icfnkcs3ySdsjvevAXEZ13uriXttuhxyF5k';
+    private const UNSPLASH_ACCESS_KEY = '.';
     // ─────────────────────────────────────────────────────────────────────────
 
     /** Local fallback image served when the API returns nothing */

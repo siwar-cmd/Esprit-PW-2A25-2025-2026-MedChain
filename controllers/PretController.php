@@ -37,7 +37,7 @@ class PretController
         }
 
         $events = [];
-        $rows   = (new Statistiques())->getCalendarEvents();
+        $rows   = (new StatistiqueController())->getCalendarEvents();
 
         foreach ($rows as $row) {
             $isEnCours  = $row['statut'] === 'en_cours';
@@ -79,7 +79,7 @@ class PretController
             redirectToRoute('pret', 'list', ['office' => 'back', 'error' => 'loan_not_found']);
         }
 
-        $timeline = (new PretHistory())->getTimeline($id);
+        $timeline = (new PretHistoryController())->getTimeline($id);
         require BASE_PATH . '/views/back/pret_timeline.php';
     }
 
@@ -267,7 +267,7 @@ class PretController
             )->execute([':new_date' => $newDate, ':id' => $id]);
 
             // Log the renewal in history as a special entry
-            (new PretHistory())->log($id, 'en_cours', 'en_cours_renouvele', $patientId);
+            (new PretHistoryController())->log($id, 'en_cours', 'en_cours_renouvele', $patientId);
 
             $db->commit();
             return ['success' => true];
@@ -290,7 +290,7 @@ class PretController
         $_SESSION['overdue_check_ts'] = time();
 
         $db           = $this->db();
-        $notification = new Notification();
+        $notification = new NotificationController();
         $today        = date('Y-m-d');
         $tomorrow     = date('Y-m-d', strtotime('+1 day'));
 
@@ -311,7 +311,7 @@ class PretController
             $db->prepare("UPDATE pret SET statut = 'en_retard' WHERE id_pret = :id")
                ->execute([':id' => $pret['id_pret']]);
 
-            (new PretHistory())->log((int) $pret['id_pret'], 'en_cours', 'en_retard', null);
+            (new PretHistoryController())->log((int) $pret['id_pret'], 'en_cours', 'en_retard', null);
 
             $notification->create(
                 (int) $pret['id_patient'],
@@ -501,7 +501,7 @@ class PretController
 
         if ($success) {
             $newId = (int) $this->db()->lastInsertId();
-            (new PretHistory())->log($newId, '', 'en_attente', $patientId);
+            (new PretHistoryController())->log($newId, '', 'en_attente', $patientId);
         }
 
         return [
@@ -533,7 +533,7 @@ class PretController
 
             $db->prepare("UPDATE pret SET statut = 'en_cours' WHERE id_pret = :id")->execute([':id' => $id]);
 
-            (new PretHistory())->log($id, $ancienStatut, 'en_cours', $this->currentUserId());
+            (new PretHistoryController())->log($id, $ancienStatut, 'en_cours', $this->currentUserId());
 
             $db->commit();
 
@@ -552,7 +552,7 @@ class PretController
             $info = $patientRow->fetch(PDO::FETCH_ASSOC);
 
             if ($info) {
-                (new Notification())->create(
+                (new NotificationController())->create(
                     (int) $info['id_patient'],
                     '✅ Votre demande de prêt pour "' . $info['nom_objet'] . '" a été confirmée. Vous pouvez récupérer l\'objet.'
                 );
@@ -594,7 +594,7 @@ class PretController
                    ->execute([':id' => $pret['id_objet']]);
             }
 
-            (new PretHistory())->log($id, $ancienStatut, 'annule', $this->currentUserId());
+            (new PretHistoryController())->log($id, $ancienStatut, 'annule', $this->currentUserId());
 
             $db->commit();
 
@@ -608,7 +608,7 @@ class PretController
             $infoStmt->execute([':id' => $id]);
             $info = $infoStmt->fetch(PDO::FETCH_ASSOC);
             if ($info) {
-                (new Notification())->create(
+                (new NotificationController())->create(
                     (int) $info['id_patient'],
                     '❌ Votre prêt de "' . $info['nom_objet'] . '" a été annulé.'
                 );
@@ -629,16 +629,16 @@ class PretController
 
             $pret = $this->findLoanForUpdate($id);
             if ($pret === null) { $db->rollBack(); return ['success' => false, 'error' => 'loan_not_found']; }
-            if ($pret['statut'] !== 'en_cours') { $db->rollBack(); return ['success' => false, 'error' => 'invalid_status']; }
+            if (!in_array($pret['statut'], ['en_cours', 'en_retard'], true)) { $db->rollBack(); return ['success' => false, 'error' => 'invalid_status']; }
 
             $ancienStatut = $pret['statut'];
 
             $db->prepare("UPDATE pret SET statut = 'termine', date_retour_effective = NOW() WHERE id_pret = :id")->execute([':id' => $id]);
 
-            (new PretHistory())->log($id, $ancienStatut, 'termine', $this->currentUserId());
+            (new PretHistoryController())->log($id, $ancienStatut, 'termine', $this->currentUserId());
 
             // Check reservation queue
-            $reservation = new Reservation();
+            $reservation = new ReservationController();
             $next        = $reservation->getNextInQueue((int) $pret['id_objet']);
 
             if ($next !== null) {
@@ -652,7 +652,7 @@ class PretController
                 )->execute([':o' => $pret['id_objet'], ':p' => $next['id_patient']]);
 
                 $newPretId = (int) $db->lastInsertId();
-                (new PretHistory())->log($newPretId, '', 'en_attente', null);
+                (new PretHistoryController())->log($newPretId, '', 'en_attente', null);
 
                 $reservation->markFulfilled((int) $next['id_reservation']);
 

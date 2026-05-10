@@ -1,4 +1,21 @@
 <?php require BASE_PATH . '/views/templates/front/header.php'; ?>
+<style>
+    /* Collapse the empty <main class="container my-5"> the header opens.
+       Without this, its min-height:70vh + Bootstrap my-5 margins create
+       a large blank white gap above the sidebar layout. */
+    main.container.my-5 {
+        min-height: 0 !important;
+        margin:     0 !important;
+        padding:    0 !important;
+        display:    none !important;
+    }
+</style>
+
+<?php /* Close the <main> opened by the front header, then open the flex layout */ ?>
+</main>
+<div class="dashboard-container">
+<?php require BASE_PATH . '/views/templates/front/_sidebar.php'; ?>
+<div class="dashboard-main">
 
 <?php
 $filterStatut  = $_GET['statut'] ?? '';
@@ -255,4 +272,11 @@ $totalAll = count($prets);
     <?php endif; ?>
 </div>
 
+<?php
+// Close mc-front-content and mc-front-layout, then re-open <main> so the
+// front footer's closing </main> tag stays balanced.
+?>
+</div><!-- /.dashboard-main -->
+</div><!-- /.dashboard-container -->
+<main style="display:none;"><!-- placeholder closed by footer -->
 <?php require BASE_PATH . '/views/templates/front/footer.php'; ?>

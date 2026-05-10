@@ -4,7 +4,7 @@ declare(strict_types=1);
 class AIService
 {
     // ─── PUT YOUR OPENAI API KEY HERE ───────────────────────────────────────
-    private const API_KEY = ;
+    private const API_KEY = '.';
     // ────────────────────────────────────────────────────────────────────────
 
     private const ENDPOINT = 'https://api.openai.com/v1/chat/completions';
@@ -18,7 +18,7 @@ class AIService
      */
     public function analyzePatientInput(string $userMessage): array
     {
-        if (self::API_KEY === 'sk-YOUR_OPENAI_API_KEY_HERE') {
+        if (self::API_KEY === '.') {
             return $this->mockAnalysis($userMessage);
         }
 

@@ -8,7 +8,7 @@ class ReportController
             redirectToRoute('objet', 'list', ['office' => 'front']);
         }
 
-        $stats       = new Statistiques();
+        $stats       = new StatistiqueController();
         $globalStats = $stats->getGlobalStats();
         $overdueLoans = $stats->getOverdueLoans();   // JOIN utilisateur already done
         $activeLoans  = $stats->getActiveLoans();    // new: en_cours + en_attente with patient names

@@ -2,44 +2,40 @@
 
 class PretHistory
 {
-    private PDO $db;
+    private ?int    $idHistory;
+    private int     $idPret;
+    private string  $ancienStatut;
+    private string  $nouveauStatut;
+    private ?int    $changedBy;
+    private ?string $dateChange;
 
-    public function __construct()
-    {
-        $this->db = Database::getInstance()->getConnection();
+    public function __construct(
+        ?int    $idHistory     = null,
+        int     $idPret        = 0,
+        string  $ancienStatut  = '',
+        string  $nouveauStatut = '',
+        ?int    $changedBy     = null,
+        ?string $dateChange    = null
+    ) {
+        $this->idHistory     = $idHistory;
+        $this->idPret        = $idPret;
+        $this->ancienStatut  = $ancienStatut;
+        $this->nouveauStatut = $nouveauStatut;
+        $this->changedBy     = $changedBy;
+        $this->dateChange    = $dateChange;
     }
 
-    /**
-     * Insert a history entry after a status change.
-     */
-    public function log(int $idPret, string $ancienStatut, string $nouveauStatut, ?int $changedBy): bool
-    {
-        $stmt = $this->db->prepare(
-            'INSERT INTO pret_history (id_pret, ancien_statut, nouveau_statut, changed_by, date_change)
-             VALUES (:id_pret, :ancien, :nouveau, :by, NOW())'
-        );
-        return $stmt->execute([
-            ':id_pret' => $idPret,
-            ':ancien'  => $ancienStatut,
-            ':nouveau' => $nouveauStatut,
-            ':by'      => $changedBy,
-        ]);
-    }
+    public function getIdHistory(): ?int      { return $this->idHistory; }
+    public function getIdPret(): int          { return $this->idPret; }
+    public function getAncienStatut(): string { return $this->ancienStatut; }
+    public function getNouveauStatut(): string{ return $this->nouveauStatut; }
+    public function getChangedBy(): ?int      { return $this->changedBy; }
+    public function getDateChange(): ?string  { return $this->dateChange; }
 
-    /**
-     * Fetch the full timeline for one loan, newest first.
-     */
-    public function getTimeline(int $idPret): array
-    {
-        $stmt = $this->db->prepare(
-            "SELECT h.*,
-                    CONCAT(u.prenom, ' ', u.nom) AS changed_by_nom
-             FROM pret_history h
-             LEFT JOIN utilisateur u ON h.changed_by = u.id_utilisateur
-             WHERE h.id_pret = :id
-             ORDER BY h.date_change ASC, h.id_history ASC"
-        );
-        $stmt->execute([':id' => $idPret]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    public function setIdHistory(?int $id): void         { $this->idHistory     = $id; }
+    public function setIdPret(int $id): void             { $this->idPret        = $id; }
+    public function setAncienStatut(string $s): void     { $this->ancienStatut  = $s; }
+    public function setNouveauStatut(string $s): void    { $this->nouveauStatut = $s; }
+    public function setChangedBy(?int $id): void         { $this->changedBy     = $id; }
+    public function setDateChange(?string $date): void   { $this->dateChange    = $date; }
 }
