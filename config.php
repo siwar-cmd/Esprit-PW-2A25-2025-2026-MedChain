@@ -32,3 +32,8 @@ class config
         return self::$pdo;
     }
 }
+
+// Face++ credentials must stay in .env, never in Git.
+define('FACEPP_API_KEY', Env::get('FACEPP_API_KEY', ''));
+define('FACEPP_API_SECRET', Env::get('FACEPP_API_SECRET', ''));
+define('FACEPP_CONFIDENCE_THRESHOLD', (float) Env::get('FACEPP_CONFIDENCE_THRESHOLD', 80));
