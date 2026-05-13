@@ -801,7 +801,7 @@ function capturAndVerify() {
     setStatus('loading', '<i class="bi bi-cpu-fill"></i> Analyse du visage en cours…');
     setBtnLoading(true);
 
-    fetch('face_login.php', {
+    fetch('Face_login.php', {
         method : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body   : JSON.stringify({ image: imageBase64, email: email })
@@ -822,7 +822,7 @@ function capturAndVerify() {
         if (data.success) {
             setDot(3, true);
             setStatus('success',
-                `<i class="bi bi-check-circle-fill"></i> Visage reconnu ! Confiance : ${data.confidence.toFixed(1)}%`
+                `<i class="bi bi-check-circle-fill"></i> Visage reconnu ! Confiance : ${Number(data.confidence || 0).toFixed(1)}%`
             );
             // Redirection après 1.2 secondes
             setTimeout(() => {
@@ -847,7 +847,7 @@ function capturAndVerify() {
                      </span>`
                 );
             } else {
-                setStatus('error', `<i class="bi bi-x-circle-fill"></i> ${data.message}`);
+                setStatus('error', `<i class="bi bi-x-circle-fill"></i> ${escapeHtml(data.message || 'Visage non reconnu.')}`);
             }
         }
     })
@@ -856,7 +856,7 @@ function capturAndVerify() {
         setBtnLoading(false);
         setDot(1);
         if (err.message === 'HTTP_404') {
-            setStatus('error', '<i class="bi bi-exclamation-triangle-fill"></i> Fichier face_login.php introuvable (404).');
+            setStatus('error', '<i class="bi bi-exclamation-triangle-fill"></i> Fichier Face_login.php introuvable (404).');
         } else if (err.message === 'HTTP_500') {
             setStatus('error', '<i class="bi bi-exclamation-triangle-fill"></i> Erreur serveur PHP. Vérifiez les logs.');
         } else {
@@ -870,6 +870,12 @@ function setStatus(type, html) {
     const el = document.getElementById('faceStatus');
     el.className = 'face-status ' + type;
     el.innerHTML = html;
+}
+
+function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = String(value);
+    return div.innerHTML;
 }
 
 function setDot(active, allDone = false) {
@@ -898,7 +904,6 @@ function resetFaceUI() {
     setBtnLoading(false);
     document.getElementById('btnCapture').disabled = true;
 }
-
 // Fermer avec Échap
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
