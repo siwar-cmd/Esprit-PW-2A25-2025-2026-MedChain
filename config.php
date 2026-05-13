@@ -3,10 +3,17 @@
 
 
 class config
-
 {
+    private static $pdo = null;
 
-  private static $pdo = null;
+    // Twilio Configuration
+  const TWILIO_SID = 'AC590b372a4ac402a6b2dbbb7feb0bd259';
+  const TWILIO_TOKEN = '61b8d108e5415272e1a6b99670425a30';
+  const TWILIO_FROM_NUMBER = '+18165754826';
+  
+  // Admin Configuration
+  const ADMIN_FALLBACK_PHONE = '+21651981250'; 
+
 
 
 

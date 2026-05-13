@@ -43,6 +43,7 @@ if (!$fiche || $rdv['idClient'] != $currentUser->getId()) {
     <title>Ma Fiche Médicale #<?= $fiche['idFiche'] ?> - MedChain</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E8F7F2; --green-pale: #F0FDF9;
@@ -104,11 +105,19 @@ if (!$fiche || $rdv['idClient'] != $currentUser->getId()) {
         .btn-primary { background: var(--green); color: white; }
         .btn-secondary { background: #f1f5f9; color: var(--navy); }
         
-        @media print {
-            .dashboard-sidebar, .btn, .dashboard-header { display: none !important; }
-            .dashboard-container { display: block; }
-            .dashboard-main { padding: 0; }
-            .view-card { box-shadow: none; border: 1px solid #eee; max-width: none; }
+            .print-header { display: flex !important; align-items: center; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid var(--green); padding-bottom: 15px; }
+            .print-logo { width: 50px; height: 50px; background: var(--green); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .print-logo i { color: white; font-size: 24px; }
+            .print-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--navy); }
+            .print-title span { color: var(--green); }
+        }
+        .print-header { 
+            display: flex; 
+            opacity: 0; 
+            height: 0; 
+            overflow: hidden; 
+            pointer-events: none;
+            transition: none;
         }
     </style>
 </head>
@@ -138,9 +147,24 @@ if (!$fiche || $rdv['idClient'] != $currentUser->getId()) {
 
     <main class="dashboard-main">
         <div class="dashboard-header">
-            <h1>Ma Fiche Médicale</h1>
-            <button onclick="window.print()" class="btn btn-secondary"><i class="bi bi-printer"></i> Imprimer</button>
+            <h1>Détails de la Fiche</h1>
+            <div style="display:flex; gap:10px;">
+                <button onclick="generatePDF()" class="btn btn-secondary"><i class="bi bi-download"></i> Télécharger PDF</button>
+                <?php if($fiche['modeConsultation'] === 'Téléconsultation'): ?>
+                    <a href="https://meet.jit.si/MedChain_Consultation_<?= $fiche['idFiche'] ?>" target="_blank" class="btn" style="background: linear-gradient(135deg, var(--green), var(--navy)); color: white;"><i class="bi bi-video"></i> Rejoindre la consultation</a>
+                <?php endif; ?>
+            </div>
         </div>
+
+        <div id="capture-area" style="background:white; padding:20px;">
+            <div class="print-header">
+                <div class="print-logo"><i class="bi bi-plus-square-fill"></i></div>
+                <div class="print-title">Med<span>Chain</span></div>
+                <div style="margin-left: auto; text-align: right; font-size: 12px; color: var(--gray-500);">
+                    Fiche Médicale #<?= $fiche['idFiche'] ?><br>
+                    Généré par MedChain le <?= date('d/m/Y H:i') ?>
+                </div>
+            </div>
 
         <div class="view-card">
             <div class="view-header">
@@ -152,6 +176,17 @@ if (!$fiche || $rdv['idClient'] != $currentUser->getId()) {
             </div>
             
             <div class="view-content">
+                <?php if($fiche['modeConsultation'] === 'Téléconsultation'): ?>
+                <div class="view-section full-width" style="margin-bottom: 20px;">
+                    <div style="background: rgba(29, 158, 117, 0.1); border: 1px dashed var(--green); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px;">
+                        <div style="font-size: 24px; color: var(--green);"><i class="bi bi-camera-video-fill"></i></div>
+                        <div>
+                            <div style="font-weight: 700; color: var(--navy);">Consultation en ligne activée</div>
+                            <div style="font-size: 13px; color: var(--gray-500);">Utilisez le bouton ci-dessus pour rejoindre la salle d'attente virtuelle Jitsi Meet.</div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
                 <!-- Section Constantes -->
                 <div class="view-section">
                     <h3 class="view-section-title"><i class="bi bi-activity"></i> Mes Constantes</h3>
@@ -199,12 +234,52 @@ if (!$fiche || $rdv['idClient'] != $currentUser->getId()) {
 
             </div>
             
-            <div style="padding: 20px 30px; background: #f8fafc; border-top: 1px solid var(--gray-200); text-align: right;">
+            <div style="padding: 20px 30px; background: #f8fafc; border-top: 1px solid var(--gray-200); text-align: right;" id="return-btn-container">
                 <a href="index.php" class="btn btn-secondary">Retour à l'historique</a>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 </div>
+<script>
+async function generatePDF() {
+    const element = document.getElementById('capture-area');
+    const header = document.querySelector('.print-header');
+    const returnBtn = document.getElementById('return-btn-container');
+    
+    // Preparation
+    header.style.opacity = '1';
+    header.style.height = 'auto';
+    header.style.marginBottom = '30px';
+    if(returnBtn) returnBtn.style.opacity = '0';
+    
+    const opt = {
+        margin: 10,
+        filename: 'Fiche_Medicale_<?= $fiche['idFiche'] ?>.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 1, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Use a small timeout to ensure the browser has rendered the changes
+    setTimeout(() => {
+        html2pdf().from(element).set(opt).save().then(() => {
+            // Restore
+            header.style.opacity = '0';
+            header.style.height = '0';
+            header.style.marginBottom = '0';
+            if(returnBtn) returnBtn.style.opacity = '1';
+        });
+    }, 100);
+}
+
+// Auto-download if requested via URL parameter
+<?php if(isset($_GET['download']) && $_GET['download'] == '1'): ?>
+window.onload = function() {
+    setTimeout(generatePDF, 500);
+};
+<?php endif; ?>
+</script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/projet/views/assets/js/swal-utils.js"></script>
 </body>

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital 3D Map</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        /* 3D Canvas Full Screen */
+        #canvas-container { flex: 1; position: relative; background-color: #1a1a2e; }
+        
+        #interaction-tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            pointer-events: none;
+            display: none;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            transform: translate(-50%, -100%);
+            margin-top: -15px;
+            z-index: 20;
+        }
+
+        .header-title {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .header-title h1 { margin: 0; font-size: 1.2rem; color: #3b82f6; }
+        .header-title p { margin: 5px 0 0 0; font-size: 0.85rem; color: #94a3b8; }
+        .status-dot { display: inline-block; width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; margin-right: 5px; box-shadow: 0 0 8px #10b981; }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+    </style>
+    <!-- Three.js via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="calendar-component.js"></script>
+    <style>
+        /* Calendar Modal Styles */
+        #calendar-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content-cal {
+            background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 1000px;
+            position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .modal-close-cal {
+            position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #64748b;
+        }
+        .modal-close-cal:hover { color: #ef4444; }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Canvas -->
+    <div id="canvas-container">
+        <div class="header-title">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px;">
+                <div>
+                    <h1>Carte 3D Hôpital</h1>
+                    <p><span class="status-dot"></span> Synchronisation en temps réel activée</p>
+                </div>
+                <a href="views/backoffice/admin-dashboard.php" class="btn-back">
+                    &larr; Retour au Dashboard
+                </a>
+            </div>
+        </div>
+        <div id="interaction-tooltip"></div>
+    </div>
+
+    <!-- Calendar Modal -->
+    <div id="calendar-modal">
+        <div class="modal-content-cal">
+            <span class="modal-close-cal" onclick="document.getElementById('calendar-modal').style.display='none'">&times;</span>
+            <h2 id="modal-machine-title" style="margin-top:0; color:#1e293b; margin-bottom:15px; font-family:sans-serif;">Calendrier du matériel</h2>
+            <div id="calendar-wrapper"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Constants & Configuration ---
+        const machineColors = {
+            wheelchair: 0x2ecc71, // Green
+            bed: 0x3498db,        // Blue
+            ventilator: 0xe74c3c, // Red
+            scanner: 0x9b59b6,    // Purple
+            monitor: 0xf1c40f,    // Yellow
+            defibrillator: 0xe67e22 // Orange
+        };
+
+        let machinesArray = []; // Keep track of meshes
+        const API_URL = 'api-machines.php'; // PHP API endpoint
+
+        // --- 2. Three.js Scene Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color('#1a1a2e');
+        scene.fog = new THREE.Fog('#1a1a2e', 50, 200);
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 60, 80);
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.05; // Don't go below ground
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(40, 80, 40);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.left = -60;
+        dirLight.shadow.camera.right = 60;
+        dirLight.shadow.camera.top = 60;
+        dirLight.shadow.camera.bottom = -60;
+        scene.add(dirLight);
+
+        // --- 3. Environment Building ---
+        const roomCentersForVisuals = {
+            ER: { x: -30, y: 1, z: -30 },
+            ICU: { x: 0, y: 1, z: -30 },
+            Radiology: { x: 30, y: 1, z: -30 },
+            Lab: { x: -30, y: 1, z: 30 },
+            Hall: { x: 0, y: 1, z: 30 },
+            Storage: { x: 30, y: 1, z: 30 }
+        };
+        
+        // Floor
+        const floorGeo = new THREE.PlaneGeometry(120, 120);
+        const floorMat = new THREE.MeshStandardMaterial({ color: '#16213e', roughness: 0.2 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Grid
+        const gridHelper = new THREE.GridHelper(120, 30, 0x3b82f6, 0x3b82f6);
+        gridHelper.material.opacity = 0.15;
+        gridHelper.material.transparent = true;
+        gridHelper.position.y = 0.01;
+        scene.add(gridHelper);
+
+        // Create Rooms (Simple boxes)
+        function buildRooms() {
+            const roomSize = 24;
+            const wallHeight = 4;
+            
+            const wallMat = new THREE.MeshStandardMaterial({ 
+                color: '#1e293b', transparent: true, opacity: 0.6, roughness: 0.8
+            });
+
+            const floorMat = new THREE.MeshBasicMaterial({ color: '#334155', transparent: true, opacity: 0.3 });
+
+            Object.keys(roomCentersForVisuals).forEach(roomName => {
+                const center = roomCentersForVisuals[roomName];
+                
+                // Room base visual
+                const baseGeo = new THREE.PlaneGeometry(roomSize, roomSize);
+                const baseMesh = new THREE.Mesh(baseGeo, floorMat);
+                baseMesh.rotation.x = -Math.PI / 2;
+                baseMesh.position.set(center.x, 0.02, center.z);
+                scene.add(baseMesh);
+
+                // Create Walls (Outline box)
+                const wallThickness = 0.5;
+                const walls = [
+                    { w: roomSize, h: wallHeight, d: wallThickness, x: 0, z: -roomSize/2 }, // Back
+                    { w: wallThickness, h: wallHeight, d: roomSize, x: -roomSize/2, z: 0 }, // Left
+                    { w: wallThickness, h: wallHeight, d: roomSize, x: roomSize/2, z: 0 },  // Right
+                ];
+
+                const roomGroup = new THREE.Group();
+                roomGroup.position.set(center.x, 0, center.z);
+
+                walls.forEach(w => {
+                    const geo = new THREE.BoxGeometry(w.w, w.h, w.d);
+                    const mesh = new THREE.Mesh(geo, wallMat);
+                    mesh.position.set(w.x, w.h/2, w.z);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+                    roomGroup.add(mesh);
+                });
+
+                // Front wall with door gap
+                const fwGeo = new THREE.BoxGeometry(roomSize * 0.3, wallHeight, wallThickness);
+                const fw1 = new THREE.Mesh(fwGeo, wallMat);
+                fw1.position.set(-roomSize*0.35, wallHeight/2, roomSize/2);
+                fw1.castShadow = true;
+                
+                const fw2 = new THREE.Mesh(fwGeo, wallMat);
+                fw2.position.set(roomSize*0.35, wallHeight/2, roomSize/2);
+                fw2.castShadow = true;
+                
+                roomGroup.add(fw1);
+                roomGroup.add(fw2);
+
+                // Text Label for Room
+                const canvas = document.createElement('canvas');
+                canvas.width = 256; canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 36px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(roomName, 128, 32);
+                
+                const tex = new THREE.CanvasTexture(canvas);
+                const labelMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+                const labelGeo = new THREE.PlaneGeometry(roomSize * 0.4, 1.5);
+                const labelMesh = new THREE.Mesh(labelGeo, labelMat);
+                labelMesh.position.set(0, wallHeight + 1, 0);
+                roomGroup.add(labelMesh);
+
+                scene.add(roomGroup);
+            });
+        }
+        buildRooms();
+
+        // --- 4. Logic & Interactions (Synced with Backend) ---
+
+        function createMachine3D(data) {
+            // Color based on status
+            let colorHex = 0x2ecc71; // default available (green)
+            if (data.status === 'reserved') colorHex = 0xe67e22; // orange
+            if (data.status === 'in_use') colorHex = 0xe74c3c; // red
+            const size = 2;
+
+            // Geometry & Material
+            const geometry = new THREE.BoxGeometry(size, size, size);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: colorHex, roughness: 0.3, metalness: 0.2
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            // Set Position provided directly from database
+            const posX = parseFloat(data.pos_x);
+            const posY = parseFloat(data.pos_y);
+            const posZ = parseFloat(data.pos_z);
+            
+            // Validate coordinates
+            if (isNaN(posX) || isNaN(posZ)) return;
+
+            mesh.position.set(posX, size / 2, posZ);
+
+            mesh.userData = {
+                id: data.id,
+                name: data.name,
+                type: data.type,
+                room: data.bloc,
+                status: data.status,
+                color: colorHex
+            };
+
+            // Add highlight outline (hidden by default)
+            const outlineGeo = new THREE.BoxGeometry(size + 0.3, size + 0.3, size + 0.3);
+            const outlineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide, transparent: true, opacity: 0 });
+            const outline = new THREE.Mesh(outlineGeo, outlineMat);
+            mesh.add(outline);
+            mesh.userData.outline = outline;
+
+            scene.add(mesh);
+            machinesArray.push(mesh);
+
+            // Add drop animation effect for newly appearing items
+            mesh.position.y += 20;
+            const targetY = size / 2;
+            
+            const dropAnim = setInterval(() => {
+                if (mesh.position.y > targetY) {
+                    mesh.position.y -= 1.5;
+                    mesh.rotation.y += 0.1;
+                } else {
+                    mesh.position.y = targetY;
+                    mesh.rotation.y = 0;
+                    clearInterval(dropAnim);
+                }
+            }, 16);
+        }
+
+        // Fetch API Data
+        async function fetchMachines() {
+            try {
+                const res = await fetch(API_URL);
+                if (!res.ok) throw new Error('API Error');
+                const dbMachines = await res.json();
+                
+                // Compare with current scene
+                dbMachines.forEach(dbm => {
+                    const exists = machinesArray.find(m => parseInt(m.userData.id) === parseInt(dbm.id));
+                    
+                    if (!exists && dbm.bloc) {
+                        createMachine3D(dbm); // Create new machine
+                    } else if (exists && dbm.bloc && exists.userData.room !== dbm.bloc) {
+                        // Machine was moved or status changed
+                        scene.remove(exists);
+                        machinesArray = machinesArray.filter(m => m.userData.id !== exists.userData.id);
+                        createMachine3D(dbm);
+                    } else if (exists && exists.userData.status !== dbm.status) {
+                        // Status changed, update color
+                        scene.remove(exists);
+                        machinesArray = machinesArray.filter(m => m.userData.id !== exists.userData.id);
+                        createMachine3D(dbm);
+                    }
+                });
+
+                // Handle deletions
+                const dbIds = dbMachines.map(dbm => parseInt(dbm.id));
+                machinesArray.forEach(m => {
+                    if (!dbIds.includes(parseInt(m.userData.id))) {
+                        scene.remove(m);
+                        machinesArray = machinesArray.filter(item => item.userData.id !== m.userData.id);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Failed to fetch machines:", error);
+            }
+        }
+
+        // Polling every 2 seconds to simulate real-time sockets (since PHP doesn't have Socket.io natively)
+        fetchMachines(); // initial load
+        setInterval(fetchMachines, 2000);
+
+        // Listen to localStorage for refresh signals from other pages (e.g., when materiel is added)
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'mapRefreshTrigger' || event.key === 'materielAdded') {
+                console.log('🔄 Nouveau matériel détecté, mise à jour de la carte 3D...');
+                setTimeout(fetchMachines, 500); // Refresh map after a short delay
+            }
+        });
+
+        // Also listen for visibility change to refresh when user returns to tab
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('📱 Retour sur la carte 3D, mise à jour...');
+                fetchMachines();
+            }
+        });
+
+        // --- 5. Tooltip Interaction ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const tooltip = document.getElementById('interaction-tooltip');
+
+        container.addEventListener('mousemove', (event) => {
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersects = raycaster.intersectObjects(machinesArray);
+
+            if (intersects.length > 0) {
+                const object = intersects[0].object;
+                const data = object.userData;
+
+                tooltip.style.display = 'block';
+                tooltip.style.left = event.clientX + 'px';
+                tooltip.style.top = event.clientY + 'px';
+                
+                const statusLabel = data.status === 'in_use' ? 'En Cours' : (data.status === 'reserved' ? 'Réservé' : 'Disponible');
+                tooltip.innerHTML = `<strong>${data.name}</strong><br>${data.type}<br>Loc: ${data.room}<br>Status: ${statusLabel}<br><em>Clic pour voir le calendrier</em>`;
+                
+                // Highlight
+                machinesArray.forEach(m => m.userData.outline.material.opacity = 0);
+                data.outline.material.opacity = 0.5;
+                document.body.style.cursor = 'pointer';
+            } else {
+                tooltip.style.display = 'none';
+                machinesArray.forEach(m => m.userData.outline.material.opacity = 0);
+                document.body.style.cursor = 'default';
+            }
+        });
+
+        // Click to open calendar
+        container.addEventListener('click', async (event) => {
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersects = raycaster.intersectObjects(machinesArray);
+            if(intersects.length > 0) {
+                const data = intersects[0].object.userData;
+                document.getElementById('calendar-modal').style.display = 'flex';
+                document.getElementById('modal-machine-title').innerText = `Calendrier : ${data.name} (${data.type})`;
+                
+                // Load calendar
+                const cal = new HospitalCalendar('calendar-wrapper', { startHour: 8, endHour: 20 });
+                
+                // Fetch reservations for this machine
+                try {
+                    const res = await fetch(`api-calendar.php?type=machine&machine_id=${data.name}`);
+                    const json = await res.json();
+                    if(json.success) {
+                        const events = json.data.map(item => ({
+                            id: item.id,
+                            start_time: item.start_time,
+                            end_time: item.end_time,
+                            title: item.used_by,
+                            status: 'reserved' // We just color them orange/red depending on time in JS maybe? Let's default to reserved
+                        }));
+                        cal.setEvents(events);
+                    }
+                } catch(e) { console.error(e); }
+            }
+        });
+
+        // --- 6. Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            // Gently rotate machines to make them feel "alive"
+            const time = Date.now() * 0.001;
+            machinesArray.forEach((mesh, index) => {
+                mesh.position.y = (mesh.geometry.parameters.height / 2) + Math.sin(time * 2 + index) * 0.2;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        animate();
+
+    </script>
+</body>
+</html>

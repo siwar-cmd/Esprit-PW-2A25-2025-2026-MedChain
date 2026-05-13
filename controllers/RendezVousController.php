@@ -49,7 +49,21 @@ class RendezVousController {
                 $params[] = $filters['statut'];
             }
             
-            $sql .= ' ORDER BY r.dateHeureDebut DESC';
+            // Sorting Logic
+            $allowedSortFields = [
+                'date' => 'r.dateHeureDebut',
+                'patient' => 'u1.nom',
+                'medecin' => 'u2.nom',
+                'type' => 'r.typeConsultation',
+                'statut' => 'r.statut'
+            ];
+            
+            $sort = $filters['sort'] ?? 'date';
+            $order = strtoupper($filters['order'] ?? 'DESC');
+            if (!in_array($order, ['ASC', 'DESC'])) $order = 'DESC';
+            
+            $orderBy = $allowedSortFields[$sort] ?? 'r.dateHeureDebut';
+            $sql .= " ORDER BY $orderBy $order";
             
             $req = $this->pdo->prepare($sql);
             $req->execute($params);
@@ -120,6 +134,13 @@ class RendezVousController {
             ]);
             
             if ($success) {
+                $newId = $this->pdo->lastInsertId();
+                
+                // Gérer les documents si présents
+                if (!empty($_FILES['documents']['name'][0])) {
+                    $this->uploadDocuments($newId, $_FILES['documents']);
+                }
+
                 return ["success" => true, "message" => "Rendez-vous créé avec succès"];
             }
             
@@ -241,6 +262,39 @@ class RendezVousController {
             ];
         } catch (Exception $e) {
             return ['total' => 0, 'ce_mois' => 0, 'by_status' => []];
+        }
+    }
+
+    public function uploadDocuments($idRDV, $files): void {
+        $uploadDir = __DIR__ . '/../uploads/documents_rdv/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        foreach ($files['name'] as $key => $name) {
+            if ($files['error'][$key] === UPLOAD_ERR_OK) {
+                $tmpName = $files['tmp_name'][$key];
+                $extension = pathinfo($name, PATHINFO_EXTENSION);
+                $newName = uniqid('doc_', true) . '.' . $extension;
+                $destination = $uploadDir . $newName;
+
+                if (move_uploaded_file($tmpName, $destination)) {
+                    $sql = "INSERT INTO documents_rendezvous (idRDV, nomFichier, cheminFichier, typeFichier) VALUES (?, ?, ?, ?)";
+                    $stmt = $this->pdo->prepare($sql);
+                    $stmt->execute([$idRDV, $name, 'uploads/documents_rdv/' . $newName, $files['type'][$key]]);
+                }
+            }
+        }
+    }
+
+    public function getDocumentsByRDV($idRDV): array {
+        try {
+            $sql = "SELECT * FROM documents_rendezvous WHERE idRDV = ? ORDER BY dateUpload DESC";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$idRDV]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
         }
     }
 }

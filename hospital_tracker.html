@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Hospital Asset Tracking</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a; }
+        #canvas-container { width: 100vw; height: 100vh; }
+        
+        /* UI Overlay */
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(25, 30, 36, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 280px;
+            z-index: 10;
+        }
+        h2 { margin-top: 0; font-size: 1.2rem; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
+        
+        /* Controls */
+        .controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        #btn-start { background-color: #2ecc71; color: white; }
+        #btn-start:hover { background-color: #27ae60; }
+        #btn-stop { background-color: #e74c3c; color: white; opacity: 0.5; }
+        #btn-stop:hover { background-color: #c0392b; }
+        
+        /* Machine List */
+        #machine-list { list-style: none; padding: 0; margin: 0; max-height: 350px; overflow-y: auto; }
+        #machine-list::-webkit-scrollbar { width: 6px; }
+        #machine-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        #machine-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        .machine-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .machine-item:hover { background: rgba(255, 255, 255, 0.1); transform: translateX(5px); }
+        .machine-item.selected { background: rgba(255, 255, 255, 0.15); border-left-color: #3498db; }
+        .machine-info { flex: 1; }
+        .machine-item span { display: block; font-size: 0.8rem; color: #bbb; margin-top: 4px; }
+        .machine-item strong { display: block; font-size: 1rem; color: #fff; }
+        
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 0 8px rgba(255,255,255,0.2);
+        }
+
+        /* Info Panel */
+        #info-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(25, 30, 36, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-radius: 12px;
+            color: #fff;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: none;
+            z-index: 10;
+            pointer-events: none;
+            text-align: center;
+            min-width: 200px;
+        }
+        #info-panel h3 { margin: 0 0 10px 0; color: #3498db; }
+        #info-panel p { margin: 5px 0; font-size: 0.95rem; color: #ccc; }
+        #info-panel .highlight { color: #fff; font-weight: bold; }
+    </style>
+    
+    <!-- Three.js and OrbitControls via CDN (r128 for simple script tag compatibility) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div id="ui-overlay">
+        <h2>Hospital Assets</h2>
+        <div class="controls">
+            <button id="btn-start">Start Sim</button>
+            <button id="btn-stop">Stop Sim</button>
+        </div>
+        <ul id="machine-list">
+            <!-- Machine items injected via JS -->
+        </ul>
+    </div>
+    
+    <div id="info-panel">
+        <!-- Info injected via JS -->
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script>
+        // --- State Variables ---
+        const machines = [];
+        const rooms = [];
+        let simulationInterval = null;
+        let isSimulating = false;
+        let selectedMachine = null;
+        const clock = new THREE.Clock();
+
+        // --- UI Elements ---
+        const machineList = document.getElementById('machine-list');
+        const infoPanel = document.getElementById('info-panel');
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
+
+        // --- Scene Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color('#1a1a2e');
+        scene.fog = new THREE.Fog('#1a1a2e', 30, 150);
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 40, 50);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevent camera going under the floor
+        controls.minDistance = 10;
+        controls.maxDistance = 100;
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(20, 50, 20);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.left = -40;
+        dirLight.shadow.camera.right = 40;
+        dirLight.shadow.camera.top = 40;
+        dirLight.shadow.camera.bottom = -40;
+        scene.add(dirLight);
+
+        const pointLight = new THREE.PointLight(0x3498db, 0.5, 100);
+        pointLight.position.set(0, 20, 0);
+        scene.add(pointLight);
+
+        // --- Environment Materials ---
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+            color: '#16213e', 
+            roughness: 0.2, 
+            metalness: 0.1 
+        });
+        
+        const wallMaterial = new THREE.MeshStandardMaterial({ 
+            color: '#0f3460', 
+            roughness: 0.8, 
+            transparent: true, 
+            opacity: 0.6 
+        });
+        
+        // --- Floor & Environment ---
+        const floorGeometry = new THREE.PlaneGeometry(100, 100);
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const gridHelper = new THREE.GridHelper(100, 25, 0x3498db, 0x3498db);
+        gridHelper.material.opacity = 0.1;
+        gridHelper.material.transparent = true;
+        gridHelper.position.y = 0.01;
+        scene.add(gridHelper);
+
+        // --- Core Functions ---
+
+        function createRoom(name, x, z, width, depth) {
+            const height = 6;
+            const wallThickness = 0.6;
+            const roomGroup = new THREE.Group();
+            roomGroup.position.set(x, 0, z);
+
+            // Walls definition: Left, Right, Back
+            const walls = [
+                { w: wallThickness, h: height, d: depth, px: -width/2, pz: 0 }, 
+                { w: wallThickness, h: height, d: depth, px: width/2, pz: 0 },  
+                { w: width + wallThickness, h: height, d: wallThickness, px: 0, pz: -depth/2 }, 
+            ];
+
+            walls.forEach(w => {
+                const geo = new THREE.BoxGeometry(w.w, w.h, w.d);
+                const mesh = new THREE.Mesh(geo, wallMaterial);
+                mesh.position.set(w.px, w.h/2, w.pz);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                roomGroup.add(mesh);
+            });
+
+            // Front wall with door gap
+            const fwGeo1 = new THREE.BoxGeometry(width * 0.3, height, wallThickness);
+            const fwMesh1 = new THREE.Mesh(fwGeo1, wallMaterial);
+            fwMesh1.position.set(-width*0.35, height/2, depth/2);
+            fwMesh1.castShadow = true;
+            roomGroup.add(fwMesh1);
+
+            const fwGeo2 = new THREE.BoxGeometry(width * 0.3, height, wallThickness);
+            const fwMesh2 = new THREE.Mesh(fwGeo2, wallMaterial);
+            fwMesh2.position.set(width*0.35, height/2, depth/2);
+            fwMesh2.castShadow = true;
+            roomGroup.add(fwMesh2);
+
+            // Inner Floor Area (visual cue for room boundaries)
+            const areaGeo = new THREE.PlaneGeometry(width - wallThickness, depth - wallThickness);
+            const areaMat = new THREE.MeshBasicMaterial({ color: 0xe94560, transparent: true, opacity: 0.1 });
+            const areaMesh = new THREE.Mesh(areaGeo, areaMat);
+            areaMesh.rotation.x = -Math.PI / 2;
+            areaMesh.position.y = 0.02;
+            roomGroup.add(areaMesh);
+
+            // Simple 3D Text fallback using Canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(0,0,0,0)'; // Transparent
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 48px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(name, canvas.width/2, canvas.height/2);
+            
+            const tex = new THREE.CanvasTexture(canvas);
+            const labelMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+            const labelGeo = new THREE.PlaneGeometry(width * 0.5, 1.2);
+            const labelMesh = new THREE.Mesh(labelGeo, labelMat);
+            labelMesh.position.set(0, height + 1, depth/2);
+            roomGroup.add(labelMesh);
+
+            scene.add(roomGroup);
+            
+            rooms.push({
+                name,
+                getCenter: () => new THREE.Vector3(x, 0.5, z),
+                getRandomPosition: () => {
+                    const margin = 2; // Keep away from walls
+                    const rx = x + (Math.random() - 0.5) * (width - margin * 2);
+                    const rz = z + (Math.random() - 0.5) * (depth - margin * 2);
+                    return new THREE.Vector3(rx, 1, rz); // y=1 so it rests above floor
+                }
+            });
+        }
+
+        function createMachine(id, type, status, colorHex) {
+            const size = 1.5;
+            
+            // Outer geometric shell
+            const geo = new THREE.BoxGeometry(size, size, size);
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: colorHex, 
+                roughness: 0.4, 
+                metalness: 0.6 
+            });
+
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            // Highlight outline (invisible initially)
+            const outlineGeo = new THREE.BoxGeometry(size + 0.3, size + 0.3, size + 0.3);
+            const outlineMat = new THREE.MeshBasicMaterial({ 
+                color: 0xffffff, 
+                side: THREE.BackSide, 
+                transparent: true, 
+                opacity: 0 
+            });
+            const outline = new THREE.Mesh(outlineGeo, outlineMat);
+            mesh.add(outline);
+
+            // Indicator light on top
+            const lightGeo = new THREE.SphereGeometry(size * 0.2, 16, 16);
+            const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const indicator = new THREE.Mesh(lightGeo, lightMat);
+            indicator.position.y = size / 2;
+            mesh.add(indicator);
+
+            // Initial placement
+            const initialRoom = rooms[Math.floor(Math.random() * rooms.length)];
+            const pos = initialRoom.getRandomPosition();
+            mesh.position.copy(pos);
+
+            scene.add(mesh);
+
+            const machine = {
+                id, type, status, colorHex, mesh, outline, indicator,
+                currentRoom: initialRoom, targetPosition: null, startPosition: null, 
+                moveProgress: 0, moving: false
+            };
+            
+            machines.push(machine);
+            addMachineToUI(machine);
+            return machine;
+        }
+
+        function moveMachine(machine, targetRoom) {
+            machine.startPosition = machine.mesh.position.clone();
+            machine.targetPosition = targetRoom.getRandomPosition();
+            machine.currentRoom = targetRoom;
+            machine.moveProgress = 0;
+            machine.moving = true;
+            updateMachineUI(machine);
+        }
+
+        function animateMachines(delta) {
+            const speed = 2.0; // Movement speed
+            
+            machines.forEach(m => {
+                // Pulse indicator light
+                const time = Date.now() * 0.005;
+                m.indicator.material.color.setHSL(0, 0, 0.5 + Math.sin(time) * 0.5);
+
+                if (m.moving && m.targetPosition) {
+                    const dist = m.startPosition.distanceTo(m.targetPosition);
+                    const duration = dist / speed;
+                    
+                    m.moveProgress += delta / duration;
+                    
+                    if (m.moveProgress >= 1) {
+                        m.moveProgress = 1;
+                        m.moving = false;
+                        updateMachineUI(m);
+                    }
+
+                    // Linear interpolation for X and Z
+                    m.mesh.position.lerpVectors(m.startPosition, m.targetPosition, m.moveProgress);
+                    
+                    // Parabolic jump for Y (smooth hop effect)
+                    const jumpHeight = 3;
+                    m.mesh.position.y = 1 + Math.sin(m.moveProgress * Math.PI) * jumpHeight;
+                    
+                    // Rotate while moving
+                    m.mesh.rotation.y += delta * 2;
+                    m.mesh.rotation.x += delta;
+                } else {
+                    // Gently settle rotation back to normal
+                    m.mesh.rotation.x = THREE.MathUtils.lerp(m.mesh.rotation.x, 0, 0.1);
+                    m.mesh.rotation.z = THREE.MathUtils.lerp(m.mesh.rotation.z, 0, 0.1);
+                }
+            });
+        }
+
+        // --- Build Hospital Environment ---
+        createRoom('ER 1', -15, -15, 14, 12);
+        createRoom('ER 2', 5, -15, 14, 12);
+        createRoom('ICU', 25, -15, 14, 12);
+        createRoom('Radiology', -15, 10, 18, 14);
+        createRoom('Storage', 10, 10, 14, 14);
+        createRoom('Surgery', 30, 10, 16, 16);
+
+        // Generate Machines
+        const colors = {
+            blue: 0x3498db, red: 0xe74c3c, green: 0x2ecc71, 
+            yellow: 0xf1c40f, purple: 0x9b59b6, orange: 0xe67e22
+        };
+
+        createMachine('W-101', 'Wheelchair', 'Available', colors.blue);
+        createMachine('W-102', 'Wheelchair', 'In Use', colors.red);
+        createMachine('B-201', 'Hospital Bed', 'Available', colors.green);
+        createMachine('B-202', 'Hospital Bed', 'Maintenance', colors.yellow);
+        createMachine('M-301', 'MRI Coils', 'Available', colors.purple);
+        createMachine('P-401', 'IV Pump', 'In Use', colors.orange);
+        createMachine('D-501', 'Defibrillator', 'Available', colors.red);
+        createMachine('V-601', 'Ventilator', 'In Use', colors.blue);
+
+        // --- Interaction (Raycaster) ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        window.addEventListener('click', (event) => {
+            // Ignore UI clicks
+            if (event.target.closest('#ui-overlay') || event.target.closest('#info-panel')) return;
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const machineMeshes = machines.map(m => m.mesh);
+            const intersects = raycaster.intersectObjects(machineMeshes);
+
+            if (intersects.length > 0) {
+                const clickedMesh = intersects[0].object;
+                const machine = machines.find(m => m.mesh === clickedMesh);
+                selectMachine(machine);
+            } else {
+                selectMachine(null);
+            }
+        });
+
+        // --- UI Logic ---
+
+        function addMachineToUI(machine) {
+            const li = document.createElement('li');
+            li.className = 'machine-item';
+            li.id = `ui-m-${machine.id}`;
+            li.innerHTML = `
+                <div class="status-dot" style="background-color: #${machine.colorHex.toString(16).padStart(6, '0')}"></div>
+                <div class="machine-info">
+                    <strong>${machine.id}</strong>
+                    <span id="loc-${machine.id}">${machine.currentRoom.name}</span>
+                </div>
+            `;
+            li.onclick = () => selectMachine(machine);
+            machineList.appendChild(li);
+        }
+
+        function updateMachineUI(machine) {
+            const locSpan = document.getElementById(`loc-${machine.id}`);
+            if (locSpan) {
+                locSpan.innerText = machine.moving ? `${machine.currentRoom.name} (Moving...)` : machine.currentRoom.name;
+            }
+            
+            // Update selected info panel if applicable
+            if (selectedMachine === machine && !machine.moving) {
+                updateInfoPanel(machine);
+            }
+        }
+
+        function updateInfoPanel(machine) {
+            infoPanel.innerHTML = `
+                <h3>${machine.id}</h3>
+                <p>Type: <span class="highlight">${machine.type}</span></p>
+                <p>Status: <span class="highlight">${machine.status}</span></p>
+                <p>Location: <span class="highlight">${machine.currentRoom.name}</span></p>
+            `;
+        }
+
+        function selectMachine(machine) {
+            // Deselect all
+            machines.forEach(m => {
+                m.outline.material.opacity = 0;
+                const el = document.getElementById(`ui-m-${m.id}`);
+                if (el) el.classList.remove('selected');
+            });
+
+            selectedMachine = machine;
+
+            if (machine) {
+                machine.outline.material.opacity = 0.8;
+                const el = document.getElementById(`ui-m-${machine.id}`);
+                if (el) el.classList.add('selected');
+
+                infoPanel.style.display = 'block';
+                updateInfoPanel(machine);
+            } else {
+                infoPanel.style.display = 'none';
+            }
+        }
+
+        // --- Simulation Logic ---
+        function triggerRandomMovement() {
+            // Find a machine that isn't moving
+            const availableMachines = machines.filter(m => !m.moving);
+            if (availableMachines.length === 0) return;
+
+            const randomMachine = availableMachines[Math.floor(Math.random() * availableMachines.length)];
+            
+            // Pick a room different from current
+            const otherRooms = rooms.filter(r => r !== randomMachine.currentRoom);
+            const randomRoom = otherRooms[Math.floor(Math.random() * otherRooms.length)];
+            
+            moveMachine(randomMachine, randomRoom);
+        }
+
+        btnStart.onclick = () => {
+            if (isSimulating) return;
+            isSimulating = true;
+            btnStart.style.opacity = '0.5';
+            btnStop.style.opacity = '1';
+            
+            triggerRandomMovement();
+            simulationInterval = setInterval(triggerRandomMovement, 2500);
+        };
+
+        btnStop.onclick = () => {
+            if (!isSimulating) return;
+            isSimulating = false;
+            btnStart.style.opacity = '1';
+            btnStop.style.opacity = '0.5';
+            clearInterval(simulationInterval);
+        };
+
+        // --- Render Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            
+            controls.update();
+            animateMachines(delta);
+
+            renderer.render(scene, camera);
+        }
+
+        // --- Resize Handler ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start
+        animate();
+    </script>
+</body>
+</html>

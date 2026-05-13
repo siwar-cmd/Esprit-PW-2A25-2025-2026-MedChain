@@ -1,0 +1,146 @@
+============================================
+RÉSUMÉ DES MODIFICATIONS - BLOC OPÉRATION
+============================================
+
+VERSION: 2026-05-03
+MISE À JOUR: Ajout du niveau d'urgence (1-5) et PDF export
+
+FICHIERS MODIFIÉS
+=================
+
+1. MODÈLES (Models)
+   ✅ models/Intervention.php
+      - Correction du setter setNiveauUrgence() pour accepter les nombres (1-5)
+      - Ajout de la fonction utilitaire getNiveauUrgenceLabel() pour convertir en texte
+      - Exemple: 1 → "Faible", 2 → "Modérée", 3 → "Élevée", 4 → "Critique", 5 → "Extrême"
+
+2. FORMULAIRES
+   ✅ views/backoffice/bloc-operation/intervention-create.php
+      - Ajout du sélecteur "Niveau d'urgence (1-5)"
+      - Ajout des champs: type, duree, salle, chirurgien
+      
+   ✅ views/backoffice/bloc-operation/intervention-edit.php
+      - Même structure que le formulaire de création
+      - Tous les champs préremplis depuis la base de données
+
+3. AFFICHAGES
+   ✅ views/backoffice/bloc-operation/intervention-index.php
+      - Ajout de styles CSS pour les badges (1-5 avec couleurs différentes)
+      - Affichage du niveau d'urgence avec conversion en label texte
+      - Couleurs: Faible(vert) → Modérée(jaune) → Élevée(rose) → Critique(rouge) → Extrême(rouge foncé)
+      
+   ✅ views/backoffice/bloc-operation/intervention-view.php
+      - Affichage des détails avec conversion numéro → label
+      
+   ✅ views/backoffice/bloc-operation/intervention-search.php
+      - Adaptation pour afficher les nouveaux champs
+
+4. EXPORT PDF
+   ✅ views/backoffice/bloc-operation/intervention-export-pdf.php
+      - Création complète d'un système d'export PDF
+      - Utilise la bibliothèque TCPDF
+      - Génère un rapport complet avec tableau et résumé
+      - Format: interventions_YYYY-MM-DD_HH-mm-ss.pdf
+      
+   ✅ views/backoffice/bloc-operation/materiel-export-pdf.php
+      - Nettoyage et adaptation pour nouveau schéma
+      - Affiche: Nom, Catégorie, Disponibilité, Stérilisation, Utilisations
+      - Format: materiel_YYYY-MM-DD_HH-mm-ss.pdf
+
+5. DOCUMENTATION
+   ✅ INSTALL_TCPDF.txt
+      - Guide complet pour installer TCPDF
+      - Deux méthodes: Composer (recommandé) et installation manuelle
+
+CHANGEMENTS DE BASE DE DONNÉES
+==============================
+
+Table: intervention
+- Champ: niveau_urgence
+  - Type: INT ou VARCHAR
+  - Valeurs supportées: 1, 2, 3, 4, 5 (ou NULL)
+  - Labels affichés: "Faible", "Modérée", "Élevée", "Critique", "Extrême"
+
+MIGRATION DES ANCIENNES DONNÉES
+===============================
+
+Si vous avez des anciennes interventions avec des valeurs NULL ou "0":
+
+UPDATE intervention SET niveau_urgence = 2 WHERE niveau_urgence IS NULL OR niveau_urgence = 0;
+
+INSTALLATION DE TCPDF
+====================
+
+URGENT: Pour utiliser l'export PDF, TCPDF doit être installé.
+
+Option 1 - Via Composer (Recommandé):
+  cd c:\xampp\htdocs\projet\projet
+  composer require tecnickcom/tcpdf
+
+Option 2 - Manuelle:
+  Voir le fichier: INSTALL_TCPDF.txt
+
+FONCTIONNALITÉS DISPONIBLES
+============================
+
+✅ Créer une intervention avec niveau d'urgence (1-5)
+✅ Éditer une intervention 
+✅ Afficher la liste avec niveau d'urgence (labels + couleurs)
+✅ Afficher les détails d'une intervention
+✅ Rechercher par type, chirurgien, etc.
+✅ Exporter en PDF (nécessite TCPDF)
+
+TESTS À EFFECTUER
+=================
+
+1. Créer une nouvelle intervention:
+   - Sélectionnez un niveau d'urgence de 1 à 5
+   - Vérifiez l'enregistrement en base
+
+2. Voir la liste:
+   - Vérifiez que le niveau s'affiche avec la couleur appropriée
+   - 1 = Vert (Faible)
+   - 2 = Jaune (Modérée)
+   - 3 = Rose (Élevée)
+   - 4 = Rouge (Critique)
+   - 5 = Rouge foncé (Extrême)
+
+3. Voir les détails:
+   - Cliquez sur l'œil pour voir tous les détails
+   - Le niveau doit afficher le label texte
+
+4. Exporter en PDF:
+   - Cliquez sur "Exporter en PDF"
+   - Vérifiez que le fichier se télécharge correctement
+   - Si erreur TCPDF: installez TCPDF (voir INSTALL_TCPDF.txt)
+
+STRUCTURE ACTUELLE DE LA BASE
+============================
+
+Table: intervention
+├── id (INT, PK)
+├── type (VARCHAR)
+├── date_intervention (DATETIME)
+├── duree (INT - minutes)
+├── niveau_urgence (INT - 1-5)
+├── chirurgien (VARCHAR - nom du médecin)
+├── salle (VARCHAR)
+├── description (TEXT)
+└── created_at (TIMESTAMP)
+
+NOTES IMPORTANTES
+=================
+
+- Le champ "niveau_urgence" utilise des nombres (1-5) en base
+- L'affichage convertit automatiquement les nombres en labels texte
+- Les anciennes interventions sans niveau affichent "Non défini" en gris
+- La fonction getNiveauUrgenceLabel() du modèle est réutilisable
+- TCPDF est optionnel: sans lui, vous ne pouvez pas exporter en PDF
+
+SUPPORT
+=======
+
+Si vous rencontrez des problèmes:
+1. Vérifiez que la structure de la base correspond
+2. Vérifiez que TCPDF est installé correctement
+3. Consultez les fichiers de log PHP pour les erreurs

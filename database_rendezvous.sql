@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS `rendezvous` (
   `motif` text DEFAULT NULL,
   `idClient` int(11) NOT NULL,
   `idMedecin` int(11) NOT NULL,
+  `rappel_envoye` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`idRDV`),
   KEY `fk_client` (`idClient`),
   KEY `fk_medecin` (`idMedecin`),
@@ -37,8 +38,21 @@ CREATE TABLE IF NOT EXISTS `ficherendezvous` (
   `examensComplementaires` text DEFAULT NULL,
   `observations` text DEFAULT NULL,
   `prochainRDV` date DEFAULT NULL,
+  `rappel_prochain_rdv_envoye` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`idFiche`),
   UNIQUE KEY `fk_rdv` (`idRDV`),
   CONSTRAINT `fk_rdv` FOREIGN KEY (`idRDV`) REFERENCES `rendezvous` (`idRDV`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table documents_rendezvous
+CREATE TABLE IF NOT EXISTS `documents_rendezvous` (
+  `idDocument` int(11) NOT NULL AUTO_INCREMENT,
+  `idRDV` int(11) NOT NULL,
+  `nomFichier` varchar(255) NOT NULL,
+  `cheminFichier` varchar(255) NOT NULL,
+  `typeFichier` varchar(100) DEFAULT NULL,
+  `dateUpload` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`idDocument`),
+  CONSTRAINT `fk_doc_rdv` FOREIGN KEY (`idRDV`) REFERENCES `rendezvous` (`idRDV`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

@@ -198,14 +198,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="row">
                 <div class="col-md-12 mb-3">
-                    <label class="form-label"><i class="bi bi-calendar-event text-success me-2"></i>Date & Heure Début</label>
+                    <label class="form-label"><i class="bi bi-calendar-event text-success me-2"></i>Date & Heure du rendez-vous</label>
                     <?php 
                         $valDate = isset($_POST['dateHeureDebut']) ? htmlspecialchars($_POST['dateHeureDebut']) : date('Y-m-d\TH:i', strtotime($rdv['dateHeureDebut']));
                     ?>
                     <input type="datetime-local" name="dateHeureDebut" id="dateHeureDebut" class="form-control <?= ($errorField === 'dateHeureDebut') ? 'is-invalid' : '' ?>" 
                            min="<?= date('Y-m-d\TH:i') ?>"
                            value="<?= $valDate ?>">
-                    <div class="text-danger mt-1 error-msg" id="err-dateHeureDebut" style="display:none; font-size:0.875em;">Veuillez choisir une date de début.</div>
+                    <div class="text-danger mt-1 error-msg" id="err-dateHeureDebut" style="display:none; font-size:0.875em;">Veuillez choisir une date et heure.</div>
                     <?php if($errorField === 'dateHeureDebut'): ?>
                         <div class="text-danger mt-1" style="font-size:0.875em;"><?= htmlspecialchars($errorMsg) ?></div>
                     <?php endif; ?>

@@ -29,7 +29,9 @@ if (isset($_POST['delete_id'])) {
 }
 
 $search = $_GET['search'] ?? '';
-$filters = ['search' => $search];
+$sort = $_GET['sort'] ?? 'date';
+$order = $_GET['order'] ?? 'desc';
+$filters = ['search' => $search, 'sort' => $sort, 'order' => $order];
 $rdvData = $rdvController->getAllRendezVous($filters, 'patient', $currentUser->getId());
 $rendezvous = $rdvData['success'] ? $rdvData['rdvs'] : [];
 
@@ -56,6 +58,7 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
   <style>
     :root {
       --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E8F7F2; --green-pale: #F0FDF9;
@@ -82,14 +85,8 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
     .status-termine { background: #DCFCE7; color: #16A34A; }
     .status-annule { background: #FEE2E2; color: #DC2626; }
 
-    .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 30px; padding-bottom: 20px; }
-    .page-link { padding: 8px 16px; border-radius: 8px; background: white; border: 1px solid var(--gray-200); color: var(--navy); text-decoration: none; transition: 0.3s; font-weight: 500; font-size: 13px; }
-    .page-link:hover { border-color: var(--green); color: var(--green); }
-    .page-link.active { background: var(--green); color: white; border-color: var(--green); }
-    .page-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
-
-    .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 30px; padding-bottom: 20px; }
-    .page-link { padding: 8px 16px; border-radius: 8px; background: white; border: 1px solid var(--gray-200); color: var(--navy); text-decoration: none; transition: 0.3s; font-weight: 500; font-size: 13px; }
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 15px; padding-bottom: 10px; }
+    .page-link { padding: 6px 14px; border-radius: 8px; background: white; border: 1px solid var(--gray-200); color: var(--navy); text-decoration: none; transition: 0.3s; font-weight: 500; font-size: 13px; }
     .page-link:hover { border-color: var(--green); color: var(--green); }
     .page-link.active { background: var(--green); color: white; border-color: var(--green); }
     .page-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
@@ -272,20 +269,83 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
       .dashboard-sidebar.open { left: 0; }
       .dashboard-main { padding: 20px; }
     }
+
     @media print {
-        body * { visibility: hidden; }
-        .dashboard-sidebar { display: none !important; }
-        .dashboard-container { display: block; }
-        #print-area, #print-area * { visibility: visible; }
-        #print-area { position: absolute; left: 0; top: 0; width: 100%; }
-        .action-bar, .actions-col { display: none !important; }
+        @page { margin: 1cm; }
+        body { margin: 0; padding: 0; visibility: hidden; background: white; }
+        .dashboard-sidebar, .action-bar, .actions-col, .pagination, .stats-row, #rdvTable, .alert { display: none !important; }
+        #capture-area, #capture-area * { visibility: visible; }
+        #capture-area { position: absolute; left: 0; top: 0; width: 100%; padding: 1cm; background: white; }
+
+        #rdvTablePrint { display: table !important; width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #edf2f7; }
+        #rdvTablePrint th { background-color: #f7fafc; color: #2d3748; padding: 12px 15px; text-align: left; font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #edf2f7; }
+        #rdvTablePrint td { padding: 12px 15px; font-size: 13px; color: #4a5568; border-bottom: 1px solid #edf2f7; vertical-align: middle; line-height: 1.4; }
+        #rdvTablePrint tr:nth-child(even) { background-color: #fcfdfe; }
+
+        .date-cell { font-weight: 700; color: var(--navy); display: block; }
+        .time-cell { font-size: 11px; color: var(--gray-500); display: block; }
+        .doctor-cell { font-weight: 600; color: var(--green-dark); display: block; }
+        .type-tag { font-size: 11px; color: var(--gray-500); font-style: italic; display: block; }
+
+        .pdf-badge { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; display: inline-block; }
+        .pdf-badge-planifie { background: #ebf8ff; color: #2b6cb0; border-color: #bee3f8; }
+        .pdf-badge-termine { background: #f0fff4; color: #2f855a; border-color: #c6f6d5; }
+        .pdf-badge-annule { background: #fff5f5; color: #c53030; border-color: #fed7d7; }
+
+        .print-header { display: flex !important; align-items: center; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .print-logo { width: 45px; height: 45px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .print-logo i { color: white; font-size: 20px; }
+        .print-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--navy); }
+        .print-title span { color: var(--green); }
+        .stat-card { border: 1px solid #e2e8f0 !important; background: #fff !important; padding: 15px !important; }
+    }
+
+    .print-header { 
+        display: flex; 
+        opacity: 0; 
+        height: 0; 
+        overflow: hidden; 
+        pointer-events: none;
+        transition: none;
+    }
+    #rdvTablePrint { 
+        display: none; 
+        opacity: 0; 
+        height: 0; 
+        overflow: hidden; 
+        pointer-events: none;
     }
     .btn-mc { background-color: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
     .btn-mc:hover { background-color: var(--green-dark); color: white; transform: translateY(-2px); }
     .btn-stats { background: linear-gradient(135deg, var(--green), var(--navy)); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
     .btn-stats:hover { background: linear-gradient(135deg, var(--green-dark), var(--navy)); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3); }
-    .sort-select { padding: 9px 15px; border-radius: 8px; border: 1px solid var(--gray-200); background: white; color: var(--navy); font-weight: 500; font-size: 14px; outline: none; cursor: pointer; transition: all 0.3s; }
-    .sort-select:hover { border-color: var(--green); }
+    .sort-select { 
+      padding: 10px 35px 10px 15px; 
+      border-radius: 12px; 
+      border: 1.5px solid var(--gray-200); 
+      background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236B7280' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E") no-repeat right 12px center;
+      background-size: 14px;
+      appearance: none;
+      color: var(--navy); 
+      font-weight: 600; 
+      font-size: 13px; 
+      outline: none; 
+      cursor: pointer; 
+      transition: all 0.3s;
+      min-width: 160px;
+    }
+    .sort-select:focus, .search-box:focus-within { 
+      border-color: var(--green); 
+      box-shadow: 0 0 0 4px rgba(29, 158, 117, 0.1); 
+    }
+
+    .search-box { display: flex; align-items: center; background: white; border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 4px; transition: all 0.3s; gap: 0; }
+    .search-box .form-control { border: none !important; padding: 8px 12px; outline: none !important; font-size: 13px; font-weight: 500; min-width: 250px; background: transparent; }
+    .search-box .btn-mc { padding: 8px 15px; border-radius: 8px; }
+
+    .btn { padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 13px;}
+    .btn-mc { background: var(--green); color: white; }
+    .btn-secondary { background: var(--gray-500); color: white; }
   </style>
 </head>
 <body>
@@ -364,8 +424,17 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
     </aside>
 
     <main class="dashboard-main">
-        <div class="mc-container" id="print-area">
-    <h1 class="page-title">Mes Rendez-vous</h1>
+        <div id="capture-area">
+            <div class="print-header">
+                <div class="print-logo"><i class="bi bi-plus-square-fill"></i></div>
+                <div class="print-title">Med<span>Chain</span></div>
+                <div style="margin-left: auto; text-align: right; font-size: 12px; color: var(--gray-500);">
+                    Document généré par MedChain<br>
+                    <?= date('d/m/Y H:i') ?>
+                </div>
+            </div>
+
+        <h1 class="page-title">Mes Rendez-vous</h1>
 
     <?php if(isset($_SESSION['success_message'])): ?>
         <div class="alert alert-success"><?= $_SESSION['success_message']; unset($_SESSION['success_message']); ?></div>
@@ -401,16 +470,16 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
             <input type="text" name="search" id="searchInput" class="form-control" placeholder="Rechercher..." value="<?= htmlspecialchars($search) ?>" onkeyup="filterTable()">
             <button type="submit" class="btn btn-mc"><i class="bi bi-search"></i></button>
         </form>
+        <select class="sort-select" onchange="handleSortChange(this)" style="margin-left: 10px;">
+            <option value="">Tri par...</option>
+            <option value="date" <?= $sort == 'date' ? 'selected' : '' ?>>Date & Heure</option>
+            <option value="medecin" <?= $sort == 'medecin' ? 'selected' : '' ?>>Médecin</option>
+            <option value="type" <?= $sort == 'type' ? 'selected' : '' ?>>Type</option>
+            <option value="statut" <?= $sort == 'statut' ? 'selected' : '' ?>>Statut</option>
+        </select>
         <div style="display:flex; align-items:center; gap:10px;">
-            <select class="sort-select" onchange="handleSortChange(this, 'rdvTable')">
-                <option value="">Tri par...</option>
-                <option value="0">Date & Heure</option>
-                <option value="1">Médecin</option>
-                <option value="2">Type</option>
-                <option value="4">Statut</option>
-            </select>
             <a href="stats.php" class="btn btn-stats"><i class="bi bi-bar-chart-line-fill"></i> Statistiques</a>
-            <button onclick="window.print()" class="btn btn-secondary"><i class="bi bi-file-pdf"></i> PDF</button>
+            <button onclick="generatePDF()" class="btn btn-secondary"><i class="bi bi-download"></i> Télécharger PDF</button>
             <a href="create.php" class="btn btn-mc"><i class="bi bi-plus-lg"></i> Nouveau RDV</a>
         </div>
     </div>
@@ -419,11 +488,11 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
         <table class="table mb-0" id="rdvTable">
             <thead>
                 <tr>
-                    <th style="cursor:pointer" onclick="sortTable(0, 'rdvTable')">Date & Heure <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                    <th style="cursor:pointer" onclick="sortTable(1, 'rdvTable')">Médecin <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
-                    <th style="cursor:pointer" onclick="sortTable(2, 'rdvTable')">Type <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
+                    <th style="cursor:pointer" onclick="sortTable('date')">Date & Heure <i class="bi bi-arrow-<?= $sort == 'date' ? ($order == 'asc' ? 'up' : 'down') : 'down-up' ?>" style="font-size:10px;"></i></th>
+                    <th style="cursor:pointer" onclick="sortTable('medecin')">Médecin <i class="bi bi-arrow-<?= $sort == 'medecin' ? ($order == 'asc' ? 'up' : 'down') : 'down-up' ?>" style="font-size:10px;"></i></th>
+                    <th style="cursor:pointer" onclick="sortTable('type')">Type <i class="bi bi-arrow-<?= $sort == 'type' ? ($order == 'asc' ? 'up' : 'down') : 'down-up' ?>" style="font-size:10px;"></i></th>
                     <th>Motif</th>
-                    <th style="cursor:pointer" onclick="sortTable(4, 'rdvTable')">Statut <i class="bi bi-arrow-down-up" style="font-size:10px;"></i></th>
+                    <th style="cursor:pointer" onclick="sortTable('statut')">Statut <i class="bi bi-arrow-<?= $sort == 'statut' ? ($order == 'asc' ? 'up' : 'down') : 'down-up' ?>" style="font-size:10px;"></i></th>
                     <th class="actions-col">Actions</th>
                 </tr>
             </thead>
@@ -456,21 +525,55 @@ $paginated_rdv = array_slice($rendezvous, $offset, $items_per_page);
         </table>
     </div>
 
+    <!-- Hidden table for printing all data -->
+    <table id="rdvTablePrint">
+        <thead>
+            <tr>
+                <th>Date / Heure</th>
+                <th>Médecin / Spécialité</th>
+                <th>Motif de consultation</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach($rendezvous as $rdv): ?>
+            <tr>
+                <td>
+                    <span class="date-cell"><?= date('d/m/Y', strtotime($rdv['dateHeureDebut'])) ?></span>
+                    <span class="time-cell"><?= date('H:i', strtotime($rdv['dateHeureDebut'])) ?></span>
+                </td>
+                <td>
+                    <span class="doctor-cell">Dr. <?= htmlspecialchars($rdv['medecin_nom'] . ' ' . $rdv['medecin_prenom']) ?></span>
+                    <span class="type-tag"><?= htmlspecialchars($rdv['typeConsultation']) ?></span>
+                </td>
+                <td><?= htmlspecialchars($rdv['motif']) ?></td>
+                <td style="text-align: center;">
+                    <span class="pdf-badge pdf-badge-<?= strtolower($rdv['statut']) ?>">
+                        <?= ucfirst($rdv['statut']) ?>
+                    </span>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    </div> <!-- End capture-area -->
+
     <?php if ($total_pages >= 1): ?>
     <div class="pagination">
-        <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>" 
+        <a href="?page=<?= $current_page - 1 ?>&search=<?= urlencode($search) ?>&sort=<?= $sort ?>&order=<?= $order ?>" 
            class="page-link <?= $current_page <= 1 ? 'disabled' : '' ?>">
             <i class="bi bi-chevron-left"></i>
         </a>
         
         <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-            <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>" 
+            <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&sort=<?= $sort ?>&order=<?= $order ?>" 
                class="page-link <?= $current_page == $i ? 'active' : '' ?>">
                 <?= $i ?>
             </a>
         <?php endfor; ?>
         
-        <a href="?page=<?= $current_page + 1 ?>&search=<?= urlencode($search) ?>" 
+        <a href="?page=<?= $current_page + 1 ?>&search=<?= urlencode($search) ?>&sort=<?= $sort ?>&order=<?= $order ?>" 
            class="page-link <?= $current_page >= $total_pages ? 'disabled' : '' ?>">
             <i class="bi bi-chevron-right"></i>
         </a>
@@ -504,47 +607,73 @@ function filterTable() {
     }
 }
 
-    function handleSortChange(select, tableId) {
+    function handleSortChange(select) {
         if (select.value !== "") {
-            sortTable(parseInt(select.value), tableId);
+            window.location.href = "?page=1&search=<?= urlencode($search) ?>&sort=" + select.value + "&order=<?= $order ?>";
         }
     }
 
-function sortTable(n, tableId) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-    table = document.getElementById(tableId);
-    switching = true;
-    dir = "asc"; 
-    while (switching) {
-        switching = false;
-        rows = table.rows;
-        for (i = 1; i < (rows.length - 1); i++) {
-            shouldSwitch = false;
-            x = rows[i].getElementsByTagName("TD")[n];
-            y = rows[i + 1].getElementsByTagName("TD")[n];
-            if (dir == "asc") {
-                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                    shouldSwitch = true;
-                    break;
-                }
-            } else if (dir == "desc") {
-                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                    shouldSwitch = true;
-                    break;
-                }
-            }
+    function sortTable(column) {
+        let currentSort = "<?= $sort ?>";
+        let currentOrder = "<?= $order ?>";
+        let newOrder = "asc";
+        
+        if (currentSort === column) {
+            newOrder = currentOrder === "asc" ? "desc" : "asc";
         }
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
-            switchcount ++;
-        } else {
-            if (switchcount == 0 && dir == "asc") {
-                dir = "desc";
-                switching = true;
-            }
-        }
+        
+        window.location.href = "?page=1&search=<?= urlencode($search) ?>&sort=" + column + "&order=" + newOrder;
     }
+
+async function generatePDF() {
+    const element = document.getElementById('capture-area');
+    const header = document.querySelector('.print-header');
+    const fullTable = document.getElementById('rdvTablePrint');
+    const paginatedTable = document.getElementById('rdvTable');
+    const actionBar = document.querySelector('.action-bar');
+    const statsRow = document.querySelector('.stats-row');
+    const pagination = document.querySelector('.pagination');
+    const pageTitle = document.querySelector('.page-title');
+
+    // Preparation
+    header.style.opacity = '1';
+    header.style.height = 'auto';
+    header.style.marginBottom = '40px';
+    
+    fullTable.style.display = 'table';
+    fullTable.style.opacity = '1';
+    fullTable.style.height = 'auto';
+    fullTable.style.marginTop = '30px';
+
+    if(paginatedTable) paginatedTable.style.display = 'none';
+    if(actionBar) actionBar.style.display = 'none';
+    if(pagination) pagination.style.display = 'none';
+    
+    const opt = {
+        margin: 10,
+        filename: 'Mes_Rendezvous_MedChain.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 1, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    setTimeout(() => {
+        html2pdf().from(element).set(opt).save().then(() => {
+            // Restore
+            header.style.opacity = '0';
+            header.style.height = '0';
+            header.style.marginBottom = '0';
+            
+            fullTable.style.display = 'none';
+            fullTable.style.opacity = '0';
+            fullTable.style.height = '0';
+            fullTable.style.marginTop = '0';
+
+            if(paginatedTable) paginatedTable.style.display = 'table';
+            if(actionBar) actionBar.style.display = 'flex';
+            if(pagination) pagination.style.display = 'flex';
+        });
+    }, 100);
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

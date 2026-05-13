@@ -1,0 +1,85 @@
+============================================
+EXPORT PDF - GUIDE D'UTILISATION
+============================================
+
+VERSION: 2026-05-03
+SOLUTION: Export HTML imprimable (aucune dépendance externe requise)
+
+✅ BONNE NOUVELLE: Aucune installation nécessaire!
+================================================
+
+La fonctionnalité d'export PDF utilise maintenant une solution HTML imprimable
+qui fonctionne directement dans le navigateur, sans dépendances externes.
+
+COMMENT ÇA MARCHE
+=================
+
+1. Cliquez sur le bouton "Exporter en PDF" dans la liste des interventions/matériel
+2. Une page HTML bien formatée s'ouvre
+3. Cliquez sur le bouton "🖨️ Imprimer / Sauvegarder en PDF"
+4. Choisissez:
+   - "Imprimer" pour imprimer physiquement
+   - "Sauvegarder en PDF" pour télécharger le PDF
+
+AVANTAGES DE CETTE SOLUTION
+============================
+
+✓ Aucune dépendance externe (TCPDF n'est pas nécessaire)
+✓ Compatible avec tous les navigateurs modernes
+✓ PDF généré directement par le navigateur
+✓ Mise en page professionnelle
+✓ Coloration des données (niveaux d'urgence)
+✓ Résumé statistique inclus
+✓ Entête et pied de page automatiques
+✓ Évite les pages blanches en impression
+
+NAVIGATEURS SUPPORTÉS
+=====================
+
+✓ Chrome / Chromium
+✓ Firefox
+✓ Safari
+✓ Edge
+✓ Opera
+
+ANCIENNES NOTES TCPDF (optionnel)
+=================================
+
+Si vous préférez toujours utiliser TCPDF pour une génération de PDF côté serveur:
+
+Option 1 - Via Composer:
+  cd c:\xampp\htdocs\projet\projet
+  composer require tecnickcom/tcpdf
+
+Option 2 - Installation Manuelle:
+  1. Téléchargez TCPDF: https://tcpdf.org/
+  2. Extrayez dans: vendor/tecnickcom/tcpdf/
+  3. Créez vendor/autoload.php avec le code d'autoload
+
+Cependant, cette solution HTML est recommandée car elle est:
+- Plus simple (pas de dépendances)
+- Plus légère (aucune librairie supplémentaire)
+- Aussi professionnelle (mise en page CSS)
+- Entièrement personnalisable
+
+DÉPANNAGE
+=========
+
+Si le bouton d'impression ne fonctionne pas:
+1. Vérifiez que JavaScript est activé
+2. Essayez un autre navigateur
+3. Vérifiez les logs du serveur
+
+PERSONNALISATION
+================
+
+Les fichiers d'export sont:
+- intervention-export-pdf.php (interventions)
+- materiel-export-pdf.php (matériel)
+
+Vous pouvez modifier les styles CSS pour changer:
+- Les couleurs
+- Les polices
+- La mise en page
+- Les colonnes affichées
+

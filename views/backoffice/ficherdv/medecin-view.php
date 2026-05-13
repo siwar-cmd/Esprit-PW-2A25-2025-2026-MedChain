@@ -34,6 +34,7 @@ $stats = $rdvController->getStats('medecin', $userId);
     <title>Détails Fiche #<?= $fiche['idFiche'] ?> - MedChain</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="../components/medecin.css">
     <style>
         :root {
             --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E8F7F2; --green-pale: #F0FDF9;
@@ -47,35 +48,6 @@ $stats = $rdvController->getStats('medecin', $userId);
         
         .dashboard-container { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
         
-        /* Sidebar */
-        .dashboard-sidebar { background: linear-gradient(160deg, #ffffff 0%, #f0fdf9 60%, #e6faf3 100%); border-right: 1px solid rgba(29,158,117,.15); position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; box-shadow: 4px 0 24px rgba(29,158,117,.08); }
-        .sidebar-logo-zone { padding: 26px 22px 20px; border-bottom: 1px solid rgba(29,158,117,.12); }
-        .sidebar-logo-link { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-        .sidebar-logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--green), var(--green-dark)); border-radius: 13px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(29,158,117,.35); color: white; }
-        .sidebar-logo-text { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: -.3px; }
-        .sidebar-logo-text span { color: var(--green); }
-        .sidebar-tagline { font-size: 11px; color: var(--gray-500); margin-top: 3px; letter-spacing: .03em; }
-        
-        .sidebar-user-card { margin: 18px 16px; background: linear-gradient(135deg, var(--green), var(--green-dark)); border-radius: var(--radius-lg); padding: 18px 16px; box-shadow: var(--shadow-green); color: white; }
-        .sidebar-user-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.25); border: 2.5px solid rgba(255,255,255,.5); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-        .sidebar-user-name { font-size: 15px; font-weight: 700; }
-        .sidebar-user-role { font-size: 11px; opacity: 0.9; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
-
-        .sidebar-stats-widget { margin: 0 16px 12px; padding: 12px; background: white; border-radius: 12px; border: 1px solid rgba(29,158,117,0.1); }
-        .sidebar-stats-label { font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; margin-bottom: 8px; }
-        .sidebar-stats-row { display: flex; justify-content: space-between; }
-        .sidebar-stat-num { font-size: 16px; font-weight: 700; color: var(--green); }
-        .sidebar-stat-lbl { font-size: 10px; color: var(--gray-500); }
-
-        .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 3px; padding: 12px; }
-        .sidebar-nav-item { display: flex; align-items: center; gap: 13px; padding: 11px 14px; color: var(--gray-500); text-decoration: none; border-radius: 12px; transition: all 0.25s; font-size: 14px; font-weight: 500; }
-        .sidebar-nav-item i { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(29,158,117,.08); color: var(--green); }
-        .sidebar-nav-item:hover, .sidebar-nav-item.active { background: rgba(29,158,117,.07); color: var(--green-dark); }
-        .sidebar-nav-item.active i { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: white; }
-        
-        .sidebar-footer { padding: 16px; border-top: 1px solid rgba(29,158,117,.10); margin-top: auto; }
-        .sidebar-footer-back { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; background: var(--green-pale); color: var(--green-dark); font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid rgba(29,158,117,.2); }
-
         .dashboard-main { padding: 32px 40px; }
         .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
         .dashboard-header h1 { font-family: 'Syne', sans-serif; font-size: 28px; color: var(--navy); }
@@ -119,44 +91,16 @@ $stats = $rdvController->getStats('medecin', $userId);
 </head>
 <body>
 <div class="dashboard-container">
-    <aside class="dashboard-sidebar">
-      <div class="sidebar-logo-zone">
-        <a href="../../frontoffice/home/index.php" class="sidebar-logo-link">
-          <div class="sidebar-logo-icon"><i class="bi bi-plus-square-fill"></i></div>
-          <div>
-            <div class="sidebar-logo-text">Med<span>Chain</span></div>
-            <div class="sidebar-tagline">Espace Médecin</div>
-          </div>
-        </a>
-      </div>
-      <div class="sidebar-user-card">
-        <div class="sidebar-user-avatar"><i class="bi bi-person-badge-fill"></i></div>
-        <div class="sidebar-user-name">Dr. <?= htmlspecialchars($_SESSION['user_prenom'] . ' ' . $_SESSION['user_nom']) ?></div>
-        <div class="sidebar-user-role"><i class="bi bi-heart-pulse-fill"></i> Médecin</div>
-      </div>
-      <div class="sidebar-stats-widget">
-        <div class="sidebar-stats-label">Mes statistiques</div>
-        <div class="sidebar-stats-row">
-          <div><div class="sidebar-stat-num"><?= $stats['total'] ?? 0 ?></div><div class="sidebar-stat-lbl">Consultations</div></div>
-          <div><div class="sidebar-stat-num"><?= $stats['ce_mois'] ?? 0 ?></div><div class="sidebar-stat-lbl">Ce mois</div></div>
-        </div>
-      </div>
-      <nav class="sidebar-nav">
-        <a href="../rendezvous/medecin-index.php" class="sidebar-nav-item"><i class="bi bi-calendar-check"></i> Rendez-vous</a>
-        <a href="medecin-index.php" class="sidebar-nav-item active"><i class="bi bi-file-earmark-medical"></i> Fiches Médicales</a>
-      </nav>
-      <div class="sidebar-footer">
-        <a href="../../../controllers/logout.php" class="sidebar-nav-item logout" onclick="confirmSwal(event, this, 'Déconnexion ?', 'Voulez-vous vraiment vous déconnecter ?')"><i class="bi bi-box-arrow-left"></i> Déconnexion</a>
-        <div style="margin-top:10px;"><a href="../../frontoffice/home/index.php" class="sidebar-footer-back"><i class="bi bi-arrow-left"></i> Retour au site</a></div>
-      </div>
-    </aside>
-
+    <?php include '../components/sidebar-medecin.php'; ?>
     <main class="dashboard-main">
         <div class="dashboard-header">
             <h1>Détails de la Fiche</h1>
             <div style="display:flex; gap:10px;">
                 <button onclick="window.print()" class="btn btn-secondary"><i class="bi bi-printer"></i> Imprimer</button>
                 <a href="medecin-edit.php?id=<?= $fiche['idFiche'] ?>" class="btn btn-primary"><i class="bi bi-pencil"></i> Modifier</a>
+                <?php if($fiche['modeConsultation'] === 'Téléconsultation'): ?>
+                    <a href="https://meet.jit.si/MedChain_Consultation_<?= $fiche['idFiche'] ?>" target="_blank" class="btn" style="background: linear-gradient(135deg, var(--green), var(--navy)); color: white;"><i class="bi bi-video"></i> Rejoindre la consultation</a>
+                <?php endif; ?>
             </div>
         </div>
 

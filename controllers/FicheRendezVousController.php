@@ -172,7 +172,22 @@ class FicheRendezVousController {
                 $params[] = $searchTerm;
             }
             
-            $sql .= ' ORDER BY f.dateGeneration DESC';
+            // Sorting Logic
+            $allowedSortFields = [
+                'date' => 'r.dateHeureDebut',
+                'dateGen' => 'f.dateGeneration',
+                'patient' => 'u1.nom',
+                'medecin' => 'u2.nom',
+                'tarif' => 'f.tarifConsultation',
+                'id' => 'f.idFiche'
+            ];
+            
+            $sort = $filters['sort'] ?? 'dateGen';
+            $order = strtoupper($filters['order'] ?? 'DESC');
+            if (!in_array($order, ['ASC', 'DESC'])) $order = 'DESC';
+            
+            $orderBy = $allowedSortFields[$sort] ?? 'f.dateGeneration';
+            $sql .= " ORDER BY $orderBy $order";
             
             $req = $this->pdo->prepare($sql);
             $req->execute($params);
@@ -220,13 +235,29 @@ class FicheRendezVousController {
             $req->execute($params);
             $ceMois = $req->fetch(PDO::FETCH_ASSOC)['ce_mois'];
 
+            // Monthly data for last 6 months
+            $monthlyData = [];
+            for ($i = 5; $i >= 0; $i--) {
+                $month = date('m', strtotime("-$i months"));
+                $year = date('Y', strtotime("-$i months"));
+                $monthName = date('M', strtotime("-$i months"));
+                
+                $sqlMonth = "SELECT COUNT(*) as count $baseSql AND MONTH(f.dateGeneration) = ? AND YEAR(f.dateGeneration) = ?";
+                $stmtMonth = $this->pdo->prepare($sqlMonth);
+                $stmtMonth->execute(array_merge($params, [$month, $year]));
+                $count = $stmtMonth->fetch(PDO::FETCH_ASSOC)['count'];
+                
+                $monthlyData[] = ['month' => $monthName, 'count' => $count];
+            }
+
             return [
                 'total' => $total,
                 'ce_mois' => $ceMois,
-                'emails_sent' => $emailsSent
+                'emails_sent' => $emailsSent,
+                'monthly' => $monthlyData
             ];
         } catch (Exception $e) {
-            return ['total' => 0, 'ce_mois' => 0, 'emails_sent' => 0];
+            return ['total' => 0, 'ce_mois' => 0, 'emails_sent' => 0, 'monthly' => []];
         }
     }
 }
