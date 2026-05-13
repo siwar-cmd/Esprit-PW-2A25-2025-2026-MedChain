@@ -120,11 +120,6 @@ $stats = $rdvController->getStats('medecin', $userId);
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'DM Sans', sans-serif; background: #f0faf6; color: var(--gray-700); min-height: 100vh; }
         
-        .dashboard-container { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
-        
-        .dashboard-container { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
-        
-        .dashboard-main { padding: 32px 40px; }
         .dashboard-header { margin-bottom: 32px; }
         .dashboard-header h1 { font-family: 'Syne', sans-serif; font-size: 28px; color: var(--navy); }
         
