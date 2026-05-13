@@ -1,0 +1,130 @@
+=== BLOC OPÉRATION - GUIDE D'INSTALLATION ===
+
+ÉTAPE 1 : IMPORTER LES TABLES SQL
+=================================
+Ouvrez votre gestionnaire de base de données (phpMyAdmin)
+et exécutez le fichier : /projet/bloc_operation.sql
+
+Cela créera automatiquement les 3 tables :
+- materiel
+- intervention  
+- intervention_materiel
+
+ÉTAPE 2 : FICHIERS CRÉÉS
+========================
+
+MODÈLES (Models) :
+- /models/Materiel.php (Gestion du matériel)
+- /models/Intervention.php (Gestion des interventions)
+
+CONTRÔLEURS (Controllers) :
+- /controllers/BlocOperationController.php (Logique métier)
+
+VUES MATÉRIEL (Views) :
+- /views/backoffice/bloc-operation/materiel-index.php (Liste)
+- /views/backoffice/bloc-operation/materiel-create.php (Création)
+- /views/backoffice/bloc-operation/materiel-edit.php (Modification)
+- /views/backoffice/bloc-operation/materiel-view.php (Affichage détail)
+- /views/backoffice/bloc-operation/materiel-search.php (Recherche)
+- /views/backoffice/bloc-operation/materiel-export-pdf.php (Export PDF)
+- /views/backoffice/bloc-operation/api-materiel.php (API JSON)
+
+VUES INTERVENTION (Views) :
+- /views/backoffice/bloc-operation/intervention-index.php (Liste)
+- /views/backoffice/bloc-operation/intervention-create.php (Création)
+- /views/backoffice/bloc-operation/intervention-edit.php (Modification)
+- /views/backoffice/bloc-operation/intervention-view.php (Affichage détail)
+- /views/backoffice/bloc-operation/intervention-search.php (Recherche)
+- /views/backoffice/bloc-operation/intervention-export-pdf.php (Export PDF)
+- /views/backoffice/bloc-operation/api-intervention.php (API JSON)
+
+DASHBOARD MODIFIÉ :
+- /views/backoffice/admin-dashboard.php (Boutons Bloc Opération ajoutés)
+
+ÉTAPE 3 : ACCÈS
+===============
+Admin :
+- Bouton "Matériel" : http://localhost/projet/views/backoffice/bloc-operation/materiel-index.php
+- Bouton "Intervention" : http://localhost/projet/views/backoffice/bloc-operation/intervention-index.php
+- Depuis le dashboard : Dashboard > Bloc Opération > Matériel/Interventions
+
+Médecin :
+- Peut accéder aux liens directement (modifications limitées)
+- Matériel : Affichage et modification seulement
+- Intervention : Affichage et modification de ses propres interventions
+
+ÉTAPE 4 : DÉPENDANCES OPTIONNELLES
+===================================
+Pour l'export PDF, installez TCPDF :
+composer require tecnickcom/tcpdf
+
+Sans TCPDF, l'export PDF affichera une erreur. Les autres fonctionnalités continueront de fonctionner.
+
+PERMISSIONS
+===========
+MATÉRIEL:
+✓ Admin : CRUD + Statistiques + Export PDF + Recherche
+✓ Médecin : Lecture + Modification + Recherche
+
+INTERVENTION:
+✓ Admin : CRUD + Statistiques + Export PDF + Recherche
+✓ Médecin : Lecture + Création + Modification (propres) + Affichage
+
+ROUTES CLÉS
+===========
+- materiel-index.php : Liste tous les matériels
+- materiel-create.php : Créer nouveau matériel
+- materiel-edit.php?id=X : Modifier matériel
+- materiel-view.php?id=X : Voir détails matériel
+- materiel-search.php : Résultats de recherche
+- materiel-export-pdf.php : Télécharger PDF
+- api-materiel.php : Endpoints API JSON
+
+Même structure pour interventions.
+
+API ENDPOINTS
+=============
+GET/POST /api-materiel.php?action=list&page=1
+GET/POST /api-materiel.php?action=stats
+GET/POST /api-materiel.php?action=search&keyword=xxx
+POST /api-materiel.php (action=create|update|delete)
+
+Même pour api-intervention.php
+
+NOTES IMPORTANTES
+=================
+1. Les dates d'intervention utilisent le format datetime-local (HTML5)
+2. Les recherches sont dynamiques et supportent plusieurs champs
+3. Les statistiques sont calculées en temps réel
+4. Les suppressions de matériel supprimera automatiquement les liens intervention_materiel
+5. Un médecin ne peut que modifier ses propres interventions
+6. L'export PDF nécessite TCPDF installé via composer
+
+STRUCTURE BD
+============
+materiel :
+- id_materiel (PK)
+- nom, description, quantite, prix_unitaire, fournisseur
+- date_acquisition, statut (disponible|en_maintenance|hors_service)
+- created_by, created_at, updated_at
+
+intervention :
+- id_intervention (PK)
+- titre, description, date_intervention
+- medecin_id (FK), patient_id (FK), statut
+- resultat_intervention, notes_medecin
+- created_at, updated_at
+
+intervention_materiel :
+- id (PK)
+- intervention_id (FK), materiel_id (FK)
+- quantite_utilisee
+
+DÉPANNAGE
+=========
+- Si PDF échoue : installer TCPDF via composer
+- Si recherche ne fonctionne pas : vérifier la connexion BD
+- Si permissions refusées : vérifier $_SESSION['user_role']
+- 404 sur routes : vérifier les chemins relatifs aux dossiers
+
+Fin du guide d'installation.

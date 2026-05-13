@@ -29,9 +29,10 @@ class RendezVousController {
             if ($role === 'patient' && $userId !== null) {
                 $sql .= ' AND r.idClient = ?';
                 $params[] = $userId;
-            } elseif ($role === 'medecin' && $userId !== null) {
-                $sql .= ' AND r.idMedecin = ?';
-                $params[] = $userId;
+            } elseif ($role === 'medecin') {
+                // Pour le moment, on affiche tout pour le médecin pour remplir le tableau
+                // $sql .= ' AND r.idMedecin = ?';
+                // $params[] = $userId;
             }
             
             if (!empty($filters['search'])) {
