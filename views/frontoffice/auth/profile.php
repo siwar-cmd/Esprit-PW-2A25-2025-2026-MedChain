@@ -3,10 +3,12 @@ session_start();
 include_once '../../../controllers/AuthController.php'; 
 include_once '../../../controllers/PasswordController.php';
 include_once '../../../controllers/ProfileController.php';
+include_once '../../../controllers/FaceIdController.php';
 
 $authController     = new AuthController();
 $passwordController = new PasswordController();
 $profileController  = new ProfileController();
+$faceController     = new FaceIdController();
 
 if (!$authController->isLoggedIn()) {
     header('Location: sign-in.php');
@@ -19,6 +21,8 @@ $isAdmin = $user && $user->estAdmin();
 $profile_error  = null; $profile_success  = null;
 $photo_error    = null; $photo_success    = null;
 $password_error = null; $password_success = null;
+
+$hasFace = $faceController->hasFaceRegistered($user->getId());
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_profile'])) {
@@ -50,6 +54,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $passwordController->changePassword($user->getId(), $current_password, $new_password);
             if ($result['success']) { $password_success = htmlspecialchars($result['message'], ENT_QUOTES, 'UTF-8'); $_POST = []; }
             else                    { $password_error   = htmlspecialchars($result['message'], ENT_QUOTES, 'UTF-8'); }
+        }
+    }
+    if (isset($_POST['delete_face'])) {
+        $result = $faceController->deleteFace($user->getId());
+        if ($result['success']) { 
+            $profile_success = htmlspecialchars($result['message'], ENT_QUOTES, 'UTF-8'); 
+            $hasFace = false;
+        } else {
+            $profile_error = htmlspecialchars($result['message'], ENT_QUOTES, 'UTF-8');
         }
     }
 }
@@ -381,6 +394,54 @@ $photo_url = $user->getPhotoProfilUrl();
             .avatar-info .email{justify-content:center}
             .profile-card-body{padding:18px}
         }
+
+        /* ══ MODAL FACE ID (Enrollment) ═══════════════════════════════════════ */
+        #faceEnrollModal {
+            display: none; position: fixed; inset: 0; z-index: 99999;
+            align-items: center; justify-content: center;
+        }
+        #faceEnrollBackdrop {
+            position: absolute; inset: 0;
+            background: rgba(10,30,50,0.65); backdrop-filter: blur(8px);
+        }
+        #faceEnrollCard {
+            position: relative; z-index: 2; width: 100%; max-width: 440px;
+            margin: 20px; background: #fff; border-radius: 24px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.22); overflow: hidden;
+            transform: scale(0.88); opacity: 0;
+            transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+        }
+        .face-modal-header {
+            background: linear-gradient(135deg,#0ea5e9,#0284c7);
+            padding: 24px 28px 20px; position: relative;
+        }
+        .face-modal-header h3 { font-family: 'Syne',sans-serif; font-size: 20px; font-weight: 700; color: white; margin-bottom: 4px; }
+        .face-modal-header p  { color: rgba(255,255,255,0.80); font-size: 13px; }
+        .face-modal-close {
+            position: absolute; top: 14px; right: 14px;
+            background: rgba(255,255,255,0.2); border: none; color: white;
+            width: 32px; height: 32px; border-radius: 50%; font-size: 16px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .face-modal-body { padding: 24px 28px; }
+        .webcam-wrapper {
+            position: relative; border-radius: 16px; overflow: hidden;
+            background: #0f172a; margin-bottom: 16px;
+            border: 3px solid #e2e8f0;
+        }
+        #enrollVideo { width: 100%; display: block; transform: scaleX(-1); }
+        .scan-overlay { position: absolute; inset: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+        .scan-frame { width: 180px; height: 200px; position: relative; }
+        .scan-frame::before,.scan-frame::after { content: ''; position: absolute; width: 30px; height: 30px; border-color: rgba(14,165,233,0.85); border-style: solid; }
+        .scan-frame::before { top: 0; left: 0; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+        .scan-frame::after  { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+        .face-status { text-align: center; padding: 10px 0 4px; font-size: 14px; font-weight: 500; min-height: 28px; }
+        .face-status.info { color: #0284c7; }
+        .face-status.success { color: #16a34a; }
+        .face-status.error { color: #dc2626; }
+        .face-status.loading { color: #6b7280; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
     </style>
 </head>
 <body>
@@ -514,6 +575,7 @@ $photo_url = $user->getPhotoProfilUrl();
                 <div class="profile-tabs">
                     <button class="tab-btn active" data-tab="edit"><i class="bi bi-pencil-fill"></i> Modifier</button>
                     <button class="tab-btn" data-tab="password"><i class="bi bi-key-fill"></i> Mot de passe</button>
+                    <button class="tab-btn" data-tab="security"><i class="bi bi-shield-lock-fill"></i> Face ID</button>
                     <button class="tab-btn" data-tab="info"><i class="bi bi-info-circle-fill"></i> Informations</button>
                 </div>
 
@@ -592,6 +654,49 @@ $photo_url = $user->getPhotoProfilUrl();
                             </button>
                         </div>
                     </form>
+                </div>
+
+                <!-- Tab: Security (Face ID) -->
+                <div class="tab-pane" id="tab-security">
+                    <div style="background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: flex-start; gap: 20px;">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #0ea5e9, #0284c7); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);">
+                                <i class="bi bi-person-bounding-box" style="color: white; font-size: 28px;"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-family: 'Syne', sans-serif; font-size: 18px; color: var(--navy); margin-bottom: 8px;">Connexion par reconnaissance faciale (Face ID)</h3>
+                                <p style="font-size: 14px; color: var(--gray-500); line-height: 1.5; margin-bottom: 16px;">
+                                    Sécurisez votre compte en utilisant votre visage pour vous connecter. Plus besoin de retenir votre mot de passe, un simple scan suffit !
+                                </p>
+                                
+                                <?php if ($hasFace): ?>
+                                    <div style="display: flex; align-items: center; gap: 10px; color: #16a34a; font-weight: 600; font-size: 14px; margin-bottom: 16px;">
+                                        <i class="bi bi-check-circle-fill"></i> Face ID est actuellement activé sur votre compte.
+                                    </div>
+                                    <div class="actions-row">
+                                        <button type="button" class="btn btn-primary" onclick="openFaceEnrollModal()">
+                                            <i class="bi bi-camera-fill"></i> Mettre à jour mon visage
+                                        </button>
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="delete_face" value="1">
+                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Voulez-vous vraiment désactiver Face ID ?')">
+                                                <i class="bi bi-trash-fill"></i> Désactiver Face ID
+                                            </button>
+                                        </form>
+                                    </div>
+                                <?php else: ?>
+                                    <div style="display: flex; align-items: center; gap: 10px; color: var(--gray-500); font-size: 14px; margin-bottom: 16px;">
+                                        <i class="bi bi-info-circle"></i> Face ID n'est pas encore activé.
+                                    </div>
+                                    <div class="actions-row">
+                                        <button type="button" class="btn btn-primary" onclick="openFaceEnrollModal()">
+                                            <i class="bi bi-person-bounding-box"></i> Configurer Face ID maintenant
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tab: Info -->
@@ -792,6 +897,125 @@ $photo_url = $user->getPhotoProfilUrl();
             if (np.value !== cp.value)    { alert('Les mots de passe ne correspondent pas'); e.preventDefault(); }
             else if (np.value.length < 6) { alert('Minimum 6 caractères requis');            e.preventDefault(); }
         });
+    }
+</script>
+
+<!-- ══ MODAL ENREGISTREMENT FACE ID ══════════════════════════════════════════ -->
+<div id="faceEnrollModal">
+    <div id="faceEnrollBackdrop" onclick="closeFaceEnrollModal()"></div>
+    <div id="faceEnrollCard">
+        <div class="face-modal-header">
+            <button class="face-modal-close" onclick="closeFaceEnrollModal()">✕</button>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <i class="bi bi-person-bounding-box" style="color:white;font-size:20px;"></i>
+                </div>
+                <h3 style="margin:0;">Configurer Face ID</h3>
+            </div>
+            <p>Positionnez votre visage et restez immobile</p>
+        </div>
+        <div class="face-modal-body">
+            <div class="webcam-wrapper">
+                <video id="enrollVideo" autoplay playsinline></video>
+                <div class="scan-overlay">
+                    <div class="scan-frame"></div>
+                </div>
+            </div>
+            <canvas id="enrollCanvas" width="640" height="480" style="display:none;"></canvas>
+            
+            <div class="face-status info" id="enrollStatus">
+                <i class="bi bi-camera-video-fill"></i> Initialisation caméra…
+            </div>
+            
+            <button id="btnEnrollCapture" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="captureAndEnroll()" disabled>
+                <span class="btn-spinner" id="enrollSpinner"></span>
+                <i class="bi bi-camera-fill" id="enrollIcon"></i>
+                <span id="enrollText">Enregistrer mon visage</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let enrollStream = null;
+
+    function openFaceEnrollModal() {
+        const modal = document.getElementById('faceEnrollModal');
+        const card  = document.getElementById('faceEnrollCard');
+        modal.style.display = 'flex';
+        setTimeout(() => { card.style.transform = 'scale(1)'; card.style.opacity = '1'; }, 10);
+        startEnrollCamera();
+    }
+
+    function closeFaceEnrollModal() {
+        const modal = document.getElementById('faceEnrollModal');
+        const card  = document.getElementById('faceEnrollCard');
+        card.style.transform = 'scale(0.88)'; card.style.opacity = '0';
+        setTimeout(() => { modal.style.display = 'none'; }, 320);
+        stopEnrollCamera();
+    }
+
+    function startEnrollCamera() {
+        const video = document.getElementById('enrollVideo');
+        navigator.mediaDevices.getUserMedia({ video: { width:640, height:480, facingMode:'user' }, audio: false })
+            .then(stream => {
+                enrollStream = stream;
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    document.getElementById('enrollStatus').innerHTML = '<i class="bi bi-camera-video-fill"></i> Prêt pour l\'enregistrement';
+                    document.getElementById('btnEnrollCapture').disabled = false;
+                };
+            })
+            .catch(err => {
+                document.getElementById('enrollStatus').className = 'face-status error';
+                document.getElementById('enrollStatus').innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Erreur caméra';
+            });
+    }
+
+    function stopEnrollCamera() {
+        if (enrollStream) { enrollStream.getTracks().forEach(t => t.stop()); enrollStream = null; }
+    }
+
+    function captureAndEnroll() {
+        const video = document.getElementById('enrollVideo');
+        const canvas = document.getElementById('enrollCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+        setEnrollLoading(true);
+        document.getElementById('enrollStatus').innerHTML = '<i class="bi bi-cpu-fill"></i> Traitement en cours…';
+
+        fetch('Save_face.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageBase64 })
+        })
+        .then(r => r.json())
+        .then(data => {
+            setEnrollLoading(false);
+            if (data.success) {
+                document.getElementById('enrollStatus').className = 'face-status success';
+                document.getElementById('enrollStatus').innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + data.message;
+                setTimeout(() => { window.location.reload(); }, 1500);
+            } else {
+                document.getElementById('enrollStatus').className = 'face-status error';
+                document.getElementById('enrollStatus').innerHTML = '<i class="bi bi-x-circle-fill"></i> ' + data.message;
+            }
+        })
+        .catch(err => {
+            setEnrollLoading(false);
+            document.getElementById('enrollStatus').className = 'face-status error';
+            document.getElementById('enrollStatus').innerHTML = '<i class="bi bi-wifi-off"></i> Erreur réseau';
+        });
+    }
+
+    function setEnrollLoading(loading) {
+        document.getElementById('btnEnrollCapture').disabled = loading;
+        document.getElementById('enrollSpinner').style.display = loading ? 'inline-block' : 'none';
+        document.getElementById('enrollIcon').style.display = loading ? 'none' : 'inline';
+        document.getElementById('enrollText').textContent = loading ? 'Traitement…' : 'Enregistrer mon visage';
     }
 </script>
 </body>
