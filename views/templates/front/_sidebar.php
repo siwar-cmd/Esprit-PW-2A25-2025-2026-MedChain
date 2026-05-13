@@ -84,7 +84,7 @@ if (!function_exists('_sb_active')) {
         </a>
 
         <div class="dashboard-nav-title">Mon compte</div>
-        <a href="/midchaine/views/frontoffice/auth/profile.php"
+        <a href="/projet/views/frontoffice/auth/profile.php"
            class="dashboard-nav-item">
             <i class="bi bi-person-circle"></i> Mon profil
         </a>
@@ -96,7 +96,7 @@ if (!function_exists('_sb_active')) {
         <?php endif; ?>
 
         <div class="dashboard-nav-title">Session</div>
-        <a href="/midchaine/controllers/logout.php"
+        <a href="/projet/controllers/logout.php"
            class="dashboard-nav-item logout"
            onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
             <i class="bi bi-box-arrow-right"></i> Déconnexion

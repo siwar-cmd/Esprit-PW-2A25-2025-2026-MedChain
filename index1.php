@@ -96,7 +96,7 @@ try {
             if ($office !== 'back') {
                 redirectToRoute('objet', 'list', ['office' => 'front']);
             }
-            (new AdminController())->dashboard();
+            (new AdminController())->dashboardLoisir();
             break;
 
         case 'objet':

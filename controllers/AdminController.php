@@ -424,6 +424,25 @@ class AdminController {
         }
     }
 
+    public function dashboardLoisir() {
+        $statCtrl = new StatistiqueController();
+        $global   = $statCtrl->getGlobalStats();
+        
+        $totalObjets   = $global['total_objets'];
+        $pendingCount  = $global['en_attente'];
+        $confirmedCount= $global['en_cours'];
+        $returnedCount = $global['termine'];
+        
+        $topObjects   = $statCtrl->getTopObjects(5);
+        $loansByMonth = $statCtrl->getLoansByMonth();
+        $returnRate   = $statCtrl->getReturnRate();
+        
+        $pretCtrl    = new PretController();
+        $recentPrets = $pretCtrl->getRecentPendingLoans(5);
+
+        require BASE_PATH . '/views/back/admin_dashboard.php';
+    }
+
     private function isAdmin(): bool {
         return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
     }

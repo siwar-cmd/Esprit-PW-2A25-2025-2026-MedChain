@@ -11,17 +11,17 @@
                 <span style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#fff;">Med<span style="color:var(--green);">Chain</span></span>
             </div>
             <div style="display:flex;gap:20px;">
-                <a href="/midchaine/index1.php?office=front&controller=objet&action=list"
+                <a href="/projet/index1.php?office=front&controller=objet&action=list"
                    style="color:rgba(255,255,255,.6);font-size:13.5px;transition:color .2s;"
                    onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
                     Catalogue
                 </a>
-                <a href="/midchaine/index1.php?office=front&controller=pret&action=myLoans"
+                <a href="/projet/index1.php?office=front&controller=pret&action=myLoans"
                    style="color:rgba(255,255,255,.6);font-size:13.5px;transition:color .2s;"
                    onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
                     Mes prêts
                 </a>
-                <a href="/midchaine/views/frontoffice/auth/profile.php"
+                <a href="/projet/views/frontoffice/auth/profile.php"
                    style="color:rgba(255,255,255,.6);font-size:13.5px;transition:color .2s;"
                    onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
                     Mon profil

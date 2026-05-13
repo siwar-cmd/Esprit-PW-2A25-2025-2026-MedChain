@@ -991,11 +991,11 @@ if ($isLoggedIn) {
 
     <nav class="mc-nav">
       <a href="index.php" class="active">Accueil</a>
+      <a href="/projet/index1.php">Loisirs & Objets</a>
+      <a href="/projet/index1.php?controller=chat">Assistant IA</a>
       <a href="innovation.php">L'Innovation</a>
       <a href="fonctionnalites.php">Fonctionnalités</a>
       <a href="securite.php">Sécurité</a>
-      <a href="cas_usage.php">Cas d'Usage</a>
-      <a href="blog.php">Blog <span class="nav-badge">New</span></a>
     </nav>
 
     <div class="mc-actions">
@@ -1040,11 +1040,11 @@ if ($isLoggedIn) {
   <!-- Mobile Nav -->
   <div class="mc-mobile-nav" id="mobileNav">
     <a href="index.php" class="active">Accueil</a>
+    <a href="/projet/index1.php">Loisirs & Objets</a>
+    <a href="/projet/index1.php?controller=chat">Assistant IA</a>
     <a href="innovation.php">L'Innovation</a>
     <a href="fonctionnalites.php">Fonctionnalités</a>
-    <a href="securite.php">Sécurité Blockchain</a>
-    <a href="cas_usage.php">Cas d'Usage</a>
-    <a href="blog.php">Blog</a>
+    <a href="securite.php">Sécurité</a>
     <div class="mc-mob-btns">
       <?php if ($isLoggedIn): ?>
         <a href="../auth/profile.php" class="btn-outline-mc">Mon profil</a>

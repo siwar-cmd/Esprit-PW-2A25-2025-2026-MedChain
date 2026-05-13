@@ -7,7 +7,7 @@ if (!defined('BASE_PATH')) {
     define('BASE_PATH', dirname(__DIR__, 3));
 }
 if (!defined('APP_ENTRY_URL')) {
-    define('APP_ENTRY_URL', '/midchaine/index1.php');
+    define('APP_ENTRY_URL', '/projet/index1.php');
 }
 if (!function_exists('routeUrl')) {
     function routeUrl(string $controller = 'objet', string $action = 'list', array $params = []): string
@@ -409,7 +409,7 @@ $currentAct  = $_GET['action']     ?? 'list';
                     <span class="mc-user-name"><?php echo htmlspecialchars($userName ?: 'Utilisateur', ENT_QUOTES, 'UTF-8'); ?></span>
                     <i class="bi bi-chevron-down" style="font-size:11px;color:var(--gray-500);"></i>
                     <div class="mc-dropdown">
-                        <a href="/midchaine/views/frontoffice/auth/profile.php">
+                        <a href="/projet/views/frontoffice/auth/profile.php">
                             <i class="bi bi-person-circle"></i> Mon profil
                         </a>
                         <?php if ($userRole === 'admin'): ?>
@@ -418,15 +418,15 @@ $currentAct  = $_GET['action']     ?? 'list';
                             </a>
                         <?php endif; ?>
                         <div class="mc-dropdown-divider"></div>
-                        <a href="/midchaine/controllers/logout.php"
+                        <a href="/projet/controllers/logout.php"
                            onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
                             <i class="bi bi-box-arrow-right"></i> Déconnexion
                         </a>
                     </div>
                 </div>
             <?php else: ?>
-                <a href="/midchaine/views/frontoffice/auth/login.php" class="btn-outline-mc">Connexion</a>
-                <a href="/midchaine/views/frontoffice/auth/register.php" class="btn-solid-mc">
+                <a href="/projet/views/frontoffice/auth/login.php" class="btn-outline-mc">Connexion</a>
+                <a href="/projet/views/frontoffice/auth/register.php" class="btn-solid-mc">
                     <i class="bi bi-person-plus" style="font-size:13px;"></i> Inscription
                 </a>
             <?php endif; ?>

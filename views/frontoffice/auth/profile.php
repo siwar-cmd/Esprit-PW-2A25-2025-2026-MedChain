@@ -787,6 +787,8 @@ $photo_url = $user->getPhotoProfilUrl();
             <div class="sb-label">Navigation</div>
             <a href="../home/index.php"   class="sb-item"><i class="bi bi-house-door-fill"></i> Accueil</a>
             <a href="profile.php"         class="sb-item active"><i class="bi bi-person-circle"></i> Mon Profil</a>
+            <a href="/projet/index1.php"  class="sb-item"><i class="bi bi-box-seam-fill"></i> Loisirs & Objets</a>
+            <a href="/projet/index1.php?controller=chat" class="sb-item"><i class="bi bi-robot"></i> Assistant IA</a>
             <a href="../appointments/index.php"    class="sb-item"><i class="bi bi-calendar-check-fill"></i> Rendez-vous</a>
             <a href="../medical/index.php"         class="sb-item"><i class="bi bi-file-medical-fill"></i> Dossier médical</a>
             <a href="../messages/index.php"        class="sb-item"><i class="bi bi-chat-dots-fill"></i> Messages</a>

@@ -65,7 +65,7 @@ class ChatController
     public function index(): void
     {
         if (empty($_SESSION['user_id'])) {
-            header('Location: /midchaine/views/frontoffice/auth/login.php');
+            header('Location: /projet/views/frontoffice/auth/login.php');
             exit;
         }
         require_once BASE_PATH . '/views/front/chat.php';

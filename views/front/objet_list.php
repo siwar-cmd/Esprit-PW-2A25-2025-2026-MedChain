@@ -82,7 +82,7 @@ if (!function_exists('resolveIcon')) {
         <!-- Recommendation cards -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;">
             <?php foreach ($recommendations as $rec):
-                $recFallback = '/midchaine/public/assets/images/default-object.jpg';
+                $recFallback = '/projet/public/assets/images/default-object.jpg';
                 $recImgSrc   = !empty($rec['image_url']) ? $rec['image_url'] : $recFallback;
             ?>
                 <div style="background:var(--white);border-radius:var(--radius-lg);overflow:hidden;
@@ -258,7 +258,7 @@ if (!function_exists('resolveIcon')) {
     <?php else: ?>
         <div class="objects-grid">
             <?php foreach ($objets as $objet):
-                $fallback = '/midchaine/public/assets/images/default-object.jpg';
+                $fallback = '/projet/public/assets/images/default-object.jpg';
                 $imgSrc   = !empty($objet['image_url']) ? $objet['image_url'] : $fallback;
             ?>
                 <div class="object-card">

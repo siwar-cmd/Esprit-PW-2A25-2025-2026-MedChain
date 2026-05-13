@@ -54,7 +54,7 @@
                 <tbody>
                     <?php foreach ($objets as $objet): ?>
                         <?php
-                        $fallback = '/midchaine/public/assets/images/default-object.jpg';
+                        $fallback = '/projet/public/assets/images/default-object.jpg';
                         $imgSrc   = !empty($objet['image_url']) ? $objet['image_url'] : $fallback;
                         ?>
                         <tr>

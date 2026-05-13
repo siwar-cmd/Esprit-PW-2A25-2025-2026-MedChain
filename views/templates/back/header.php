@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-    header('Location: /midchaine/views/frontoffice/auth/login.php');
+    header('Location: /projet/views/frontoffice/auth/login.php');
     exit;
 }
 
@@ -12,7 +12,7 @@ if (!defined('BASE_PATH')) {
     define('BASE_PATH', dirname(__DIR__, 3));
 }
 if (!defined('APP_ENTRY_URL')) {
-    define('APP_ENTRY_URL', '/midchaine/index1.php');
+    define('APP_ENTRY_URL', '/projet/index1.php');
 }
 if (!function_exists('routeUrl')) {
     function routeUrl(string $controller = 'objet', string $action = 'list', array $params = []): string
@@ -373,10 +373,10 @@ $currentAction     = $_GET['action']     ?? 'dashboard';
             </a>
 
             <div class="mc-nav-section">Gestion</div>
-            <a href="/midchaine/views/backoffice/admin-dashboard.php" class="mc-nav-item">
+            <a href="/projet/views/backoffice/admin-dashboard.php" class="mc-nav-item">
                 <i class="bi bi-people-fill"></i> Utilisateurs
             </a>
-            <a href="/midchaine/controllers/logout.php"
+            <a href="/projet/controllers/logout.php"
                class="mc-nav-item logout"
                onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion

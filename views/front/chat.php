@@ -211,7 +211,7 @@
     const sendBtn = document.getElementById('sendBtn');
     const chips   = document.querySelectorAll('.suggestion-chip');
 
-    const ENDPOINT = '/midchaine/index1.php?controller=chat&action=message&office=front';
+    const ENDPOINT = '/projet/index1.php?controller=chat&action=message&office=front';
 
     function scrollBottom() {
         body.scrollTop = body.scrollHeight;

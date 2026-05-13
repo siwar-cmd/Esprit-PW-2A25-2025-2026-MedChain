@@ -17,7 +17,7 @@ class UnsplashService
     // ─────────────────────────────────────────────────────────────────────────
 
     /** Local fallback image served when the API returns nothing */
-    private const FALLBACK_IMAGE = '/midchaine/public/assets/images/default-object.jpg';
+    private const FALLBACK_IMAGE = '/projet/public/assets/images/default-object.jpg';
 
     /**
      * Fetch the most relevant image URL for a given keyword.
